@@ -1,0 +1,22 @@
+how to install
+https://lite.ip2location.com/database-ip-country-region-city-latitude-longitude-zipcode-timezone
+
+how to use
+https://lite.ip2location.com/faqs
+
+IP Number = 16777216*w + 65536*x + 256*y + z
+where
+IP Address = w.x.y.z
+
+simply query:
+SELECT country_name, country_code, region_name, city_name, time_zone
+FROM ip2location_db11
+WHERE (ip_from <= 2927689805) AND (ip_to >= 2927689805)
+
+for loading
+http://stackoverflow.com/questions/10762239/mysql-enable-load-data-local-infile
+
+ps.
+mysql
+-u root
+-p root

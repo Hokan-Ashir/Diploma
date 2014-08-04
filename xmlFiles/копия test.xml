@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<body>
+<tag1> asdas</tag1>
+    <img src="1111">asdasdas</img>
+<h1 id="header">My Web Page</h1>
+
+<p id="demo">A Paragraph.</p>
+
+<button type="button" onclick="myFunction()">Try it</button>
+
+<p><strong>Note:</strong> myFunction is stored in an external file called "myScript.js".</p>
+<script src="">
+    alert("some")
+</script>
+
+<script src="../myScript.js">
+    alert("some")
+</script>
+</body>
+</html>

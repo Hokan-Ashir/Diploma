@@ -1,0 +1,200 @@
+import timeit
+from pyhtmlanalyzer.full.url.commonURL.commonURLFunctions import commonURLFunctions
+from pyhtmlanalyzer.full.url.dns.dnsFunctions import dnsFunctions
+from pyhtmlanalyzer.full.url.geoip.geoIPFunctions import geoIPFunctions
+from pyhtmlanalyzer.full.url.urlvoid.urlVoidFunctions import urlVoidFunctions
+from pyhtmlanalyzer.full.url.whoisPackage.whoisFunctions import whoisFunctions
+
+__author__ = 'hokan'
+
+
+class urlAnalyzer(commonURLFunctions, dnsFunctions, geoIPFunctions, whoisFunctions, urlVoidFunctions):
+    configDict = None
+    isCommonURLModuleActive = True
+    isDNSModuleActive = True
+    isGeoIPModuleActive = True
+    isWhoIsModuleActive = True
+    isURLVoidModuleActive = True
+    # yeahm I could simply make reflection via "startswith('get')" but who knows what will be in future?
+    listOfAnalyzeFunctions = ['getDomainNameLength',
+                              'getURLTLD',
+                              'getURLFileNameLength',
+                              'getIPv4PresenceInURL',
+                              'getIPv6PresenceInURL',
+                              'getSubdomainPresecnceInURL',
+                              'getPortPresenceInURL',
+                              'getAbsoluteAndRelativeURLLength',
+                              'getRelativePathPresenceInURL',
+                              'getSuspiciousPatternsPresence',
+                              'getSuspiciousFileNamesPresence',
+
+                              'getMXRecordFirstIP',
+                              'getMXRecordFirstIPTTL',
+                              'getMXRecordFirstIPASNumber',
+                              'getARecordFirstIP',
+                              'getARecordFirstIPTTL',
+                              'getARecordFirstIPASNumber',
+                              'getNSRecordFirstIP',
+                              'getNSRecordFirstIPTTL',
+                              'getNSRecordFirstIPASNumber',
+                              'getMXRecordIPsNumber',
+                              'getARecordIPsNumber',
+                              'getNSRecordIPsNumber',
+                              'getResolvedPTR',
+                              'getAandPTRIPsEquality',
+
+                              'getCountryCode',
+                              'getRegion',
+                              'getTimeZone',
+
+                              'getIsHostMalicious',
+                              'getDetectedEnginesList',
+
+                              'getURLExpirationDates',
+                              'getURLRegistrationDates',
+                              'getURLUpdateDate']
+
+    # constructor
+    def __init__(self, configDict, uri=None):
+        commonURLFunctions.__init__(self, configDict, uri)
+        dnsFunctions.__init__(self, uri)
+        geoIPFunctions.__init__(self, uri)
+        whoisFunctions.__init__(self, uri)
+        urlVoidFunctions.__init__(self, uri)
+        if configDict is None:
+            print("\nInvalid parameters")
+            return
+
+        self.configDict = configDict
+    #
+    ###################################################################################################################
+
+    def setActiveModules(self, commonURLModule, dnsModule, geoIPModule, whoisModule, urlVoidModule):
+        self.isCommonURLModuleActive = commonURLModule
+        self.isDNSModuleActive = dnsModule
+        self.isGeoIPModuleActive = geoIPModule
+        self.isWhoIsModuleActive = whoisModule
+        self.isURLVoidModuleActive = urlVoidModule
+    #
+    ###################################################################################################################
+
+    def setURI(self, uri):
+        self.uri = uri
+        if self.isURLVoidModuleActive:
+            self.retrieveURLData()
+        if self.isDNSModuleActive:
+            self.retrieveDNShostInfo()
+        if self.isWhoIsModuleActive:
+            self.retrieveWHOIShostInfo()
+        if self.isGeoIPModuleActive:
+            self.retrieveGeoIPhostInfo()
+    #
+    ###################################################################################################################
+
+    # public functions for outer packages
+    # print result of all functions via reflection with default values
+    # NOTE: no order in function calls
+    def printAll(self, uri):
+        if uri is None:
+            print("Insufficient number of parameters")
+            return
+        # TODO (un)comment
+        self.setActiveModules(True, True, True, True, False)
+        self.setURI(uri)
+        #list_of_domains = ['diagsv3.com', 'google.com', 'abc.com', 'xxxtoolbar.com']
+        #printURLVoidScanResults(list_of_domains)
+        #printURLVoidScanResults(list_of_domains, True)
+        #printURLVoidMaliciousDomains(list_of_domains)
+        #self.printIsHostMalicious()
+        # TODO remove in production
+        #if (True):
+        #    return
+        print("\n\nurl Analyser ----------------------")
+        begin = timeit.default_timer()
+        for className in urlAnalyzer.__bases__:
+            if className.__name__ == commonURLFunctions.__name__ and not self.isCommonURLModuleActive:
+                continue
+            if className.__name__ == dnsFunctions.__name__ and not self.isDNSModuleActive:
+                continue
+            if className.__name__ == geoIPFunctions.__name__ and not self.isGeoIPModuleActive:
+                continue
+            if className.__name__ == whoisFunctions.__name__ and not self.isWhoIsModuleActive:
+                continue
+            if className.__name__ == urlVoidFunctions.__name__ and not self.isURLVoidModuleActive:
+                continue
+            for funcName, funcValue in className.__dict__.items():
+                if str(funcName).startswith("print") and callable(funcValue):
+                    try:
+                        getattr(self, funcName)()
+                    except TypeError:
+                        pass
+        end = timeit.default_timer()
+        print("\nElapsed time: " + str(end - begin) + " seconds")
+        print("---------------------------------------")
+    #
+    ###################################################################################################################
+
+    # @queue parameters is needed for multiprocessing
+    def getTotalAll(self, uri, queue):
+        if uri is None:
+            print("Insufficient number of parameters")
+            return
+        self.uri = uri
+        resultDict = {}
+        for className in urlAnalyzer.__bases__:
+            if className.__name__ == commonURLFunctions.__name__ and not self.isCommonURLModuleActive:
+                continue
+            if className.__name__ == dnsFunctions.__name__ and not self.isDNSModuleActive:
+                continue
+            if className.__name__ == geoIPFunctions.__name__ and not self.isGeoIPModuleActive:
+                continue
+            if className.__name__ == whoisFunctions.__name__ and not self.isWhoIsModuleActive:
+                continue
+            if className.__name__ == urlVoidFunctions.__name__ and not self.isURLVoidModuleActive:
+                continue
+            for funcName, funcValue in className.__dict__.items():
+                if str(funcName).startswith("getTotal") and callable(funcValue):
+                    try:
+                        resultDict[funcName] = getattr(self, funcName)()
+                    except TypeError:
+                        pass
+        queue.put([resultDict, urlAnalyzer.__name__])
+    #
+    ###################################################################################################################
+
+    def getAllAnalyzeReport(self, uri, queue):
+        if uri is None:
+            print("Insufficient number of parameters")
+            return
+        self.uri = uri
+        resultDict = {}
+        for className in urlAnalyzer.__bases__:
+            if className.__name__ == commonURLFunctions.__name__ and not self.isCommonURLModuleActive:
+                continue
+            if className.__name__ == dnsFunctions.__name__ and not self.isDNSModuleActive:
+                continue
+            if className.__name__ == geoIPFunctions.__name__ and not self.isGeoIPModuleActive:
+                continue
+            if className.__name__ == whoisFunctions.__name__ and not self.isWhoIsModuleActive:
+                continue
+            if className.__name__ == urlVoidFunctions.__name__ and not self.isURLVoidModuleActive:
+                continue
+            for funcName, funcValue in className.__dict__.items():
+                if funcName in self.listOfAnalyzeFunctions and callable(funcValue):
+                    try:
+                        resultDict[funcName] = getattr(self, funcName)()
+                    except TypeError:
+                        pass
+        queue.put([resultDict, urlAnalyzer.__name__])
+        # TODO if in result dict value = 0 - do not insert it
+    #
+    ###################################################################################################################
+
+    # optimized from 19 to 1.5 seconds
+
+        # TODO list
+        # syntactical features
+        # the presence of a suspicious domain name (simply must taken from ours db or from urlVoid request)
+        #
+        # geoip-based
+        # netspeed (see no point in it)

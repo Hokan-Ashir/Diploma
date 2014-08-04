@@ -1,0 +1,93 @@
+#[html analyzer features]
+html.elements.with.small.area = div, iframe, object
+
+html.non.dulpicated.elemets = html, head, title, body
+
+# list of void tag-elemets
+# taken from http://dev.w3.org/html5/markup/syntax.html#void-element
+html.void.elements = area, base, br, col, command, embed, hr, img, input, keygen, link, meta, param, source, track, wbr
+
+html.included.urls.elements = script, iframe, frame, embed, form, object
+
+# NOTE for future work there is more common list of restrictions for <head> tag:
+# http://www.w3schools.com/tags/tag_head.asp link
+# I've deleted <embed> and <script> tags cause they can be under <head> tag
+html.under.head.elements = iframe, frame, form, object, address, article, aside, audio, blockquote, canvas, dd, div, dl, fieldset, figcaption, figure, footer, form, h1, h2, h3, h4, h5, h6, header, hgroup, hr, noscript, ol, output, p, pre, section, table, tfoot, ul, video
+
+html.out.of.root.elements = iframe, frame, form, object, embed, script, address, article, aside, audio, blockquote, canvas, dd, div, dl, fieldset, figcaption, figure, footer, form, h1, h2, h3, h4, h5, h6, header, hgroup, hr, noscript, ol, output, p, pre, section, table, tfoot, ul, video
+
+# list of block level elements
+# taken from https://developer.mozilla.org/en-US/docs/HTML/Block-level_elements (includes HTML5 tags)
+html.block.level.elements = address, article, aside, audio, blockquote, canvas, dd, div, dl, fieldset, figcaption, figure, footer, form, h1, h2, h3, h4, h5, h6, header, hgroup, hr, noscript, ol, output, p, pre, section, table, tfoot, ul, video
+
+# this list contains only block elements such that contain block elements
+html.non.block.elements = p
+
+# this list contains elements which cannot contain block content if they're inline
+# taken from: http://www.w3.org/TR/html401/struct/text.html#h-9.4
+html.no.block.content.inline.elements = ins, del
+
+# do not count <html> tags, cause lxml consider root element as <html>
+html.all.tag.names = !DOCTYPE, a, abbr, acronym, address, applet, area, article, aside, audio, b, base, basefont, bdi, bdo, big, blockquote, body, br, button, canvas, caption, center, cite, code, col, colgroup, command, datalist, dd, del, details, dfn, dialog, dir, div, dl, dt, em, embed, fieldset, figcaption, figure, font, footer, form, frame, frameset, head, header, hgroup, h1, h2, h3, h4, h5, h6, hr, i, iframe, img, input, ins, kbd, keygen, label, legend, li, link, main, map, mark, menu, meta, meter, nav, noframes, noscript, object, ol, optgroup, option, output, p, param, pre, progress, q, rp, rt, ruby, s, samp, script, section, select, small, source, span, strike, strong, style, sub, summary, sup, table, tbody, td, textarea, tfoot, th, thead, time, title, tr, track, tt, u, ul, var, video, wbr
+
+########################################################################################################################
+#[script analyzer features]
+script.set.timeout.functions = setTimeout, setInterval
+
+# lists of keywords is taken from: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Reserved_Words
+
+# list of currently using js keywords
+script.keywords = break, case, catch, continue, debugger, default, delete, do, else, false, finally, for, function, if, in, instanceof, new, null, return, switch, this, throw, true, try, typeof, var, void, while, with
+
+# list of ecma1 keywords
+#script.keywords = case, catch, const, debugger, default, do, enum, export, extends, finally, import, super, switch, throw, try
+
+# list of ecma2 keywords
+#script.keywords = abstract, boolean, byte, case, catch, char, class, const, debugger, default, do, double, enum, export, extends, final, finally, float, goto, implements, import, instanceof, int, interface, long, native, package, private, protected, public, short, static, super, switch, synchronized, throw, throws, transient, try, volatile
+
+# list of ecma3 keywords
+#script.keywords = abstract, boolean, byte, char, class, const, debugger, double, enum, export, extends, final, float, goto, implements, import, int, interface, long, native, package, private, protected, public, short, static, super, synchronized, throws, transient, volatile
+
+# list of ecma5 keywords
+#script.keywords = class, enum, export, extends, import, super
+
+# list of ecma5 keywords reserved for future
+#script.keywords = implements, interface, let, package, private, protected, public, static, yield
+
+# NOTE: this list is for js-bulit-in functions only
+script.built.in.functions = decodeURI, decodeURIComponent, encodeURI, encodeURIComponent, escape, eval, isFinite, isNaN, Number, parseFloat, parseInt, String, unescape
+script.suspicious.tags = script, object, embed, frame
+
+# list of events
+script.events = onerror, onload, onbeforeunload, onunload
+
+# list of event attachments functions; dispatchEvent replaced by initEvent cause we simply can't catch event object
+# that passes to dispatchEvent, but we can manage its initialization
+script.event.functions = addEventListener, attachEvent, initEvent, fireEvent
+
+# list of string modification functions; we include all string method except valueOf() and toString()
+# slice(), indexOf(), lastIndexOf() and concat() are also ArrayType methods, but we count them all, just
+# because of side attributes that will allow us consider malicious web-page as malicious
+# based on http://www.tutorialspoint.com/javascript/javascript_builtin_functions.htm, http://www.w3schools.com/jsref/jsref_obj_string.asp
+script.string.modification.functions = charAt, charCodeAt, concat, fromCharCode, indexOf, lastIndexOf, localeCompare, match, replace, search, slice, split, substr, substring, toLocaleLowerCase, toLocaleUpperCase, toLowerCase, toUpperCase, trim
+
+# list of built-in functions (and RegExp object) using in deobfuscation routines
+# based on www.javascriptobfuscator.com, http://www.daftlogic.com/projects-online-javascript-obfuscator.htm and https://jscrambler.com/ output
+script.deobfuscation.functions = eval, replace, RegExp, split, charAt
+
+# list of DOM-modifying methods
+# based on http://www.w3schools.com/dom/dom_nodes_create.asp and other close-placed links
+# also we count clearAttributes(), insertAdjacentElement() and replaceNode() Microsoft IE methods
+script.DOM.modifying.methods = createElement, createAttribute, setAttribute, createTextNode, createCDATAsection, createComment, appendChild, setAttributeNode, insertBefore, insertData, cloneNode, replaceChild, replaceData, removeChild, removeAttribute, removeAttributeNode, nodeValue, clearAttributes
+
+# list of fingerprinting functions
+# based on https://github.com/Valve/fingerprintjs/blob/master/fingerprint.js
+script.fingerprinting.functions = navigator.userAgent, navigator.language, screen.colorDepth, getTimezoneOffset, window.localStorage, window.sessionStorage, window.indexedDB, document.body.addBehavior, window.openDatabase, navigator.cpuClass, navigator.platform, navigator.doNotTrack
+
+########################################################################################################################
+
+# list of suspicious file names
+url.suspicious.file.names = swfNode.php, pdfNode.php
+
+# list of suspicious patterns
+url.suspicious.patterns = swfNode.php, pdfNode.php
