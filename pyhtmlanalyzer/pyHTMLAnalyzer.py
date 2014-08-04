@@ -23,54 +23,44 @@ class pyHTMLAnalyzer:
     # get config list for various analyzer modules
     def getConfigList(self, configFileName):
         configFile = open(configFileName, 'r')
-        listOfHTMLFeatures = ["html.elements.with.small.area",
-                              "html.non.dulpicated.elemets",
-                              "html.void.elements",
-                              "html.included.urls.elements",
-                              "html.under.head.elements",
-                              "html.out.of.root.elements",
-                              "html.block.level.elements",
-                              "html.non.block.elements",
-                              "html.no.block.content.inline.elements",
-                              "html.all.tag.names"]
-        listOfScriptFeatures = ["script.set.timeout.functions",
-                                "script.keywords",
-                                "script.built.in.functions",
-                                "script.suspicious.tags",
-                                "script.events",
-                                "script.event.functions",
-                                "script.string.modification.functions",
-                                "script.deobfuscation.functions",
-                                "script.DOM.modifying.methods",
-                                "script.fingerprinting.functions"]
-        listOfURLFeatures = ["url.suspicious.file.names",
-                             "url.suspicious.patterns"]
         htmlConfigDict = {}
         scriptConfigDict = {}
         urlConfigDict = {}
+        currentModule = ""
         regExp = re.compile(r'[^\n\s=,]+')
         for line in configFile:
             # comments
             if line.startswith("#"):
                 continue
+
+            # decide which functions belongs to which module
+            if line == '[html analyzer features]\n':
+                currentModule = 'html'
+                continue
+            elif line == '[script analyzer features]\n':
+                currentModule = 'script'
+                continue
+            elif line == '[url.analyzer.features]\n':
+                currentModule = "url"
+                continue
+
             parseResult = re.findall(regExp, line)
             if parseResult == []:
                 continue
 
             # html features
-            if parseResult[0] in listOfHTMLFeatures:
-                htmlConfigDict[parseResult[0]] = parseResult
-                htmlConfigDict[parseResult[0]].pop(0)
+            if currentModule == 'html':
+                htmlConfigDict[parseResult[0]] = parseResult[1:]
 
             # script features
-            if parseResult[0] in listOfScriptFeatures:
-                scriptConfigDict[parseResult[0]] = parseResult
-                scriptConfigDict[parseResult[0]].pop(0)
+            elif currentModule == 'script':
+                scriptConfigDict[parseResult[0]] = parseResult[1:]
 
             # url features
-            if parseResult[0] in listOfURLFeatures:
-                urlConfigDict[parseResult[0]] = parseResult
-                urlConfigDict[parseResult[0]].pop(0)
+            elif currentModule == 'url':
+                urlConfigDict[parseResult[0]] = parseResult[1:]
+
+        configFile.close()
 
         return [htmlConfigDict, scriptConfigDict, urlConfigDict]
 

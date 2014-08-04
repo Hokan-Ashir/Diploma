@@ -5,6 +5,7 @@ import timeit
 import re
 from pyhtmlanalyzer import CLSID
 from pyhtmlanalyzer.commonFunctions.commonConnectionUtils import commonConnectionUtils
+from pyhtmlanalyzer.commonFunctions.commonFunctions import commonFunctions
 from pyhtmlanalyzer.commonFunctions.commonXPATHUtils import commonXPATHUtils
 from pyhtmlanalyzer.full.commonAnalysisData import commonAnalysisData
 from pyhtmlanalyzer.full.commonURIAnalysisData import commonURIAnalysisData
@@ -14,25 +15,7 @@ __author__ = 'hokan'
 class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
     configDict = None
     openedAsXML = None
-    listOfAnalyzeFunctions = ['getTotalNumberOfElementsWithSmallArea',
-                              'getTotalNumberOfDuplicatedElements',
-                              'getTotalNumberOfElementsWithSuspiciousContent',
-                              'getTotalNumberOfVoidElementsWithContent',
-                              'getTotalNumberOfObjectsWithSuspiciousContent',
-                              'getTotalNumberOfIncludedURLs',
-                              'getTotalNumberOfKnownMaliciousPatternObjects',
-                              'getTotalNumberOutOfPlaceTags',
-                              'getPagesPercentageMismatch',
-                              'getTotalNumberOfHiddenTags',
-                              'getTotalNumberOfScriptElements',
-                              'getTotalNumberOfScriptElementsWithWrongFileExtension',
-                              'getNumberOfTextCharactersInPage',
-                              'getTotalNumberOfCharactersInPage',
-                              'getNumberOfWhitespaceCharactersInPage',
-                              'getPercentageOfUnknownTags',
-                              'getNumberOfElementsWithExternalDomainSource',
-                              'getExternalDomainToInternalDomainSourceElementsRatio',
-                              'getPageHashValues',]
+    listOfAnalyzeFunctions = []
 
     # constructor
     def __init__(self, configDict, xmldata = None, pageReady = None, uri = None):
@@ -43,6 +26,8 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         else:
             print("\nInvalid parameters")
             return
+
+        self.listOfAnalyzeFunctions = commonFunctions.getAnalyzeFunctionList('analyzeFunctions', 'html.module')
     #
     ###################################################################################################################
 

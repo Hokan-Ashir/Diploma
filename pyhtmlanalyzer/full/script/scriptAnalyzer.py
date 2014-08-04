@@ -33,36 +33,7 @@ class scriptAnalyzer(commonAnalysisData):
     quotedStringsRegExp = None
     dictOfSymbolsProbability = None
 
-    # NOTE: commented methods are really slow down interprocessing queue
-    listOfAnalyzeFunctions = ['getNumberOfEvalFunctionCalls',
-                              'getTotalNumberOfSetTimeoutIntervalCalls',
-                              'getKeywordsToWordsRatio',
-                              'getNumberOfLongStrings',
-                              'getTotalNumberOfBuiltInFunctions',
-                              'getScriptWhitespacePercentage',
-                              'getAverageScriptLineLength',
-                              'getAverageLengthOfStringsUsedInScript',
-                              'getNumberCharactersInScriptContent',
-                              'getShellcodeExistenceProbability',
-                              'getShellcodeExistenceProbabilityAdvanced',
-                              'getTotalNumberOfIFrameStrings',
-                              'getTotalNumberOfSuspiciousStrings',
-                              'getMaximumLengthOfScriptStrings',
-                              'getTotalNumberOfObjectsWithSuspiciousContent',
-                              'getTotalNumberOfLongVariableOrFunction',
-                              'getScriptWholeEntropy',
-                              #'getScriptNodesEntropy',
-                              'getMaximumEntropyOfWholeScriptStrings',
-                              #'getMaximumEntropyOfScriptStrings',
-                              #'getEntropyOfStringsDeclaredInScriptByWholeScript',
-                              #'getEntropyOfStringsDeclaredInScriptByNodes',
-                              'getScriptContentHashing',
-                              'getNumberOfEventAttachments',
-                              'getNumberOfDirectStringAssignments',
-                              'getNumberOfStringModificationFunctions',
-                              'getNumberBuiltInDeobfuscationFunctions',
-                              'getNumberOfDOMModificationFunctions',
-                              'getNumberOfFingerPrintingFunctions']
+    listOfAnalyzeFunctions = []
 
     # constructor
     def __init__(self, configDict, xmldata = None, pageReady = None):
@@ -72,6 +43,8 @@ class scriptAnalyzer(commonAnalysisData):
         else:
             print("\nInvalid parameters")
             return
+
+        self.listOfAnalyzeFunctions = commonFunctions.getAnalyzeFunctionList('analyzeFunctions', 'script.module')
     #
     ###################################################################################################################
 

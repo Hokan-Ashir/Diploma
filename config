@@ -1,4 +1,4 @@
-#[html analyzer features]
+[html analyzer features]
 html.elements.with.small.area = div, iframe, object
 
 html.non.dulpicated.elemets = html, head, title, body
@@ -31,7 +31,7 @@ html.no.block.content.inline.elements = ins, del
 html.all.tag.names = !DOCTYPE, a, abbr, acronym, address, applet, area, article, aside, audio, b, base, basefont, bdi, bdo, big, blockquote, body, br, button, canvas, caption, center, cite, code, col, colgroup, command, datalist, dd, del, details, dfn, dialog, dir, div, dl, dt, em, embed, fieldset, figcaption, figure, font, footer, form, frame, frameset, head, header, hgroup, h1, h2, h3, h4, h5, h6, hr, i, iframe, img, input, ins, kbd, keygen, label, legend, li, link, main, map, mark, menu, meta, meter, nav, noframes, noscript, object, ol, optgroup, option, output, p, param, pre, progress, q, rp, rt, ruby, s, samp, script, section, select, small, source, span, strike, strong, style, sub, summary, sup, table, tbody, td, textarea, tfoot, th, thead, time, title, tr, track, tt, u, ul, var, video, wbr
 
 ########################################################################################################################
-#[script analyzer features]
+[script analyzer features]
 script.set.timeout.functions = setTimeout, setInterval
 
 # lists of keywords is taken from: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Reserved_Words
@@ -85,7 +85,7 @@ script.DOM.modifying.methods = createElement, createAttribute, setAttribute, cre
 script.fingerprinting.functions = navigator.userAgent, navigator.language, screen.colorDepth, getTimezoneOffset, window.localStorage, window.sessionStorage, window.indexedDB, document.body.addBehavior, window.openDatabase, navigator.cpuClass, navigator.platform, navigator.doNotTrack
 
 ########################################################################################################################
-
+[url.analyzer.features]
 # list of suspicious file names
 url.suspicious.file.names = swfNode.php, pdfNode.php
 

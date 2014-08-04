@@ -25,3 +25,27 @@ class commonFunctions:
             last_pos = m.end()
 
         return out + text[last_pos:].replace(old, new)
+
+    @staticmethod
+    def getAnalyzeFunctionList(configFileName, moduleName):
+        if moduleName is None or moduleName == '':
+            return None
+
+        configFile = open(configFileName, 'r')
+        moduleFound = False
+        regExp = re.compile(r'[^\n\s=,]+')
+        for line in configFile:
+            # decide which functions belongs to which module
+            if line.startswith(moduleName):
+                parseResult = re.findall(regExp, line)
+                if parseResult == []:
+                    return []
+                else:
+                    return parseResult[1:]
+
+            # comments or not module that we are looking for
+            if line.startswith("#") or moduleFound == False:
+                continue
+
+        configFile.close()
+        return []

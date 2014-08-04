@@ -1,4 +1,5 @@
 import timeit
+from pyhtmlanalyzer.commonFunctions.commonFunctions import commonFunctions
 from pyhtmlanalyzer.full.url.commonURL.commonURLFunctions import commonURLFunctions
 from pyhtmlanalyzer.full.url.dns.dnsFunctions import dnsFunctions
 from pyhtmlanalyzer.full.url.geoip.geoIPFunctions import geoIPFunctions
@@ -15,44 +16,7 @@ class urlAnalyzer(commonURLFunctions, dnsFunctions, geoIPFunctions, whoisFunctio
     isGeoIPModuleActive = True
     isWhoIsModuleActive = True
     isURLVoidModuleActive = True
-    # yeahm I could simply make reflection via "startswith('get')" but who knows what will be in future?
-    listOfAnalyzeFunctions = ['getDomainNameLength',
-                              'getURLTLD',
-                              'getURLFileNameLength',
-                              'getIPv4PresenceInURL',
-                              'getIPv6PresenceInURL',
-                              'getSubdomainPresecnceInURL',
-                              'getPortPresenceInURL',
-                              'getAbsoluteAndRelativeURLLength',
-                              'getRelativePathPresenceInURL',
-                              'getSuspiciousPatternsPresence',
-                              'getSuspiciousFileNamesPresence',
-
-                              'getMXRecordFirstIP',
-                              'getMXRecordFirstIPTTL',
-                              'getMXRecordFirstIPASNumber',
-                              'getARecordFirstIP',
-                              'getARecordFirstIPTTL',
-                              'getARecordFirstIPASNumber',
-                              'getNSRecordFirstIP',
-                              'getNSRecordFirstIPTTL',
-                              'getNSRecordFirstIPASNumber',
-                              'getMXRecordIPsNumber',
-                              'getARecordIPsNumber',
-                              'getNSRecordIPsNumber',
-                              'getResolvedPTR',
-                              'getAandPTRIPsEquality',
-
-                              'getCountryCode',
-                              'getRegion',
-                              'getTimeZone',
-
-                              'getIsHostMalicious',
-                              'getDetectedEnginesList',
-
-                              'getURLExpirationDates',
-                              'getURLRegistrationDates',
-                              'getURLUpdateDate']
+    listOfAnalyzeFunctions = []
 
     # constructor
     def __init__(self, configDict, uri=None):
@@ -66,6 +30,7 @@ class urlAnalyzer(commonURLFunctions, dnsFunctions, geoIPFunctions, whoisFunctio
             return
 
         self.configDict = configDict
+        self.listOfAnalyzeFunctions = commonFunctions.getAnalyzeFunctionList('analyzeFunctions', 'url.module')
     #
     ###################################################################################################################
 
