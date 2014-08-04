@@ -1,35 +1,9 @@
 #!/usr/bin/env/ python
 # -*- coding: utf-8 -*-
-from multiprocessing import Process, Queue
-import re
 import timeit
-from pyhtmlanalyzer.commonFunctions.commonConnectionUtils import commonConnectionUtils
-from pyhtmlanalyzer.commonFunctions.plottingFunctions import plottingFunctions
-from pyhtmlanalyzer.commonFunctions.processProxy import processProxy
-from pyhtmlanalyzer.full.html.htmlAnalyzer import htmlAnalyzer
 from pyhtmlanalyzer.pyHTMLAnalyzer import pyHTMLAnalyzer
 
-class Foo:
-    def bar(self, u, queue):
-        d = {}
-        print("Hello " + str(u))
-        d[u] = 'hello' + str(u)
-        print(Foo.__name__)
-        queue.put(d)
-
 if __name__ == "__main__":
-    q = Queue()
-    foo = Foo()
-    u = 1
-    p1 = processProxy(foo, [u, q], 'bar')
-    p1.start()
-    u = 2
-    p2 = processProxy(foo, [u, q], 'bar')
-    p2.start()
-    p1.join()
-    p2.join()
-    l = [q.get(), q.get()]
-
     analyzer = pyHTMLAnalyzer("config")
 
     #analyzer.printAnalyzedPageFeatures("http://www.tutorialspoint.com/python/string_split.htm")

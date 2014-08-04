@@ -6,7 +6,6 @@
 from collections import defaultdict
 from copy import copy
 import hashlib
-from itertools import chain
 from math import log
 import re
 import timeit
@@ -1173,11 +1172,14 @@ class scriptAnalyzer(commonAnalysisData):
         for funcName, funcValue in scriptAnalyzer.__dict__.items():
             if funcName in self.listOfAnalyzeFunctions and callable(funcValue):
                 try:
-                    resultDict[funcName] = getattr(self, funcName)()
+                    functionCallResult = getattr(self, funcName)()
+                    # if in result dict value = 0 - do not insert it
+                    if not ((type(functionCallResult) is int and functionCallResult == 0) or (type(
+                            functionCallResult) is float and functionCallResult == 0.0)):
+                        resultDict[funcName] = functionCallResult
                 except TypeError:
                     pass
         queue.put([resultDict, scriptAnalyzer.__name__])
-        # TODO if in result dict value = 0 - do not insert it
     #
     ###################################################################################################################
 

@@ -1,8 +1,6 @@
 import lxml
 import lxml.html
 import os
-from urllib2 import urlopen
-from urllib2 import Request
 import urllib2
 
 __author__ = 'hokan'

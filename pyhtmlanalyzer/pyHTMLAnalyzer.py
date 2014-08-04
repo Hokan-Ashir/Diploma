@@ -74,17 +74,14 @@ class pyHTMLAnalyzer:
         jsAnalyzerProcess = None
         urlAnalyzerProcess = None
         if htmlAnalysis:
-            #self.htmlAnalyzerModule.printAll(xmldata, pageReady, uri)
             htmlAnalyzerProcess = processProxy(self.htmlAnalyzerModule, [xmldata, pageReady, uri], 'printAll')
             htmlAnalyzerProcess.start()
 
         if scriptAnalysis:
-            #self.scriptAnalyzerModule.printAll(xmldata, pageReady, uri)
             jsAnalyzerProcess = processProxy(self.scriptAnalyzerModule, [xmldata, pageReady, uri], 'printAll')
             jsAnalyzerProcess.start()
 
         if urlAnalysis:
-            #self.urlAnalyzerModule.printAll(uri)
             urlAnalyzerProcess = processProxy(self.urlAnalyzerModule, [uri], 'printAll')
             urlAnalyzerProcess.start()
 

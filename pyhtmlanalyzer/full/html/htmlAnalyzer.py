@@ -4,7 +4,6 @@ import operator
 import timeit
 import re
 from pyhtmlanalyzer import CLSID
-from pyhtmlanalyzer.commonFunctions.commonConnectionUtils import commonConnectionUtils
 from pyhtmlanalyzer.commonFunctions.commonFunctions import commonFunctions
 from pyhtmlanalyzer.commonFunctions.commonXPATHUtils import commonXPATHUtils
 from pyhtmlanalyzer.full.commonAnalysisData import commonAnalysisData
@@ -955,11 +954,14 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         for funcName, funcValue in htmlAnalyzer.__dict__.items():
             if funcName in self.listOfAnalyzeFunctions and callable(funcValue):
                 try:
-                    resultDict[funcName] = getattr(self, funcName)()
+                    functionCallResult = getattr(self, funcName)()
+                    # if in result dict value = 0 - do not insert it
+                    if not ((type(functionCallResult) is int and functionCallResult == 0) or (type(
+                            functionCallResult) is float and functionCallResult == 0.0)):
+                        resultDict[funcName] = functionCallResult
                 except TypeError:
                     pass
         queue.put([resultDict, htmlAnalyzer.__name__])
-        # TODO if in result dict value = 0 - do not insert it
     #
     ###################################################################################################################
 
