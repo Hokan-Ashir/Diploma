@@ -262,6 +262,7 @@ class dnsFunctions(commonURIAnalysisData):
                 resolvedPTR = dns.resolver.query(reverseIP, 'PTR')[0]
                 listOfResolvedPTR.append(resolvedPTR)
             except(dns.resolver.NXDOMAIN, dns.resolver.NoAnswer):
+                # TODO write to log "page has no NX Domain"
                 pass
             if onlyFirstIP:
                 break

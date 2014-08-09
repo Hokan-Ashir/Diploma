@@ -23,20 +23,14 @@ class processProxy(Process):
         self.methodName = methodName
 
     def run(self):
-        if len(self.classInstance.__class__.__bases__) != 0:
-            for className in self.classInstance.__class__.__bases__:
-                for funcName, funcValue in className.__dict__.items():
-                    if str(funcName) == self.methodName and callable(funcValue):
-                        try:
-                            getattr(self.classInstance, funcName)(*self.arguments)
-                        except TypeError:
-                            pass
-                        return
+        result = None
+        if self.classInstance is None:
+            result = self.methodName(*self.arguments)
+        else:
+            try:
+                result = getattr(self.classInstance, self.methodName)(*self.arguments)
+            except TypeError:
+                # TODO write to log "No such function exists"
+                pass
 
-        for funcName, funcValue in self.classInstance.__class__.__dict__.items():
-                if str(funcName) == self.methodName and callable(funcValue):
-                    try:
-                        getattr(self.classInstance, funcName)(*self.arguments)
-                    except TypeError:
-                        pass
-                    return
+        return result

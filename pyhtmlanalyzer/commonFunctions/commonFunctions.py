@@ -7,7 +7,12 @@ class commonFunctions:
     # taken from: http://bytes.com/topic/python/answers/38845-replace-string-except-inside-quotes
     # NOTE: thus replace commented strings
     @staticmethod
-    def replaceUnquoted(text, old, new, quote = '"'):
+    def replaceUnquoted(text, old, new, quote = '"', ignoreCase = True):
+        if ignoreCase:
+            text = text.upper()
+            old = old.upper()
+            new = new.upper()
+
         # suitable for one type of quotes
         #regExp = re.compile(r'%s([^\\%s]|\\[\\%s])*%s' % (quote, quote, quote, quote))
         quote1 = "'"
@@ -49,3 +54,30 @@ class commonFunctions:
 
         configFile.close()
         return []
+
+    # this is wrapper for every function, that wished to be called in separate process via processProxy
+    # common usage:
+    # class Foo:
+    # def bar(self, u):
+    #   u += 165
+    #   return u
+    #
+    #
+    # q = Queue()
+    # u = 72
+    # foo = Foo()
+    # p1 = processProxy(None, [foo, [u], q, 'bar'], commonFunctions.callFunctionByName)
+    # p1.run()
+    #
+    # l = q.get()
+    #
+    @staticmethod
+    def callFunctionByNameQeued(classInstance, arguments, queue, methodName):
+        result = None
+        try:
+            result = getattr(classInstance, methodName)(*arguments)
+        except TypeError:
+            # TODO write to log "No such function exists"
+            pass
+
+        return queue.put([methodName, result])

@@ -17,8 +17,8 @@ if __name__ == "__main__":
     #print(dic.items())
 
     begin = timeit.default_timer()
-    #dic = analyzer.getTotalNumberOfAnalyzedPageFeatures(u'http://www.tutorialspoint.com/python/string_rstrip.htm')
-    dic = analyzer.getNumberOfAnalyzedPageFeaturesByFunction('http://www.yandex.ru')
+    dic = analyzer.getNumberOfAnalyzedPageFeaturesByFunction('http://www.tutorialspoint.com/python/string_rstrip.htm')
+    #dic = analyzer.getNumberOfAnalyzedPageFeaturesByFunction('http://www.yandex.ru')
     end = timeit.default_timer()
     print("\nElapsed time: " + str(end - begin) + " seconds")
     print(dic.items())

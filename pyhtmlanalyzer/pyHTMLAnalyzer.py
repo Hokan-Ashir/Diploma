@@ -1,6 +1,7 @@
 from multiprocessing import Queue
 import re
 from pyhtmlanalyzer.commonFunctions.commonConnectionUtils import commonConnectionUtils
+from pyhtmlanalyzer.commonFunctions.commonFunctions import commonFunctions
 from pyhtmlanalyzer.commonFunctions.processProxy import processProxy
 from pyhtmlanalyzer.full.html.htmlAnalyzer import htmlAnalyzer
 from pyhtmlanalyzer.full.script.scriptAnalyzer import scriptAnalyzer
@@ -97,19 +98,20 @@ class pyHTMLAnalyzer:
         jsAnalyzerProcess = None
         urlAnalyzerProcess = None
         if self.isHTMLModuleActive:
-            htmlAnalyzerProcess = processProxy(self, [self.htmlAnalyzerModule, [xmldata, pageReady, uri],
-                                                      processQueue, functionName], 'callFunctionByName')
+            htmlAnalyzerProcess = processProxy(None, [self.htmlAnalyzerModule, [xmldata, pageReady, uri],
+                                                      processQueue, functionName], commonFunctions.callFunctionByNameQeued)
             htmlAnalyzerProcess.start()
             processesNumber += 1
 
         if self.isURLModuleActive:
-            jsAnalyzerProcess = processProxy(self, [self.scriptAnalyzerModule, [xmldata, pageReady, uri],
-                                                    processQueue, functionName], 'callFunctionByName')
+            jsAnalyzerProcess = processProxy(None, [self.scriptAnalyzerModule, [xmldata, pageReady, uri],
+                                                    processQueue, functionName], commonFunctions.callFunctionByNameQeued)
             jsAnalyzerProcess.start()
             processesNumber += 1
 
         if self.isScriptMiduleActive:
-            urlAnalyzerProcess = processProxy(self, [self.urlAnalyzerModule, [uri], processQueue, functionName], 'callFunctionByName')
+            urlAnalyzerProcess = processProxy(None, [self.urlAnalyzerModule, [uri], processQueue, functionName],
+                                              commonFunctions.callFunctionByNameQeued)
             urlAnalyzerProcess.start()
             processesNumber += 1
 
@@ -121,7 +123,7 @@ class pyHTMLAnalyzer:
             urlAnalyzerProcess.join()
 
         for i in xrange(0, processesNumber):
-            resultList = processQueue.get()
+            resultList = processQueue.get()[1]
             # if function returns nothing (like print function, for example)
             if resultList is None:
                 resultDict = resultList
@@ -165,7 +167,8 @@ class pyHTMLAnalyzer:
         resultDict = {}
         # start process for each page
         for object in listOfObjects:
-            proxy = processProxy(self, [self, [object], processQueue, functionName], 'callFunctionByName')
+            proxy = processProxy(None, [self, [object], processQueue, functionName], commonFunctions
+            .callFunctionByNameQeued)
             proxyProcessesList.append(proxy)
             proxy.start()
 
@@ -186,27 +189,3 @@ class pyHTMLAnalyzer:
         return self.getTotalNumberOfAnalyzedObjectsFeatures(listOfFiles, False)
     #
     ###################################################################################################################
-
-    def callFunctionByName(self, classInstance, arguments, queue, methodName):
-        result = None
-        if len(classInstance.__class__.__bases__) != 0:
-            for className in classInstance.__class__.__bases__:
-                for funcName, funcValue in className.__dict__.items():
-                    if str(funcName) == methodName and callable(funcValue):
-                        try:
-                            result = getattr(classInstance, funcName)(*arguments)
-                        except TypeError:
-                            pass
-
-                        return queue.put(result)
-
-        for funcName, funcValue in classInstance.__class__.__dict__.items():
-                if str(funcName) == methodName and callable(funcValue):
-                    try:
-                        result = getattr(classInstance, funcName)(*arguments)
-                    except TypeError:
-                        pass
-
-                    return queue.put(result)
-
-        return queue.put(result)
