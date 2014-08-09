@@ -21,9 +21,24 @@ class dnsFunctions(commonURIAnalysisData):
 
     # pre analysis method
     def retrieveDNShostInfo(self):
-        self.listOfMXRecords = dns.resolver.query(self.uri.split("://")[1].split("/")[0], 'MX')
-        self.listOfARecords = dns.resolver.query(self.uri.split("://")[1].split("/")[0], 'A')
-        self.listOfNSRecords = dns.resolver.query(self.uri.split("://")[1].split("/")[0], 'NS')
+        try:
+            self.listOfMXRecords = dns.resolver.query(self.uri.split("://")[1].split("/")[0], 'MX')
+        except dns.resolver.NoAnswer, error:
+            # TODO log that page has no MX records
+            pass
+
+        try:
+            self.listOfARecords = dns.resolver.query(self.uri.split("://")[1].split("/")[0], 'A')
+        except dns.resolver.NoAnswer, error:
+            # TODO log that page has no A records
+            pass
+
+        try:
+            self.listOfNSRecords = dns.resolver.query(self.uri.split("://")[1].split("/")[0], 'NS')
+        except dns.resolver.NoAnswer, error:
+            # TODO log that page has no NS records
+            pass
+
 
     # for each of the A, NS, MX records for this host:
     # first IP address returned,

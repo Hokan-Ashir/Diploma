@@ -17,7 +17,11 @@ class whoisFunctions(commonURIAnalysisData):
 
     # expiration date
     def getURLExpirationDates(self):
-        return None if self.whoisData is None else self.whoisData.expiration_date
+        try:
+            return None if self.whoisData is None else self.whoisData.expiration_date
+        except KeyError, error:
+            # TODO log that page has no updated date
+            pass
 
     def printURLExpirationDates(self):
         print("\nExpiration dates:")
@@ -27,7 +31,11 @@ class whoisFunctions(commonURIAnalysisData):
 
     # registration date
     def getURLRegistrationDates(self):
-        return None if self.whoisData is None else self.whoisData.creation_date
+        try:
+            return None if self.whoisData is None else self.whoisData.creation_date
+        except KeyError, error:
+            # TODO log that page has no updated date
+            pass
 
     def printURLRegistrationDates(self):
         print("\nRegistration dates:")
@@ -37,7 +45,12 @@ class whoisFunctions(commonURIAnalysisData):
 
     # update date
     def getURLUpdateDate(self):
-        return None if self.whoisData is None else self.whoisData.updated_date
+        try:
+            return None if self.whoisData is None else self.whoisData.updated_date
+        except KeyError, error:
+            # TODO log that page has no updated date
+            pass
+
 
     def printURLUpdatedDate(self):
         print("\nUpdate date: %s" % self.getURLUpdateDate())

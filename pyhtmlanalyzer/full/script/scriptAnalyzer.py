@@ -1146,8 +1146,7 @@ class scriptAnalyzer(commonAnalysisData):
     #
     ###################################################################################################################
 
-    # @queue parameters is needed for multiprocessing
-    def getTotalAll(self, xmldata, pageReady, uri, queue):
+    def getTotalAll(self, xmldata, pageReady, uri):
         if xmldata is None or pageReady is None:
                 print("Insufficient number of parameters")
                 return
@@ -1159,11 +1158,12 @@ class scriptAnalyzer(commonAnalysisData):
                     resultDict[funcName] = getattr(self, funcName)()
                 except TypeError:
                     pass
-        queue.put([resultDict, scriptAnalyzer.__name__])
+
+        return [resultDict, scriptAnalyzer.__name__]
     #
     ###################################################################################################################
 
-    def getAllAnalyzeReport(self, xmldata, pageReady, uri, queue):
+    def getAllAnalyzeReport(self, xmldata, pageReady, uri):
         if xmldata is None or pageReady is None:
                 print("Insufficient number of parameters")
                 return
@@ -1179,7 +1179,8 @@ class scriptAnalyzer(commonAnalysisData):
                         resultDict[funcName] = functionCallResult
                 except TypeError:
                     pass
-        queue.put([resultDict, scriptAnalyzer.__name__])
+
+        return [resultDict, scriptAnalyzer.__name__]
     #
     ###################################################################################################################
 

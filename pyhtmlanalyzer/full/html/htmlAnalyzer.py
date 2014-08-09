@@ -925,7 +925,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
     ###################################################################################################################
 
     # @queue parameters is needed for multiprocessing
-    def getTotalAll(self, xmldata, pageReady, uri, queue):
+    def getTotalAll(self, xmldata, pageReady, uri):
         if xmldata is None or pageReady is None:
                 print("Insufficient number of parameters")
                 return
@@ -939,11 +939,12 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
                     resultDict[funcName] = getattr(self, funcName)()
                 except TypeError:
                     pass
-        queue.put([resultDict, htmlAnalyzer.__name__])
+
+        return [resultDict, htmlAnalyzer.__name__]
     #
     ###################################################################################################################
 
-    def getAllAnalyzeReport(self, xmldata, pageReady, uri, queue):
+    def getAllAnalyzeReport(self, xmldata, pageReady, uri):
         if xmldata is None or pageReady is None:
                 print("Insufficient number of parameters")
                 return
@@ -961,7 +962,8 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
                         resultDict[funcName] = functionCallResult
                 except TypeError:
                     pass
-        queue.put([resultDict, htmlAnalyzer.__name__])
+
+        return [resultDict, htmlAnalyzer.__name__]
     #
     ###################################################################################################################
 

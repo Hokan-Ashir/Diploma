@@ -1,6 +1,5 @@
 from multiprocessing import Queue
 import re
-import timeit
 from pyhtmlanalyzer.commonFunctions.commonConnectionUtils import commonConnectionUtils
 from pyhtmlanalyzer.commonFunctions.processProxy import processProxy
 from pyhtmlanalyzer.full.html.htmlAnalyzer import htmlAnalyzer
@@ -14,11 +13,28 @@ class pyHTMLAnalyzer:
     scriptAnalyzerModule = None
     urlAnalyzerModule = None
 
+    isHTMLModuleActive = True
+    isScriptMiduleActive = True
+    isURLModuleActive = True
+
     def __init__(self, configFileName):
         configList = self.getConfigList(configFileName)
         self.htmlAnalyzerModule = htmlAnalyzer(configList[0])
         self.scriptAnalyzerModule = scriptAnalyzer(configList[1])
         self.urlAnalyzerModule = urlAnalyzer(configList[2])
+
+    # returns active module list, order - html module, script module, url module
+    def getActiveModuleList(self):
+        return [self.isHTMLModuleActive, self.isScriptMiduleActive, self.isURLModuleActive]
+
+    def setIsHTMLModuleActive(self, isActive):
+        self.isHTMLModuleActive = isActive
+
+    def setIsScriptModuleActive(self, isActive):
+        self.isScriptMiduleActive = isActive
+
+    def setIsURLModuleActive(self, isActive):
+        self.isURLModuleActive = isActive
 
     # get config list for various analyzer modules
     def getConfigList(self, configFileName):
@@ -64,61 +80,12 @@ class pyHTMLAnalyzer:
 
         return [htmlConfigDict, scriptConfigDict, urlConfigDict]
 
-    # print-function group
-    def printAnalyzedAbstractObjectFeatures(self, xmldata, pageReady, htmlAnalysis, scriptAnalysis, urlAnalysis, uri):
-        if xmldata is None or pageReady is None:
-            print("Insufficient number of parameters")
-            return
-
-        htmlAnalyzerProcess = None
-        jsAnalyzerProcess = None
-        urlAnalyzerProcess = None
-        if htmlAnalysis:
-            htmlAnalyzerProcess = processProxy(self.htmlAnalyzerModule, [xmldata, pageReady, uri], 'printAll')
-            htmlAnalyzerProcess.start()
-
-        if scriptAnalysis:
-            jsAnalyzerProcess = processProxy(self.scriptAnalyzerModule, [xmldata, pageReady, uri], 'printAll')
-            jsAnalyzerProcess.start()
-
-        if urlAnalysis:
-            urlAnalyzerProcess = processProxy(self.urlAnalyzerModule, [uri], 'printAll')
-            urlAnalyzerProcess.start()
-
-        if htmlAnalyzerProcess is not None:
-            htmlAnalyzerProcess.join()
-        if jsAnalyzerProcess is not None:
-            jsAnalyzerProcess.join()
-        if urlAnalyzerProcess is not None:
-            urlAnalyzerProcess.join()
-
-    def printAnalyzedHTMLFileFeatures(self, filePath, htmlAnalysis = True, scriptAnalysis = True, urlAnalysis = True):
-        openedFile = commonConnectionUtils.openFile(filePath)
-        if openedFile == []:
-            print("Cannot analyze file")
-            return
-
-        xmldata = openedFile[0]
-        pageReady = openedFile[1]
-        self.printAnalyzedAbstractObjectFeatures(xmldata, pageReady, htmlAnalysis, scriptAnalysis, urlAnalysis, filePath)
-
-    def printAnalyzedPageFeatures(self, url, htmlAnalysis = True, scriptAnalysis = True, urlAnalysis = True):
-        openedPage = commonConnectionUtils.openPage(url)
-        if openedPage == []:
-            print("Cannot analyze page")
-            return
-
-        xmldata = openedPage[0]
-        pageReady = openedPage[1]
-        begin = timeit.default_timer()
-        self.printAnalyzedAbstractObjectFeatures(xmldata, pageReady, htmlAnalysis, scriptAnalysis, urlAnalysis, url)
-        end = timeit.default_timer()
-        print("\nprintAnalyzedPageFeatures elapsed time: " + str(end - begin) + " seconds")
+    # to run specific function in specific module, simply activate module via "set @module_name Active" functions
+    # and pass function name to some of this function wrappers - "getNumberOfAnalyzedHTMLFileFeaturesByFunction"
+    # or "getNumberOfAnalyzedPageFeaturesByFunction"
     #
-    ###################################################################################################################
-
-    # getTotal-functions group
-    def getNumberOfAnalyzedAbstractObjectFeaturesByFunction(self, xmldata, pageReady, htmlAnalysis, scriptAnalysis, urlAnalysis, uri, functionName = 'getTotalAll'):
+    # NOTE: all functions run it separate processes
+    def getNumberOfAnalyzedAbstractObjectFeaturesByFunction(self, xmldata, pageReady, uri, functionName):
         if xmldata is None or pageReady is None:
             print("Insufficient number of parameters")
             return
@@ -129,18 +96,20 @@ class pyHTMLAnalyzer:
         htmlAnalyzerProcess = None
         jsAnalyzerProcess = None
         urlAnalyzerProcess = None
-        if htmlAnalysis:
-            htmlAnalyzerProcess = processProxy(self.htmlAnalyzerModule, [xmldata, pageReady, uri, processQueue], functionName)
+        if self.isHTMLModuleActive:
+            htmlAnalyzerProcess = processProxy(self, [self.htmlAnalyzerModule, [xmldata, pageReady, uri],
+                                                      processQueue, functionName], 'callFunctionByName')
             htmlAnalyzerProcess.start()
             processesNumber += 1
 
-        if scriptAnalysis:
-            jsAnalyzerProcess = processProxy(self.scriptAnalyzerModule, [xmldata, pageReady, uri, processQueue], functionName)
+        if self.isURLModuleActive:
+            jsAnalyzerProcess = processProxy(self, [self.scriptAnalyzerModule, [xmldata, pageReady, uri],
+                                                    processQueue, functionName], 'callFunctionByName')
             jsAnalyzerProcess.start()
             processesNumber += 1
 
-        if urlAnalysis:
-            urlAnalyzerProcess = processProxy(self.urlAnalyzerModule, [uri, processQueue], functionName)
+        if self.isScriptMiduleActive:
+            urlAnalyzerProcess = processProxy(self, [self.urlAnalyzerModule, [uri], processQueue, functionName], 'callFunctionByName')
             urlAnalyzerProcess.start()
             processesNumber += 1
 
@@ -153,13 +122,16 @@ class pyHTMLAnalyzer:
 
         for i in xrange(0, processesNumber):
             resultList = processQueue.get()
-            resultDict[resultList[1]] = resultList[0]
+            # if function returns nothing (like print function, for example)
+            if resultList is None:
+                resultDict = resultList
+            else:
+                resultDict[resultList[1]] = resultList[0]
+
         return resultDict
 
-    def getNumberOfFileFeaturesWrapper(self, filePath, queue, functionName = 'getAllAnalyzeReport', htmlAnalysis = True, scriptAnalysis = True, urlAnalysis = True):
-        queue.put(self.getNumberOfAnalyzedHTMLFileFeaturesByFunction(filePath, functionName, htmlAnalysis, scriptAnalysis, urlAnalysis))
-
-    def getNumberOfAnalyzedHTMLFileFeaturesByFunction(self, filePath, functionName = 'getAllAnalyzeReport', htmlAnalysis = True, scriptAnalysis = True, urlAnalysis = True):
+    # to run specific function in specific module, just
+    def getNumberOfAnalyzedHTMLFileFeaturesByFunction(self, filePath, functionName = 'getAllAnalyzeReport'):
         openedFile = commonConnectionUtils.openFile(filePath)
         if openedFile == []:
             print("Cannot analyze file")
@@ -167,12 +139,9 @@ class pyHTMLAnalyzer:
 
         xmldata = openedFile[0]
         pageReady = openedFile[1]
-        return self.getNumberOfAnalyzedAbstractObjectFeaturesByFunction(xmldata, pageReady, htmlAnalysis, scriptAnalysis, urlAnalysis, filePath, functionName)
+        return self.getNumberOfAnalyzedAbstractObjectFeaturesByFunction(xmldata, pageReady, filePath, functionName)
 
-    def getNumberOfPageFeaturesWrapper(self, url, queue, functionName = 'getAllAnalyzeReport', htmlAnalysis = True, scriptAnalysis = True, urlAnalysis = True):
-        queue.put(self.getNumberOfAnalyzedPageFeaturesByFunction(url, functionName, htmlAnalysis, scriptAnalysis, urlAnalysis))
-
-    def getNumberOfAnalyzedPageFeaturesByFunction(self, url, functionName = 'getAllAnalyzeReport', htmlAnalysis = True, scriptAnalysis = True, urlAnalysis = True):
+    def getNumberOfAnalyzedPageFeaturesByFunction(self, url, functionName = 'getAllAnalyzeReport'):
         openedPage = commonConnectionUtils.openPage(url)
         if openedPage == []:
             print("Cannot analyze page")
@@ -180,22 +149,23 @@ class pyHTMLAnalyzer:
 
         xmldata = openedPage[0]
         pageReady = openedPage[1]
-        return self.getNumberOfAnalyzedAbstractObjectFeaturesByFunction(xmldata, pageReady, htmlAnalysis, scriptAnalysis, urlAnalysis, url, functionName)
+        return self.getNumberOfAnalyzedAbstractObjectFeaturesByFunction(xmldata, pageReady, url, functionName)
     #
     ###################################################################################################################
 
     def getTotalNumberOfAnalyzedObjectsFeatures(self, listOfObjects, isPages = True):
         if len(listOfObjects) == 0:
+            print("No objects passed to analyze")
             return None
 
-        functionName = 'getNumberOfPageFeaturesWrapper' \
-            if isPages else 'getNumberOfFileFeaturesWrapper'
+        functionName = 'getNumberOfAnalyzedPageFeaturesByFunction' \
+            if isPages else 'getNumberOfAnalyzedHTMLFileFeaturesByFunction'
         processQueue = Queue()
         proxyProcessesList = []
         resultDict = {}
         # start process for each page
-        for page in listOfObjects:
-            proxy = processProxy(self, [page, processQueue], functionName)
+        for object in listOfObjects:
+            proxy = processProxy(self, [self, [object], processQueue, functionName], 'callFunctionByName')
             proxyProcessesList.append(proxy)
             proxy.start()
 
@@ -216,3 +186,27 @@ class pyHTMLAnalyzer:
         return self.getTotalNumberOfAnalyzedObjectsFeatures(listOfFiles, False)
     #
     ###################################################################################################################
+
+    def callFunctionByName(self, classInstance, arguments, queue, methodName):
+        result = None
+        if len(classInstance.__class__.__bases__) != 0:
+            for className in classInstance.__class__.__bases__:
+                for funcName, funcValue in className.__dict__.items():
+                    if str(funcName) == methodName and callable(funcValue):
+                        try:
+                            result = getattr(classInstance, funcName)(*arguments)
+                        except TypeError:
+                            pass
+
+                        return queue.put(result)
+
+        for funcName, funcValue in classInstance.__class__.__dict__.items():
+                if str(funcName) == methodName and callable(funcValue):
+                    try:
+                        result = getattr(classInstance, funcName)(*arguments)
+                    except TypeError:
+                        pass
+
+                    return queue.put(result)
+
+        return queue.put(result)

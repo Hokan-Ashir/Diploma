@@ -99,8 +99,7 @@ class urlAnalyzer(commonURLFunctions, dnsFunctions, geoIPFunctions, whoisFunctio
     #
     ###################################################################################################################
 
-    # @queue parameters is needed for multiprocessing
-    def getTotalAll(self, uri, queue):
+    def getTotalAll(self, uri):
         if uri is None:
             print("Insufficient number of parameters")
             return
@@ -123,11 +122,12 @@ class urlAnalyzer(commonURLFunctions, dnsFunctions, geoIPFunctions, whoisFunctio
                         resultDict[funcName] = getattr(self, funcName)()
                     except TypeError:
                         pass
-        queue.put([resultDict, urlAnalyzer.__name__])
+
+        return [resultDict, urlAnalyzer.__name__]
     #
     ###################################################################################################################
 
-    def getAllAnalyzeReport(self, uri, queue):
+    def getAllAnalyzeReport(self, uri):
         if uri is None:
             print("Insufficient number of parameters")
             return
@@ -154,7 +154,8 @@ class urlAnalyzer(commonURLFunctions, dnsFunctions, geoIPFunctions, whoisFunctio
                             resultDict[funcName] = functionCallResult
                     except TypeError:
                         pass
-        queue.put([resultDict, urlAnalyzer.__name__])
+
+        return [resultDict, urlAnalyzer.__name__]
     #
     ###################################################################################################################
 
