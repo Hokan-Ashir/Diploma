@@ -76,8 +76,9 @@ class commonFunctions:
         result = None
         try:
             result = getattr(classInstance, methodName)(*arguments)
-        except TypeError:
+        except TypeError, error:
             # TODO write to log "No such function exists"
+            print(error)
             pass
 
         return queue.put([methodName, result])

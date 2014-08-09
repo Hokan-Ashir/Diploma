@@ -24,6 +24,7 @@ class scriptAnalyzer(commonAnalysisData):
     configDict = None
     uri = None
     listOfScriptTagsText = None
+    currentlyAnalyzingScriptCode = None
 
     # this list contain string like "X:Y", where X is real source line in script, and Y is order number in parser list
     # this complication is for cases when site consists of created several very long lines of html-code
@@ -314,6 +315,11 @@ class scriptAnalyzer(commonAnalysisData):
             listOfQuotedStrings += re.findall(self.quotedStringsRegExp, string)
 
         numberOfQuotedStrings = len(listOfQuotedStrings)
+
+        # no quoted string - no PURE shellcode
+        if (numberOfQuotedStrings == 0):
+            return float(0)
+
         numberOfShellcodedStrings = 0
         for item in listOfQuotedStrings:
             # method 1: get number of non-printable ASCII characters
@@ -347,6 +353,11 @@ class scriptAnalyzer(commonAnalysisData):
             listOfQuotedStrings += re.findall(self.quotedStringsRegExp, string)
 
         numberOfQuotedStrings = len(listOfQuotedStrings)
+
+        # no quoted strings - no PURE shellcode
+        if numberOfQuotedStrings == 0:
+            return float(0)
+
         numberOfShellcodedStrings = 0
         emulator = libemu.Emulator()
         for item in listOfQuotedStrings:
@@ -550,6 +561,9 @@ class scriptAnalyzer(commonAnalysisData):
     def getScriptWholeEntropy(self):
         def callbackFunction(text, arguments):
             for letter in text:
+                if arguments[1][letter] <= 0:
+                    continue
+
                 arguments[0] += (arguments[1][letter] * log(arguments[1][letter], 2))
             return arguments
 
@@ -584,6 +598,9 @@ class scriptAnalyzer(commonAnalysisData):
 
             # calculating entropy
             for letter in text:
+                if dictOfSymbolsProbability[letter] <= 0:
+                    continue
+
                 if inlineTagContent:
                     arguments[self.listOfScriptTagsTextSourcelines[i]] += (dictOfSymbolsProbability[letter] * log(dictOfSymbolsProbability[letter], 2))
                 else:
@@ -629,6 +646,9 @@ class scriptAnalyzer(commonAnalysisData):
             listOfStrings = re.split(separator, text)
             for string in listOfStrings:
                 for letter in string:
+                    if arguments[2][letter] <= 0:
+                        continue
+
                     entropy += (arguments[2][letter] * log(arguments[2][letter], 2))
                 entropy *= -1
                 if entropy > arguments[0]:
@@ -677,6 +697,9 @@ class scriptAnalyzer(commonAnalysisData):
             for string in listOfStrings:
                 entropy = 0.0
                 for letter in string:
+                    if dictOfSymbolsProbability[letter] <= 0:
+                        continue
+
                     entropy += (dictOfSymbolsProbability[letter] * log(dictOfSymbolsProbability[letter], 2))
                 entropy *= -1
                 if entropy > maximumEntropy:
@@ -723,6 +746,9 @@ class scriptAnalyzer(commonAnalysisData):
             for string in listOfStrings:
                 entropy = 0.0
                 for letter in string:
+                    if arguments[1][letter] <= 0:
+                        continue
+
                     entropy += (arguments[1][letter] * log(arguments[1][letter], 2))
                 entropy *= -1
                 arguments[0][string] = entropy
@@ -765,6 +791,9 @@ class scriptAnalyzer(commonAnalysisData):
             for string in listOfStrings:
                 entropy = 0.0
                 for letter in string:
+                    if dictOfSymbolsProbability[letter] <= 0:
+                        continue
+
                     entropy += (dictOfSymbolsProbability[letter] * log(dictOfSymbolsProbability[letter], 2))
                 entropy *= -1
                 arguments[string] = entropy
@@ -786,8 +815,8 @@ class scriptAnalyzer(commonAnalysisData):
     ###################################################################################################################
 
     # script content hashing
-    # NOTE: we don't remove comments by default
-    def getScriptContentHashing(self, includeComments = True):
+    # NOTE: we remove comments by default
+    def getScriptContentHashingAll(self, includeComments = False):
         dictOfScriptTagsHashed = {}
         def callbackFunction(text, arguments, i, inlineTagContent):
             if inlineTagContent:
@@ -815,8 +844,21 @@ class scriptAnalyzer(commonAnalysisData):
 
         return dictOfScriptTagsHashed
 
+    def getScriptContentHashing(self, includeComments = False):
+        if self.currentlyAnalyzingScriptCode >= len(self.listOfScriptTagsText):
+            text = copy(self.listOfIncludedScriptFilesContent[self.currentlyAnalyzingScriptCode - len(self
+            .listOfScriptTagsText)])
+        else:
+            text = copy(self.listOfScriptTagsText[self.currentlyAnalyzingScriptCode])
+
+        if not includeComments:
+            # deleting comments
+            text = re.sub(self.commentsRegExp, '', text)
+
+        return [hashlib.sha256(text.encode('utf-8')).hexdigest(), hashlib.sha512(text.encode('utf-8')).hexdigest()]
+
     def printScriptContentHashing(self):
-        dictOfScriptTagsHashed = self.getScriptContentHashing()
+        dictOfScriptTagsHashed = self.getScriptContentHashingAll()
         if len(dictOfScriptTagsHashed) == 0:
             print("\nNone script content to hash")
             return
@@ -1087,8 +1129,19 @@ class scriptAnalyzer(commonAnalysisData):
     ###################################################################################################################
 
     def analyzeFunction(self, callbackFunction, callbackArgument, removeComments = True, removeQuotedStrings = True):
-        #begin = timeit.default_timer()
-        for text in self.listOfScriptTagsText:
+        # in case we would like to analyze one, specific piece of script
+        if self.currentlyAnalyzingScriptCode != None:
+            if self.currentlyAnalyzingScriptCode > (len(self.listOfScriptTagsText)
+                                                        + len(self.listOfIncludedScriptFiles)):
+                # TODO log that
+                return None
+
+            #print(self.currentlyAnalyzingScriptCode)
+            if self.currentlyAnalyzingScriptCode >= len(self.listOfScriptTagsText):
+                text = self.listOfIncludedScriptFilesContent[self.currentlyAnalyzingScriptCode - len(self.listOfScriptTagsText)]
+            else:
+                text = self.listOfScriptTagsText[self.currentlyAnalyzingScriptCode]
+
             if removeComments:
                 # deleting comments
                 text = re.sub(self.commentsRegExp, '', text)
@@ -1098,28 +1151,42 @@ class scriptAnalyzer(commonAnalysisData):
                 text = re.sub(self.quotedStringsRegExp, '', text)
 
             callbackArgument = callbackFunction(text, callbackArgument)
+            return callbackArgument
+        else:
+            # in case we would like to analyze every script in page/file
+            #begin = timeit.default_timer()
+            for text in self.listOfScriptTagsText:
+                if removeComments:
+                    # deleting comments
+                    text = re.sub(self.commentsRegExp, '', text)
 
-        for scriptContent in self.listOfIncludedScriptFilesContent:
-            if removeComments:
-                # deleting comments
-                scriptContent = re.sub(self.commentsRegExp, '', scriptContent)
+                if removeQuotedStrings:
+                    # remove all quoted strings via regExp
+                    text = re.sub(self.quotedStringsRegExp, '', text)
 
-            if removeQuotedStrings:
-                # remove all quoted strings via regExp
-                scriptContent = re.sub(self.quotedStringsRegExp, '', scriptContent)
+                callbackArgument = callbackFunction(text, callbackArgument)
 
-            # for future: in case callbackFunction can be list, so we check that before functions using
-            # so as in inline js-code
-            #if type(callbackFunctions) is list:
-            #    callbackArgument = callbackFunctions[1](scriptContent, callbackArgument)
-            #else:
-            #    callbackArgument = callbackFunctions(scriptContent, callbackArgument)
-            callbackArgument = callbackFunction(scriptContent, callbackArgument)
+            for scriptContent in self.listOfIncludedScriptFilesContent:
+                if removeComments:
+                    # deleting comments
+                    scriptContent = re.sub(self.commentsRegExp, '', scriptContent)
 
-        #end = timeit.default_timer()
-        #print("\nElapsed time: " + str(end - begin) + " seconds")
+                if removeQuotedStrings:
+                    # remove all quoted strings via regExp
+                    scriptContent = re.sub(self.quotedStringsRegExp, '', scriptContent)
 
-        return callbackArgument
+                # for future: in case callbackFunction can be list, so we check that before functions using
+                # so as in inline js-code
+                #if type(callbackFunctions) is list:
+                #    callbackArgument = callbackFunctions[1](scriptContent, callbackArgument)
+                #else:
+                #    callbackArgument = callbackFunctions(scriptContent, callbackArgument)
+                callbackArgument = callbackFunction(scriptContent, callbackArgument)
+
+            #end = timeit.default_timer()
+            #print("\nElapsed time: " + str(end - begin) + " seconds")
+
+            return callbackArgument
     #
     ###################################################################################################################
 
@@ -1140,7 +1207,7 @@ class scriptAnalyzer(commonAnalysisData):
             if str(funcName).startswith("print") and callable(funcValue):
                 try:
                     getattr(self, funcName)()
-                except TypeError:
+                except TypeError, error:
                     # TODO write to log "No such function exists"
                     pass
         end = timeit.default_timer()
@@ -1159,7 +1226,7 @@ class scriptAnalyzer(commonAnalysisData):
             if str(funcName).startswith("getTotal") and callable(funcValue):
                 try:
                     resultDict[funcName] = getattr(self, funcName)()
-                except TypeError:
+                except TypeError, error:
                     # TODO write to log "No such function exists"
                     pass
 
@@ -1167,74 +1234,146 @@ class scriptAnalyzer(commonAnalysisData):
     #
     ###################################################################################################################
 
-    def getAllAnalyzeReport(self, xmldata, pageReady, uri, numberOfProcesses = 1):
+    def parallelViaScriptCodePieces(self, numberOfProcesses):
+        totalNumberOfScriptCodes = len(self.listOfScriptTagsText) + len(self.listOfIncludedScriptFiles)
+        # adapt function for script nodes - for every script piece of code make own process
+        #if numberOfProcesses == 0:
+        #    numberOfProcesses = len(self.listOfScriptTagsText) + len(self.listOfIncludedScriptFiles)
+
+        # in case too much process number
+        if numberOfProcesses > totalNumberOfScriptCodes:
+            numberOfProcesses = totalNumberOfScriptCodes
+
+        numberOfScriptCodePiecesByProcess = totalNumberOfScriptCodes / numberOfProcesses
+        scriptCodesNotInProcesses = totalNumberOfScriptCodes % numberOfProcesses
+        processQueue = Queue()
+        proxyProcessesList = []
+        resultDict = {}
+        # start process for each function
+        for i in xrange(0, numberOfScriptCodePiecesByProcess):
+            for j in xrange(0, numberOfProcesses):
+                self.currentlyAnalyzingScriptCode = i * numberOfProcesses + j
+                proxy = processProxy(None, [self, [], processQueue, 'analyzeAllFunctions'],
+                                            commonFunctions.callFunctionByNameQeued)
+                proxyProcessesList.append(proxy)
+                proxy.start()
+
+            # wait for process joining
+            for j in xrange(0, len(proxyProcessesList)):
+                proxyProcessesList[j].join()
+
+            # gather all data
+            for j in xrange(0, len(proxyProcessesList)):
+                functionCallResult = processQueue.get()[1]
+                # get hash values of current piece of code, remove them from result and set into dictionary
+                hashValues = (functionCallResult['getScriptContentHashing'][0],
+                            functionCallResult['getScriptContentHashing'][1])
+                del functionCallResult['getScriptContentHashing']
+                resultDict[hashValues] = functionCallResult
+
+            del proxyProcessesList[:]
+
+        # if reminder(number of script codes, number of processes) != 0 - not all functions ran in separated processes
+        # run other script codes in one, current, process
+        if scriptCodesNotInProcesses != 0:
+            for i in xrange(0, scriptCodesNotInProcesses):
+                try:
+                    self.currentlyAnalyzingScriptCode = totalNumberOfScriptCodes - 1 - i
+                    functionCallResult = self.analyzeAllFunctions()
+                    # get hash values of current piece of code, remove them from result and set into dictionary
+                    hashValues = (functionCallResult['getScriptContentHashing'][0],
+                                functionCallResult['getScriptContentHashing'][1])
+                    del functionCallResult['getScriptContentHashing']
+                    resultDict[hashValues] = functionCallResult
+                except TypeError, error:
+                    # TODO write to log "No such function exists"
+                    pass
+
+        return resultDict
+
+    def parallelViaFunctions(self, numberOfProcesses):
+        numberOfFunctionsByProcess = len(self.listOfAnalyzeFunctions) / numberOfProcesses
+        functionsNotInProcesses = len(self.listOfAnalyzeFunctions) % numberOfProcesses
+        processQueue = Queue()
+        proxyProcessesList = []
+        resultDict = {}
+        # start process for each function
+        for i in xrange(0, numberOfFunctionsByProcess):
+            for j in xrange(0, numberOfProcesses):
+                proxy = processProxy(None, [self, [], processQueue, self.listOfAnalyzeFunctions[i * numberOfProcesses + j]],                                        commonFunctions.callFunctionByNameQeued)
+                proxyProcessesList.append(proxy)
+                proxy.start()
+
+            # wait for process joining
+            for j in xrange(0, len(proxyProcessesList)):
+                proxyProcessesList[j].join()
+
+            # gather all data
+            for j in xrange(0, len(proxyProcessesList)):
+                functionCallResult = processQueue.get()
+                # if in result dict value = 0 - do not insert it
+                if not ((type(functionCallResult[1]) is int and functionCallResult[1] == 0) or (type(
+                        functionCallResult[1]) is float and functionCallResult[1] == 0.0)):
+                    resultDict[functionCallResult[0]] = functionCallResult[1]
+
+            del proxyProcessesList[:]
+
+        # if reminder(number of functions, number of processes) != 0 - not all functions ran in separated processes
+        # run other functions in one, current, process
+        if functionsNotInProcesses != 0:
+            for i in xrange(0, functionsNotInProcesses):
+                try:
+                    functionCallResult = getattr(self, self.listOfAnalyzeFunctions[-i])()
+                    # if in result dict value = 0 - do not insert it
+                    if not ((type(functionCallResult) is int and functionCallResult == 0) or (type(
+                            functionCallResult) is float and functionCallResult == 0.0)):
+                        resultDict[self.listOfAnalyzeFunctions[-i]] = functionCallResult
+                except TypeError, error:
+                    # TODO write to log "No such function exists"
+                    pass
+
+        return resultDict
+
+    # analyze all list of analyze functions in one process
+    def analyzeAllFunctions(self):
+        resultDict = {}
+        for funcName in self.listOfAnalyzeFunctions:
+            try:
+                functionCallResult = getattr(self, funcName)()
+                # if in result dict value = 0 - do not insert it
+                if not ((type(functionCallResult) is int and functionCallResult == 0) or (type(
+                        functionCallResult) is float and functionCallResult == 0.0)):
+                    resultDict[funcName] = functionCallResult
+            except TypeError, error:
+                # TODO write to log "No such function exists"
+                pass
+        return resultDict
+
+    # if parallelViaScriptCodePieces set to False, parallel by functions will be used
+    def getAllAnalyzeReport(self, xmldata, pageReady, uri, numberOfProcesses = 1, parallelViaScriptCodePieces =
+    False):
         if xmldata is None or pageReady is None:
                 print("Insufficient number of parameters")
                 return
         self.initialization(xmldata, pageReady, uri)
 
-        # in case too much process number
-        if numberOfProcesses > len(self.listOfAnalyzeFunctions):
-            numberOfProcesses = len(self.listOfAnalyzeFunctions)
-
-        # adapt function for script nodes - for every script piece of code make own process
-        if numberOfProcesses == 0:
-            numberOfProcesses = len(self.listOfScriptTagsText) + len(self.listOfIncludedScriptFiles)
+        # in case too less processes
+        if numberOfProcesses <= 0:
+            numberOfProcesses = 1
 
         resultDict = {}
-        if numberOfProcesses > 1:
-            numberOfFunctionsByProcess = len(self.listOfAnalyzeFunctions) / numberOfProcesses
-            functionsNotInProcesses = len(self.listOfAnalyzeFunctions) % numberOfProcesses
-            processQueue = Queue()
-            proxyProcessesList = []
-            resultDict = {}
-            # start process for each function
-            for i in xrange(0, numberOfFunctionsByProcess):
-                for j in xrange(0, numberOfProcesses):
-                    proxy = processProxy(None, [self, [], processQueue, self.listOfAnalyzeFunctions[i * numberOfProcesses + j]],
-                                        commonFunctions.callFunctionByNameQeued)
-                    proxyProcessesList.append(proxy)
-                    proxy.start()
-
-                # wait for process joining
-                for j in xrange(0, len(proxyProcessesList)):
-                    proxyProcessesList[j].join()
-
-                # gather all data
-                for j in xrange(0, len(proxyProcessesList)):
-                    functionCallResult = processQueue.get()
-                    # if in result dict value = 0 - do not insert it
-                    if not ((type(functionCallResult[1]) is int and functionCallResult[1] == 0) or (type(
-                            functionCallResult[1]) is float and functionCallResult[1] == 0.0)):
-                        resultDict[functionCallResult[0]] = functionCallResult[1]
-
-                del proxyProcessesList[:]
-
-            # if reminder(number of functions, number of processes) != 0 - not all functions ran in separated processes
-            # run other functions in one, current, process
-            if functionsNotInProcesses != 0:
-                for i in xrange(0, functionsNotInProcesses):
-                    try:
-                        functionCallResult = getattr(self, self.listOfAnalyzeFunctions[-i])()
-                        # if in result dict value = 0 - do not insert it
-                        if not ((type(functionCallResult) is int and functionCallResult == 0) or (type(
-                                functionCallResult) is float and functionCallResult == 0.0)):
-                            resultDict[self.listOfAnalyzeFunctions[-i]] = functionCallResult
-                    except TypeError:
-                        # TODO write to log "No such function exists"
-                        pass
-
+        # parallel by script codes - in limiting case one process per script piece
+        if parallelViaScriptCodePieces:
+            resultDict = self.parallelViaScriptCodePieces(numberOfProcesses)
         else:
-            for funcName in self.listOfAnalyzeFunctions:
-                try:
-                    functionCallResult = getattr(self, funcName)()
-                    # if in result dict value = 0 - do not insert it
-                    if not ((type(functionCallResult) is int and functionCallResult == 0) or (type(
-                            functionCallResult) is float and functionCallResult == 0.0)):
-                        resultDict[funcName] = functionCallResult
-                except TypeError:
-                    # TODO write to log "No such function exists"
-                    pass
+            # in case too much process number
+            if numberOfProcesses > len(self.listOfAnalyzeFunctions):
+                numberOfProcesses = len(self.listOfAnalyzeFunctions)
+
+            if numberOfProcesses > 1:
+                resultDict = self.parallelViaFunctions(numberOfProcesses)
+            else:
+                resultDict = self.analyzeAllFunctions()
 
         return [resultDict, scriptAnalyzer.__name__]
     #

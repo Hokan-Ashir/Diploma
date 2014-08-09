@@ -29,7 +29,7 @@ class processProxy(Process):
         else:
             try:
                 result = getattr(self.classInstance, self.methodName)(*self.arguments)
-            except TypeError:
+            except TypeError, error:
                 # TODO write to log "No such function exists"
                 pass
 

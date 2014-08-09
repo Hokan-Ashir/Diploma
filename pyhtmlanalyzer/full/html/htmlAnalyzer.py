@@ -918,7 +918,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
             if str(funcName).startswith("print") and callable(funcValue):
                 try:
                     getattr(self, funcName)()
-                except TypeError:
+                except TypeError, error:
                     # TODO write to log "No such function exists"
                     pass
         end = timeit.default_timer()
@@ -940,7 +940,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
             if str(funcName).startswith("getTotal") and callable(funcValue):
                 try:
                     resultDict[funcName] = getattr(self, funcName)()
-                except TypeError:
+                except TypeError, error:
                     # TODO write to log "No such function exists"
                     pass
 
@@ -999,7 +999,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
                         if not ((type(functionCallResult) is int and functionCallResult == 0) or (type(
                                 functionCallResult) is float and functionCallResult == 0.0)):
                             resultDict[self.listOfAnalyzeFunctions[-i]] = functionCallResult
-                    except TypeError:
+                    except TypeError, error:
                         # TODO write to log "No such function exists"
                         pass
 
@@ -1011,11 +1011,10 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
                     if not ((type(functionCallResult) is int and functionCallResult == 0) or (type(
                             functionCallResult) is float and functionCallResult == 0.0)):
                         resultDict[funcName] = functionCallResult
-                except TypeError:
+                except TypeError, error:
                     # TODO write to log "No such function exists"
                     pass
 
-        return [resultDict, htmlAnalyzer.__name__]
         return [resultDict, htmlAnalyzer.__name__]
     #
     ###################################################################################################################

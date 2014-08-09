@@ -103,13 +103,13 @@ class pyHTMLAnalyzer:
             htmlAnalyzerProcess.start()
             processesNumber += 1
 
-        if self.isURLModuleActive:
+        if self.isScriptMiduleActive:
             jsAnalyzerProcess = processProxy(None, [self.scriptAnalyzerModule, [xmldata, pageReady, uri],
                                                     processQueue, functionName], commonFunctions.callFunctionByNameQeued)
             jsAnalyzerProcess.start()
             processesNumber += 1
 
-        if self.isScriptMiduleActive:
+        if self.isURLModuleActive:
             urlAnalyzerProcess = processProxy(None, [self.urlAnalyzerModule, [uri], processQueue, functionName],
                                               commonFunctions.callFunctionByNameQeued)
             urlAnalyzerProcess.start()
