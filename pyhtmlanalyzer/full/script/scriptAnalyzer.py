@@ -5,7 +5,7 @@
 #from __future__ import unicode_literals
 from multiprocessing import Queue
 from collections import defaultdict
-from copy import copy
+from copy import copy, deepcopy
 import hashlib
 from math import log
 import re
@@ -234,7 +234,7 @@ class scriptAnalyzer(commonAnalysisData):
     ###################################################################################################################
 
     # average script line length
-    def getAverageScriptLineLength(self):
+    def getAverageScriptLength(self):
         def callbackFunction(text, arguments):
             arguments += len(text)
             return arguments
@@ -250,7 +250,7 @@ class scriptAnalyzer(commonAnalysisData):
         return float(totalScriptLineLength) / numberOfScriptLines
 
     def printAverageScriptLineLength(self):
-        averageScriptLineLength = self.getAverageScriptLineLength()
+        averageScriptLineLength = self.getAverageScriptLength()
         if averageScriptLineLength == 0:
             print("\nNone script elements - average script length equals 0")
             return
@@ -567,7 +567,14 @@ class scriptAnalyzer(commonAnalysisData):
                 arguments[0] += (arguments[1][letter] * log(arguments[1][letter], 2))
             return arguments
 
-        if (self.dictOfSymbolsProbability is None):
+        # in case we're running getScriptEntropy for each script separately, we must recalculate entropy dictionary
+        # for every script piece
+        if (self.dictOfSymbolsProbability is None or self.currentlyAnalyzingScriptCode is not None):
+            # in case we're calculating entropy for each piece of code
+            # so dictionary must be removed and recreated
+            if self.dictOfSymbolsProbability is not None:
+                del self.dictOfSymbolsProbability
+
             self.dictOfSymbolsProbability = self.getWholeScriptEntropyStatistics()
 
         # calculate entropy
@@ -660,7 +667,14 @@ class scriptAnalyzer(commonAnalysisData):
         maximumEntropy = 0.0
         stringWithMaximumEntropy = ""
 
-        if (self.dictOfSymbolsProbability is None):
+         # in case we're running getScriptEntropy for each script separately, we must recalculate entropy dictionary
+        # for every script piece
+        if (self.dictOfSymbolsProbability is None or self.currentlyAnalyzingScriptCode is not None):
+            # in case we're calculating entropy for each piece of code
+            # so dictionary must be removed and recreated
+            if self.dictOfSymbolsProbability is not None:
+                del self.dictOfSymbolsProbability
+
             self.dictOfSymbolsProbability = self.getWholeScriptEntropyStatistics()
 
         arguments = [maximumEntropy, stringWithMaximumEntropy, self.dictOfSymbolsProbability]
@@ -1279,7 +1293,7 @@ class scriptAnalyzer(commonAnalysisData):
             for i in xrange(0, scriptCodesNotInProcesses):
                 try:
                     self.currentlyAnalyzingScriptCode = totalNumberOfScriptCodes - 1 - i
-                    functionCallResult = self.analyzeAllFunctions()
+                    functionCallResult = self.analyzeAllFunctions(oneProcess=True)
                     # get hash values of current piece of code, remove them from result and set into dictionary
                     hashValues = (functionCallResult['getScriptContentHashing'][0],
                                 functionCallResult['getScriptContentHashing'][1])
@@ -1291,67 +1305,49 @@ class scriptAnalyzer(commonAnalysisData):
 
         return resultDict
 
-    def parallelViaFunctions(self, numberOfProcesses):
-        numberOfFunctionsByProcess = len(self.listOfAnalyzeFunctions) / numberOfProcesses
-        functionsNotInProcesses = len(self.listOfAnalyzeFunctions) % numberOfProcesses
-        processQueue = Queue()
-        proxyProcessesList = []
-        resultDict = {}
-        # start process for each function
-        for i in xrange(0, numberOfFunctionsByProcess):
-            for j in xrange(0, numberOfProcesses):
-                proxy = processProxy(None, [self, [], processQueue, self.listOfAnalyzeFunctions[i * numberOfProcesses + j]],                                        commonFunctions.callFunctionByNameQeued)
-                proxyProcessesList.append(proxy)
-                proxy.start()
-
-            # wait for process joining
-            for j in xrange(0, len(proxyProcessesList)):
-                proxyProcessesList[j].join()
-
-            # gather all data
-            for j in xrange(0, len(proxyProcessesList)):
-                functionCallResult = processQueue.get()
-                # if in result dict value = 0 - do not insert it
-                if not ((type(functionCallResult[1]) is int and functionCallResult[1] == 0) or (type(
-                        functionCallResult[1]) is float and functionCallResult[1] == 0.0)):
-                    resultDict[functionCallResult[0]] = functionCallResult[1]
-
-            del proxyProcessesList[:]
-
-        # if reminder(number of functions, number of processes) != 0 - not all functions ran in separated processes
-        # run other functions in one, current, process
-        if functionsNotInProcesses != 0:
-            for i in xrange(0, functionsNotInProcesses):
+    # analyze all list of analyze functions in one process
+    def analyzeAllFunctions(self, oneProcess = False):
+        # in case we analyze all functions of one script code piece in one separate process
+        # designed to fulfill "parallelViaScriptCodePieces" method
+        if oneProcess:
+            resultDict = {}
+            for funcName in self.listOfAnalyzeFunctions:
                 try:
-                    functionCallResult = getattr(self, self.listOfAnalyzeFunctions[-i])()
+                    functionCallResult = getattr(self, funcName)()
                     # if in result dict value = 0 - do not insert it
                     if not ((type(functionCallResult) is int and functionCallResult == 0) or (type(
                             functionCallResult) is float and functionCallResult == 0.0)):
-                        resultDict[self.listOfAnalyzeFunctions[-i]] = functionCallResult
+                        resultDict[funcName] = functionCallResult
                 except TypeError, error:
                     # TODO write to log "No such function exists"
                     pass
+        # in case we analyze all script from whole script in one process
+        else:
+            resultDict = {}
+            resultInnerDict = {}
+            for i in xrange(0, len(self.listOfScriptTagsText) + len(self.listOfIncludedScriptFiles)):
+                self.currentlyAnalyzingScriptCode = i
+                for funcName in self.listOfAnalyzeFunctions:
+                    try:
+                        functionCallResult = getattr(self, funcName)()
+                        # if in result dict value = 0 - do not insert it
+                        if not ((type(functionCallResult) is int and functionCallResult == 0) or (type(
+                                functionCallResult) is float and functionCallResult == 0.0)):
+                            resultInnerDict[funcName] = functionCallResult
+                    except TypeError, error:
+                        # TODO write to log "No such function exists"
+                        pass
+
+                hashValues = (resultInnerDict['getScriptContentHashing'][0],
+                                resultInnerDict['getScriptContentHashing'][1])
+                del resultInnerDict['getScriptContentHashing']
+                resultDict[hashValues] = deepcopy(resultInnerDict)
+                for key in resultInnerDict.keys():
+                    del resultInnerDict[key]
 
         return resultDict
 
-    # analyze all list of analyze functions in one process
-    def analyzeAllFunctions(self):
-        resultDict = {}
-        for funcName in self.listOfAnalyzeFunctions:
-            try:
-                functionCallResult = getattr(self, funcName)()
-                # if in result dict value = 0 - do not insert it
-                if not ((type(functionCallResult) is int and functionCallResult == 0) or (type(
-                        functionCallResult) is float and functionCallResult == 0.0)):
-                    resultDict[funcName] = functionCallResult
-            except TypeError, error:
-                # TODO write to log "No such function exists"
-                pass
-        return resultDict
-
-    # if parallelViaScriptCodePieces set to False, parallel by functions will be used
-    def getAllAnalyzeReport(self, xmldata, pageReady, uri, numberOfProcesses = 1, parallelViaScriptCodePieces =
-    False):
+    def getAllAnalyzeReport(self, xmldata, pageReady, uri, numberOfProcesses = 1):
         if xmldata is None or pageReady is None:
                 print("Insufficient number of parameters")
                 return
@@ -1360,20 +1356,16 @@ class scriptAnalyzer(commonAnalysisData):
         # in case too less processes
         if numberOfProcesses <= 0:
             numberOfProcesses = 1
+        # in case too much process number
+        elif numberOfProcesses > len(self.listOfAnalyzeFunctions):
+            numberOfProcesses = len(self.listOfAnalyzeFunctions)
 
         resultDict = {}
         # parallel by script codes - in limiting case one process per script piece
-        if parallelViaScriptCodePieces:
+        if numberOfProcesses > 1:
             resultDict = self.parallelViaScriptCodePieces(numberOfProcesses)
         else:
-            # in case too much process number
-            if numberOfProcesses > len(self.listOfAnalyzeFunctions):
-                numberOfProcesses = len(self.listOfAnalyzeFunctions)
-
-            if numberOfProcesses > 1:
-                resultDict = self.parallelViaFunctions(numberOfProcesses)
-            else:
-                resultDict = self.analyzeAllFunctions()
+            resultDict = self.analyzeAllFunctions()
 
         return [resultDict, scriptAnalyzer.__name__]
     #

@@ -1,17 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" readonly="true" id="e0682ef5-57be-4028-860e-349d4b1e2e8e" name="Default" comment="* now it's able to run">
+    <list default="true" readonly="true" id="e0682ef5-57be-4028-860e-349d4b1e2e8e" name="Default" comment="* correct entropy calculation in case of">
       <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/database_initialization_script.sql" />
       <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/sqlAlchemyTest.py" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/IP-COUNTRY-REGION-CITY-LATITUDE-LONGITUDE-ZIPCODE-TIMEZONE-ISP-DOMAIN-NETSPEED-AREACODE-WEATHER-MOBILE-ELEVATION-USAGETYPE-SAMPLE.BIN" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data/IP2LOCATION-LITE-DB11.CSV" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/data" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/analyzeFunctions" afterPath="$PROJECT_DIR$/analyzeFunctions" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/pyhtmlanalyzer/commonFunctions/commonFunctions.py" afterPath="$PROJECT_DIR$/pyhtmlanalyzer/commonFunctions/commonFunctions.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/pyhtmlanalyzer/full/html/htmlAnalyzer.py" afterPath="$PROJECT_DIR$/pyhtmlanalyzer/full/html/htmlAnalyzer.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/pyhtmlanalyzer/commonFunctions/processProxy.py" afterPath="$PROJECT_DIR$/pyhtmlanalyzer/commonFunctions/processProxy.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/pyhtmlanalyzer/pyHTMLAnalyzer.py" afterPath="$PROJECT_DIR$/pyhtmlanalyzer/pyHTMLAnalyzer.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/pyhtmlanalyzer/full/script/scriptAnalyzer.py" afterPath="$PROJECT_DIR$/pyhtmlanalyzer/full/script/scriptAnalyzer.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
@@ -25,7 +18,7 @@
   </component>
   <component name="ChangesViewManager" flattened_view="true" show_ignored="false" />
   <component name="CoverageDataManager">
-    <SUITE FILE_PATH="coverage/diploma$Python_2_7.coverage" NAME="Python 2.7 Coverage Results" MODIFIED="1407604864908" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/diploma$Python_2_7.coverage" NAME="Python 2.7 Coverage Results" MODIFIED="1407780787715" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/diploma$Python_3_2.coverage" NAME="Python 3.2 Coverage Results" MODIFIED="1391705682888" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/diploma$Run.coverage" NAME="Python 3.2 Coverage Results" MODIFIED="1391449490251" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/diploma$Python_2_7_Tests.coverage" NAME="Python 2.7 Tests Coverage Results" MODIFIED="1407514347778" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
@@ -50,36 +43,28 @@
       <file leaf-file-name="scriptAnalyzer.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/pyhtmlanalyzer/full/script/scriptAnalyzer.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="1348" column="16" selection-start="64626" selection-end="64626" vertical-scroll-proportion="-6.52" vertical-offset="20057" max-vertical-offset="20985">
-              <folding>
-                <element signature="e#195#228#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="urlAnalyzer.py" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/pyhtmlanalyzer/full/url/urlAnalyzer.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="196" column="20" selection-start="9444" selection-end="9444" vertical-scroll-proportion="0.0" vertical-offset="2577" max-vertical-offset="3105">
+            <state line="1306" column="0" selection-start="62537" selection-end="62537" vertical-scroll-proportion="-4.2" vertical-offset="19290" max-vertical-offset="20670">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="dnsFunctions.py" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/pyhtmlanalyzer/full/url/dns/dnsFunctions.py">
+      <file leaf-file-name="analyzeFunctions" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/analyzeFunctions">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="265" column="16" selection-start="8651" selection-end="8651" vertical-scroll-proportion="0.0" vertical-offset="3694" max-vertical-offset="5475">
+            <state line="11" column="102" selection-start="1342" selection-end="1342" vertical-scroll-proportion="-3.235294" vertical-offset="0" max-vertical-offset="600">
               <folding />
             </state>
           </provider>
+          <provider editor-type-id="com.intellij.persistence.database.editor.CsvTableFileEditorProvider">
+            <state />
+          </provider>
         </entry>
       </file>
-      <file leaf-file-name="whoisFunctions.py" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/pyhtmlanalyzer/full/url/whoisPackage/whoisFunctions.py">
+      <file leaf-file-name="commonFunctions.py" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/pyhtmlanalyzer/commonFunctions/commonFunctions.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="38" column="0" selection-start="1070" selection-end="1070" vertical-scroll-proportion="0.0" vertical-offset="387" max-vertical-offset="915">
+            <state line="81" column="0" selection-start="2842" selection-end="2842" vertical-scroll-proportion="0.0" vertical-offset="781" max-vertical-offset="1335">
               <folding />
             </state>
           </provider>
@@ -88,7 +73,7 @@
       <file leaf-file-name="pyHTMLAnalyzer.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/pyhtmlanalyzer/pyHTMLAnalyzer.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="124" column="44" selection-start="4941" selection-end="4941" vertical-scroll-proportion="0.5852156" vertical-offset="1470" max-vertical-offset="2835">
+            <state line="103" column="32" selection-start="4005" selection-end="4005" vertical-scroll-proportion="0.26895306" vertical-offset="1291" max-vertical-offset="2835">
               <folding />
             </state>
           </provider>
@@ -97,43 +82,7 @@
       <file leaf-file-name="main.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/main.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="23" column="0" selection-start="1104" selection-end="1104" vertical-scroll-proportion="0.0" vertical-offset="158" max-vertical-offset="675">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="commonFunctions.py" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/pyhtmlanalyzer/commonFunctions/commonFunctions.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="81" column="12" selection-start="2854" selection-end="2854" vertical-scroll-proportion="0.0" vertical-offset="807" max-vertical-offset="1335">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="plottingFunctions.py" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/pyhtmlanalyzer/commonFunctions/plottingFunctions.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="6" column="8" selection-start="112" selection-end="112" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="375">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="processProxy.py" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/pyhtmlanalyzer/commonFunctions/processProxy.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="33" column="16" selection-start="919" selection-end="919" vertical-scroll-proportion="0.0" vertical-offset="87" max-vertical-offset="615">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="htmlAnalyzer.py" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/pyhtmlanalyzer/full/html/htmlAnalyzer.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="1015" column="20" selection-start="52371" selection-end="52371" vertical-scroll-proportion="0.0" vertical-offset="14785" max-vertical-offset="15300">
+            <state line="23" column="0" selection-start="1104" selection-end="1104" vertical-scroll-proportion="0.0" vertical-offset="121" max-vertical-offset="675">
               <folding />
             </state>
           </provider>
@@ -159,10 +108,10 @@
         <option value="$PROJECT_DIR$/pyhtmlanalyzer/full/url/dns/dnsFunctions.py" />
         <option value="$PROJECT_DIR$/main.py" />
         <option value="$PROJECT_DIR$/pyhtmlanalyzer/full/url/urlAnalyzer.py" />
-        <option value="$PROJECT_DIR$/analyzeFunctions" />
         <option value="$PROJECT_DIR$/pyhtmlanalyzer/commonFunctions/processProxy.py" />
         <option value="$PROJECT_DIR$/pyhtmlanalyzer/full/html/htmlAnalyzer.py" />
         <option value="$PROJECT_DIR$/pyhtmlanalyzer/commonFunctions/commonFunctions.py" />
+        <option value="$PROJECT_DIR$/analyzeFunctions" />
         <option value="$PROJECT_DIR$/pyhtmlanalyzer/full/script/scriptAnalyzer.py" />
         <option value="$PROJECT_DIR$/pyhtmlanalyzer/pyHTMLAnalyzer.py" />
       </list>
@@ -741,7 +690,11 @@
       <created>1407592927103</created>
       <updated>1407592927103</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="* script analyzer now able to parallel analysis via pieces of script code, in limit - one process for one code piece&#10;Letter zero entropy value fix">
+      <created>1407605350136</created>
+      <updated>1407605350137</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -751,14 +704,14 @@
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32865497" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32672113" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3263158" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32954547" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.2573052" sideWeight="0.68961495" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.17126623" sideWeight="0.62543756" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.34072345" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.17613636" sideWeight="0.6795322" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32046783" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.31111112" sideWeight="0.5" order="8" side_tool="true" content_ui="tabs" />
-      <window_info id="Run" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.3745624" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3745624" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32982457" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -783,7 +736,9 @@
     <MESSAGE value="* optimize queue info passing - if function result is int/float and equal to 0/0.0, just simply don't include result in queue&#10;" />
     <MESSAGE value="* now it's able to run every single function from every module in separate process&#10;added:&#10;- try-except wrappers&#10;- setters and getters for module activation in pyHTMLAnalyzer&#10;- delete redundant methods" />
     <MESSAGE value="* now it's able to create several processes in &quot;getAllAnalyzeReport&quot; functions in all modules&#10;// not really significantly improves speed, but it will, later, when script-module will be rewritten to analyze by pieces of script-code, not whole script, as it does now" />
-    <option name="LAST_COMMIT_MESSAGE" value="* now it's able to create several processes in &quot;getAllAnalyzeReport&quot; functions in all modules&#10;// not really significantly improves speed, but it will, later, when script-module will be rewritten to analyze by pieces of script-code, not whole script, as it does now" />
+    <MESSAGE value="* script analyzer now able to parallel analysis via pieces of script code, in limit - one process for one code piece&#10;Zero letter enthropy fix" />
+    <MESSAGE value="* script analyzer now able to parallel analysis via pieces of script code, in limit - one process for one code piece&#10;Letter zero entropy value fix" />
+    <option name="LAST_COMMIT_MESSAGE" value="* script analyzer now able to parallel analysis via pieces of script code, in limit - one process for one code piece&#10;Letter zero entropy value fix" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
   <component name="XDebuggerManager">
@@ -801,41 +756,67 @@
         </line-breakpoint>
         <line-breakpoint type="python-line">
           <url>file://$PROJECT_DIR$/pyhtmlanalyzer/full/script/scriptAnalyzer.py</url>
-          <line>575</line>
-          <option name="timeStamp" value="454" />
-        </line-breakpoint>
-        <line-breakpoint type="python-line">
-          <url>file://$PROJECT_DIR$/pyhtmlanalyzer/full/script/scriptAnalyzer.py</url>
-          <line>1278</line>
+          <line>1292</line>
           <option name="timeStamp" value="458" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="python-line">
+          <url>file://$PROJECT_DIR$/main.py</url>
+          <line>23</line>
+          <option name="timeStamp" value="459" />
         </line-breakpoint>
       </breakpoints>
       <breakpoints-dialog>
         <breakpoints-dialog />
       </breakpoints-dialog>
-      <option name="time" value="459" />
+      <option name="time" value="478" />
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/pyhtmlanalyzer/full/url/geoip/geoIPFunctions.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="6" column="39" selection-start="172" selection-end="172" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1425">
-          <folding>
-            <element signature="e#0#13#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/pyhtmlanalyzer/full/commonURIAnalysisData.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="2" column="6" selection-start="28" selection-end="28" vertical-scroll-proportion="0.0591716" vertical-offset="0" max-vertical-offset="507">
-          <folding />
-        </state>
+        <state line="2" column="6" selection-start="28" selection-end="28" vertical-scroll-proportion="0.0591716" vertical-offset="0" max-vertical-offset="507" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/pyhtmlanalyzer/full/url/commonURL/commonURLFunctions.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="8" column="6" selection-start="182" selection-end="182" vertical-scroll-proportion="0.15182187" vertical-offset="0" max-vertical-offset="3330" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pyhtmlanalyzer/statistics.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="6" column="8" selection-start="130" selection-end="130" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="300" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pyhtmlanalyzer/commonFunctions/plottingFunctions.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="6" column="8" selection-start="112" selection-end="112" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="375" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pyhtmlanalyzer/commonFunctions/processProxy.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="33" column="16" selection-start="919" selection-end="919" vertical-scroll-proportion="0.0" vertical-offset="87" max-vertical-offset="615">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pyhtmlanalyzer/full/html/htmlAnalyzer.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="1015" column="20" selection-start="52371" selection-end="52371" vertical-scroll-proportion="0.0" vertical-offset="14785" max-vertical-offset="15300" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pyhtmlanalyzer/full/url/urlAnalyzer.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="196" column="20" selection-start="9444" selection-end="9444" vertical-scroll-proportion="0.0" vertical-offset="2577" max-vertical-offset="3105" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pyhtmlanalyzer/full/url/dns/dnsFunctions.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="265" column="16" selection-start="8651" selection-end="8651" vertical-scroll-proportion="0.0" vertical-offset="3694" max-vertical-offset="5475" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pyhtmlanalyzer/full/url/whoisPackage/whoisFunctions.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="38" column="0" selection-start="1070" selection-end="1070" vertical-scroll-proportion="0.0" vertical-offset="387" max-vertical-offset="915" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/config">
@@ -848,9 +829,23 @@
         <state />
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/pyhtmlanalyzer/commonFunctions/commonFunctions.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="81" column="0" selection-start="2842" selection-end="2842" vertical-scroll-proportion="0.0" vertical-offset="781" max-vertical-offset="1335">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/lib/python2.7/copy.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="144" column="4" selection-start="3993" selection-end="3993" vertical-scroll-proportion="0.33212996" vertical-offset="1946" max-vertical-offset="6555">
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/analyzeFunctions">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="11" column="0" selection-start="1240" selection-end="1240" vertical-scroll-proportion="-3.235294" vertical-offset="0" max-vertical-offset="555">
+        <state line="11" column="102" selection-start="1342" selection-end="1342" vertical-scroll-proportion="-3.235294" vertical-offset="0" max-vertical-offset="600">
           <folding />
         </state>
       </provider>
@@ -858,81 +853,23 @@
         <state />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/pyhtmlanalyzer/statistics.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="6" column="8" selection-start="130" selection-end="130" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="300">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/pyhtmlanalyzer/commonFunctions/commonFunctions.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="81" column="12" selection-start="2854" selection-end="2854" vertical-scroll-proportion="0.0" vertical-offset="807" max-vertical-offset="1335">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/pyhtmlanalyzer/commonFunctions/plottingFunctions.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="6" column="8" selection-start="112" selection-end="112" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="375">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/pyhtmlanalyzer/commonFunctions/processProxy.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="33" column="16" selection-start="919" selection-end="919" vertical-scroll-proportion="0.0" vertical-offset="87" max-vertical-offset="615">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/pyhtmlanalyzer/full/html/htmlAnalyzer.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="1015" column="20" selection-start="52371" selection-end="52371" vertical-scroll-proportion="0.0" vertical-offset="14785" max-vertical-offset="15300">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/pyhtmlanalyzer/full/url/urlAnalyzer.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="196" column="20" selection-start="9444" selection-end="9444" vertical-scroll-proportion="0.0" vertical-offset="2577" max-vertical-offset="3105">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/pyhtmlanalyzer/full/url/dns/dnsFunctions.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="265" column="16" selection-start="8651" selection-end="8651" vertical-scroll-proportion="0.0" vertical-offset="3694" max-vertical-offset="5475">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/pyhtmlanalyzer/full/url/whoisPackage/whoisFunctions.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="38" column="0" selection-start="1070" selection-end="1070" vertical-scroll-proportion="0.0" vertical-offset="387" max-vertical-offset="915">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/main.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="23" column="0" selection-start="1104" selection-end="1104" vertical-scroll-proportion="0.0" vertical-offset="158" max-vertical-offset="675">
+        <state line="23" column="0" selection-start="1104" selection-end="1104" vertical-scroll-proportion="0.0" vertical-offset="121" max-vertical-offset="675">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/pyhtmlanalyzer/full/script/scriptAnalyzer.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="1348" column="16" selection-start="64626" selection-end="64626" vertical-scroll-proportion="-6.52" vertical-offset="20057" max-vertical-offset="20985">
-          <folding>
-            <element signature="e#195#228#0" expanded="true" />
-          </folding>
+        <state line="1306" column="0" selection-start="62537" selection-end="62537" vertical-scroll-proportion="-4.2" vertical-offset="19290" max-vertical-offset="20670">
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/pyhtmlanalyzer/pyHTMLAnalyzer.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="124" column="44" selection-start="4941" selection-end="4941" vertical-scroll-proportion="0.5852156" vertical-offset="1470" max-vertical-offset="2835">
+        <state line="103" column="32" selection-start="4005" selection-end="4005" vertical-scroll-proportion="0.26895306" vertical-offset="1291" max-vertical-offset="2835">
           <folding />
         </state>
       </provider>
