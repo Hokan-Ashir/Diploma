@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" readonly="true" id="e0682ef5-57be-4028-860e-349d4b1e2e8e" name="Default" comment="* correct entropy calculation in case of">
+    <list default="true" readonly="true" id="e0682ef5-57be-4028-860e-349d4b1e2e8e" name="Default" comment="*">
       <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/database_initialization_script.sql" />
       <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/sqlAlchemyTest.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/analyzeFunctions" afterPath="$PROJECT_DIR$/analyzeFunctions" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/pyhtmlanalyzer/full/html/htmlAnalyzer.py" afterPath="$PROJECT_DIR$/pyhtmlanalyzer/full/html/htmlAnalyzer.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/main.py" afterPath="$PROJECT_DIR$/main.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/pyhtmlanalyzer/pyHTMLAnalyzer.py" afterPath="$PROJECT_DIR$/pyhtmlanalyzer/pyHTMLAnalyzer.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/pyhtmlanalyzer/full/script/scriptAnalyzer.py" afterPath="$PROJECT_DIR$/pyhtmlanalyzer/full/script/scriptAnalyzer.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/pyhtmlanalyzer/full/url/urlAnalyzer.py" afterPath="$PROJECT_DIR$/pyhtmlanalyzer/full/url/urlAnalyzer.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="diploma.iws" />
@@ -18,7 +22,7 @@
   </component>
   <component name="ChangesViewManager" flattened_view="true" show_ignored="false" />
   <component name="CoverageDataManager">
-    <SUITE FILE_PATH="coverage/diploma$Python_2_7.coverage" NAME="Python 2.7 Coverage Results" MODIFIED="1407780787715" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/diploma$Python_2_7.coverage" NAME="Python 2.7 Coverage Results" MODIFIED="1407862866816" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/diploma$Python_3_2.coverage" NAME="Python 3.2 Coverage Results" MODIFIED="1391705682888" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/diploma$Run.coverage" NAME="Python 3.2 Coverage Results" MODIFIED="1391449490251" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/diploma$Python_2_7_Tests.coverage" NAME="Python 2.7 Tests Coverage Results" MODIFIED="1407514347778" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
@@ -43,28 +47,28 @@
       <file leaf-file-name="scriptAnalyzer.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/pyhtmlanalyzer/full/script/scriptAnalyzer.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="1306" column="0" selection-start="62537" selection-end="62537" vertical-scroll-proportion="-4.2" vertical-offset="19290" max-vertical-offset="20670">
-              <folding />
+            <state line="1356" column="18" selection-start="65101" selection-end="65101" vertical-scroll-proportion="-10.28" vertical-offset="19888" max-vertical-offset="21270">
+              <folding>
+                <marker date="1407861396674" expanded="true" signature="2226:2259" placeholder="..." />
+                <marker date="1407861396674" expanded="true" signature="2305:2346" placeholder="..." />
+              </folding>
             </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="analyzeFunctions" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/analyzeFunctions">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="11" column="102" selection-start="1342" selection-end="1342" vertical-scroll-proportion="-3.235294" vertical-offset="0" max-vertical-offset="600">
-              <folding />
-            </state>
-          </provider>
-          <provider editor-type-id="com.intellij.persistence.database.editor.CsvTableFileEditorProvider">
-            <state />
           </provider>
         </entry>
       </file>
       <file leaf-file-name="commonFunctions.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/pyhtmlanalyzer/commonFunctions/commonFunctions.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="81" column="0" selection-start="2842" selection-end="2842" vertical-scroll-proportion="0.0" vertical-offset="781" max-vertical-offset="1335">
+            <state line="77" column="0" selection-start="2658" selection-end="2658" vertical-scroll-proportion="0.0" vertical-offset="787" max-vertical-offset="1335">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="htmlAnalyzer.py" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/pyhtmlanalyzer/full/html/htmlAnalyzer.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="985" column="54" selection-start="50338" selection-end="50338" vertical-scroll-proportion="-18.2" vertical-offset="14155" max-vertical-offset="15720">
               <folding />
             </state>
           </provider>
@@ -73,7 +77,7 @@
       <file leaf-file-name="pyHTMLAnalyzer.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/pyhtmlanalyzer/pyHTMLAnalyzer.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="103" column="32" selection-start="4005" selection-end="4005" vertical-scroll-proportion="0.26895306" vertical-offset="1291" max-vertical-offset="2835">
+            <state line="118" column="103" selection-start="4280" selection-end="4280" vertical-scroll-proportion="0.16788322" vertical-offset="1573" max-vertical-offset="3105">
               <folding />
             </state>
           </provider>
@@ -82,9 +86,21 @@
       <file leaf-file-name="main.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/main.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="23" column="0" selection-start="1104" selection-end="1104" vertical-scroll-proportion="0.0" vertical-offset="121" max-vertical-offset="675">
+            <state line="38" column="0" selection-start="1761" selection-end="1761" vertical-scroll-proportion="0.0" vertical-offset="352" max-vertical-offset="900">
               <folding />
             </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="analyzeFunctions" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/analyzeFunctions">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="1" column="36" selection-start="116" selection-end="133" vertical-scroll-proportion="-0.29411766" vertical-offset="0" max-vertical-offset="615">
+              <folding />
+            </state>
+          </provider>
+          <provider editor-type-id="com.intellij.persistence.database.editor.CsvTableFileEditorProvider">
+            <state />
           </provider>
         </entry>
       </file>
@@ -106,13 +122,13 @@
         <option value="$PROJECT_DIR$/sqlAlchemyTest.py" />
         <option value="$PROJECT_DIR$/pyhtmlanalyzer/full/url/whoisPackage/whoisFunctions.py" />
         <option value="$PROJECT_DIR$/pyhtmlanalyzer/full/url/dns/dnsFunctions.py" />
-        <option value="$PROJECT_DIR$/main.py" />
-        <option value="$PROJECT_DIR$/pyhtmlanalyzer/full/url/urlAnalyzer.py" />
         <option value="$PROJECT_DIR$/pyhtmlanalyzer/commonFunctions/processProxy.py" />
-        <option value="$PROJECT_DIR$/pyhtmlanalyzer/full/html/htmlAnalyzer.py" />
         <option value="$PROJECT_DIR$/pyhtmlanalyzer/commonFunctions/commonFunctions.py" />
         <option value="$PROJECT_DIR$/analyzeFunctions" />
+        <option value="$PROJECT_DIR$/pyhtmlanalyzer/full/url/urlAnalyzer.py" />
         <option value="$PROJECT_DIR$/pyhtmlanalyzer/full/script/scriptAnalyzer.py" />
+        <option value="$PROJECT_DIR$/main.py" />
+        <option value="$PROJECT_DIR$/pyhtmlanalyzer/full/html/htmlAnalyzer.py" />
         <option value="$PROJECT_DIR$/pyhtmlanalyzer/pyHTMLAnalyzer.py" />
       </list>
     </option>
@@ -185,6 +201,7 @@
       <sortByType />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -347,7 +364,6 @@
           </PATH>
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -355,14 +371,14 @@
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth0" value="64" />
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth3" value="64" />
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth2" value="76" />
-    <property name="options.splitter.main.proportions" value="0.3" />
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatOrder1" value="1" />
+    <property name="options.splitter.main.proportions" value="0.3" />
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatOrder0" value="0" />
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatOrder3" value="3" />
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatOrder2" value="2" />
-    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatOrder5" value="5" />
-    <property name="recentsLimit" value="5" />
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeWidth2" value="79" />
+    <property name="recentsLimit" value="5" />
+    <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatOrder5" value="5" />
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatOrder4" value="4" />
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeWidth1" value="74" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/sqlAlchemyTest.py" />
@@ -375,8 +391,8 @@
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth4" value="110" />
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_flatWidth5" value="816" />
     <property name="options.splitter.details.proportions" value="0.2" />
-    <property name="options.lastSelected" value="preferences.sourceCode.Python" />
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeOrder5" value="5" />
+    <property name="options.lastSelected" value="preferences.sourceCode.Python" />
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeOrder3" value="3" />
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeOrder4" value="4" />
     <property name="FileHistory.org.jetbrains.idea.svn.history.SvnHistoryProvider_treeOrder1" value="1" />
@@ -491,9 +507,6 @@
       <option name="PARAMETERS" value="" />
       <method />
     </configuration>
-    <configuration default="true" type="JavascriptDebugType" factoryName="JavaScript Debug" singleton="true">
-      <method />
-    </configuration>
     <configuration default="true" type="tests" factoryName="Unittests">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -515,6 +528,9 @@
       <option name="PUREUNITTEST" value="true" />
       <option name="PARAMS" value="" />
       <option name="USE_PARAM" value="false" />
+      <method />
+    </configuration>
+    <configuration default="true" type="JavascriptDebugType" factoryName="JavaScript Debug" singleton="true">
       <method />
     </configuration>
     <configuration default="true" type="tests" factoryName="Doctests">
@@ -694,7 +710,11 @@
       <created>1407605350136</created>
       <updated>1407605350137</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="* correct entropy calculation in case of rewritten script analyzer outcome (analyzed features per (has256, hash512))&#10;also deleted parallelViaFunctions, cause now script analyzer produce outcome in such case:&#10;dict:&#10;----- script piece1 - (hash256, hash512) - list of analyzed features for script piece1&#10;----- script piece2 - (hash256, hash512) - list of analyzed features for script piece2&#10;...&#10;----- script pieceN - (hash256, hash512) - list of analyzed features for script pieceN&#10;&#10;this output refactoring is essentially important, cause before performing analysis we must check, have we analyze this piece of code already (will be checked by pair of hashes)">
+      <created>1407781222152</created>
+      <updated>1407781222152</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -704,18 +724,18 @@
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32865497" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3263158" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32954547" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.2573052" sideWeight="0.68961495" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.17613636" sideWeight="0.6795322" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32046783" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.17938311" sideWeight="0.6725146" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32748538" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.31111112" sideWeight="0.5" order="8" side_tool="true" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3745624" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.374269" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32982457" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3263158" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32982457" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="SVN Repositories" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32982457" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -738,7 +758,8 @@
     <MESSAGE value="* now it's able to create several processes in &quot;getAllAnalyzeReport&quot; functions in all modules&#10;// not really significantly improves speed, but it will, later, when script-module will be rewritten to analyze by pieces of script-code, not whole script, as it does now" />
     <MESSAGE value="* script analyzer now able to parallel analysis via pieces of script code, in limit - one process for one code piece&#10;Zero letter enthropy fix" />
     <MESSAGE value="* script analyzer now able to parallel analysis via pieces of script code, in limit - one process for one code piece&#10;Letter zero entropy value fix" />
-    <option name="LAST_COMMIT_MESSAGE" value="* script analyzer now able to parallel analysis via pieces of script code, in limit - one process for one code piece&#10;Letter zero entropy value fix" />
+    <MESSAGE value="* correct entropy calculation in case of rewritten script analyzer outcome (analyzed features per (has256, hash512))&#10;also deleted parallelViaFunctions, cause now script analyzer produce outcome in such case:&#10;dict:&#10;----- script piece1 - (hash256, hash512) - list of analyzed features for script piece1&#10;----- script piece2 - (hash256, hash512) - list of analyzed features for script piece2&#10;...&#10;----- script pieceN - (hash256, hash512) - list of analyzed features for script pieceN&#10;&#10;this output refactoring is essentially important, cause before performing analysis we must check, have we analyze this piece of code already (will be checked by pair of hashes)" />
+    <option name="LAST_COMMIT_MESSAGE" value="* correct entropy calculation in case of rewritten script analyzer outcome (analyzed features per (has256, hash512))&#10;also deleted parallelViaFunctions, cause now script analyzer produce outcome in such case:&#10;dict:&#10;----- script piece1 - (hash256, hash512) - list of analyzed features for script piece1&#10;----- script piece2 - (hash256, hash512) - list of analyzed features for script piece2&#10;...&#10;----- script pieceN - (hash256, hash512) - list of analyzed features for script pieceN&#10;&#10;this output refactoring is essentially important, cause before performing analysis we must check, have we analyze this piece of code already (will be checked by pair of hashes)" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
   <component name="XDebuggerManager">
@@ -754,21 +775,11 @@
           <line>33</line>
           <option name="timeStamp" value="449" />
         </line-breakpoint>
-        <line-breakpoint type="python-line">
-          <url>file://$PROJECT_DIR$/pyhtmlanalyzer/full/script/scriptAnalyzer.py</url>
-          <line>1292</line>
-          <option name="timeStamp" value="458" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="python-line">
-          <url>file://$PROJECT_DIR$/main.py</url>
-          <line>23</line>
-          <option name="timeStamp" value="459" />
-        </line-breakpoint>
       </breakpoints>
       <breakpoints-dialog>
         <breakpoints-dialog />
       </breakpoints-dialog>
-      <option name="time" value="478" />
+      <option name="time" value="502" />
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
@@ -799,16 +810,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/pyhtmlanalyzer/full/html/htmlAnalyzer.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="1015" column="20" selection-start="52371" selection-end="52371" vertical-scroll-proportion="0.0" vertical-offset="14785" max-vertical-offset="15300" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/pyhtmlanalyzer/full/url/urlAnalyzer.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="196" column="20" selection-start="9444" selection-end="9444" vertical-scroll-proportion="0.0" vertical-offset="2577" max-vertical-offset="3105" />
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/pyhtmlanalyzer/full/url/dns/dnsFunctions.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="265" column="16" selection-start="8651" selection-end="8651" vertical-scroll-proportion="0.0" vertical-offset="3694" max-vertical-offset="5475" />
@@ -821,7 +822,27 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/config">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1470">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1470" />
+      </provider>
+      <provider editor-type-id="com.intellij.persistence.database.editor.CsvTableFileEditorProvider">
+        <state />
+      </provider>
+    </entry>
+    <entry file="file:///usr/lib/python2.7/copy.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="144" column="4" selection-start="3993" selection-end="3993" vertical-scroll-proportion="0.33212996" vertical-offset="1946" max-vertical-offset="6555" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pyhtmlanalyzer/full/url/urlAnalyzer.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="140" column="34" selection-start="6325" selection-end="6325" vertical-scroll-proportion="0.4904943" vertical-offset="1722" max-vertical-offset="3150">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/analyzeFunctions">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="1" column="36" selection-start="116" selection-end="133" vertical-scroll-proportion="-0.29411766" vertical-offset="0" max-vertical-offset="615">
           <folding />
         </state>
       </provider>
@@ -831,45 +852,38 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/pyhtmlanalyzer/commonFunctions/commonFunctions.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="81" column="0" selection-start="2842" selection-end="2842" vertical-scroll-proportion="0.0" vertical-offset="781" max-vertical-offset="1335">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file:///usr/lib/python2.7/copy.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="144" column="4" selection-start="3993" selection-end="3993" vertical-scroll-proportion="0.33212996" vertical-offset="1946" max-vertical-offset="6555">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/analyzeFunctions">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="11" column="102" selection-start="1342" selection-end="1342" vertical-scroll-proportion="-3.235294" vertical-offset="0" max-vertical-offset="600">
-          <folding />
-        </state>
-      </provider>
-      <provider editor-type-id="com.intellij.persistence.database.editor.CsvTableFileEditorProvider">
-        <state />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/main.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="23" column="0" selection-start="1104" selection-end="1104" vertical-scroll-proportion="0.0" vertical-offset="121" max-vertical-offset="675">
+        <state line="77" column="0" selection-start="2658" selection-end="2658" vertical-scroll-proportion="0.0" vertical-offset="793" max-vertical-offset="1335">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/pyhtmlanalyzer/full/script/scriptAnalyzer.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="1306" column="0" selection-start="62537" selection-end="62537" vertical-scroll-proportion="-4.2" vertical-offset="19290" max-vertical-offset="20670">
+        <state line="1356" column="18" selection-start="65101" selection-end="65101" vertical-scroll-proportion="-10.28" vertical-offset="19888" max-vertical-offset="21270">
+          <folding>
+            <marker date="1407861396674" expanded="true" signature="2226:2259" placeholder="..." />
+            <marker date="1407861396674" expanded="true" signature="2305:2346" placeholder="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pyhtmlanalyzer/full/html/htmlAnalyzer.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="985" column="54" selection-start="50338" selection-end="50338" vertical-scroll-proportion="-18.2" vertical-offset="14155" max-vertical-offset="15720">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/main.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="38" column="0" selection-start="1761" selection-end="1761" vertical-scroll-proportion="0.0" vertical-offset="352" max-vertical-offset="900">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/pyhtmlanalyzer/pyHTMLAnalyzer.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="103" column="32" selection-start="4005" selection-end="4005" vertical-scroll-proportion="0.26895306" vertical-offset="1291" max-vertical-offset="2835">
+        <state line="118" column="103" selection-start="4280" selection-end="4280" vertical-scroll-proportion="0.16788322" vertical-offset="1573" max-vertical-offset="3105">
           <folding />
         </state>
       </provider>

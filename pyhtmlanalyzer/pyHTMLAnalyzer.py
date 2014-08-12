@@ -24,6 +24,24 @@ class pyHTMLAnalyzer:
         self.scriptAnalyzerModule = scriptAnalyzer(configList[1])
         self.urlAnalyzerModule = urlAnalyzer(configList[2])
 
+    def getHTMLModule(self):
+        return self.htmlAnalyzerModule
+
+    def setHTMLModule(self, htmlModule):
+        self.htmlAnalyzerModule = htmlModule
+
+    def getScriptModule(self):
+        return self.scriptAnalyzerModule
+
+    def setScriptModule(self, scriptModule):
+        self.scriptAnalyzerModule = scriptModule
+
+    def getURLModule(self):
+        return self.urlAnalyzerModule
+
+    def setURLModule(self, urlModule):
+        self.urlAnalyzerModule = urlModule
+
     # returns active module list, order - html module, script module, url module
     def getActiveModuleList(self):
         return [self.isHTMLModuleActive, self.isScriptMiduleActive, self.isURLModuleActive]
@@ -125,7 +143,7 @@ class pyHTMLAnalyzer:
         for i in xrange(0, processesNumber):
             resultList = processQueue.get()[1]
             # if function returns nothing (like print function, for example)
-            if resultList is None:
+            if resultList is None or not resultList:
                 resultDict = resultList
             else:
                 resultDict[resultList[1]] = resultList[0]

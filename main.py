@@ -21,6 +21,21 @@ if __name__ == "__main__":
     #dic = analyzer.getNumberOfAnalyzedPageFeaturesByFunction('http://www.yandex.ru')
     end = timeit.default_timer()
     print("\nElapsed time: " + str(end - begin) + " seconds")
+    listOfHashes = []
+    for value in (dic.values()[0]):
+        listOfHashes.append([value[0], value[1]])
+
+    listOfPageHashes = dic['htmlAnalyzer']['getPageHashValues']
+    print(dic.items())
+
+    analyzer.getScriptModule().setListOfHashes(listOfHashes)
+    analyzer.getHTMLModule().setListOfHashes(listOfPageHashes)
+
+    begin = timeit.default_timer()
+    dic = analyzer.getNumberOfAnalyzedPageFeaturesByFunction('http://www.tutorialspoint.com/python/string_rstrip.htm')
+    #dic = analyzer.getNumberOfAnalyzedPageFeaturesByFunction('http://www.yandex.ru')
+    end = timeit.default_timer()
+    print("\nElapsed time: " + str(end - begin) + " seconds")
     print(dic.items())
     #html = htmlAnalyzer.printPagesPercentageMismatch(commonConnectionUtils.openFile('xmlFiles/VLC.htm')[0],
     #                                                commonConnectionUtils.openFile('xmlFiles/VLC1.htm')[0])

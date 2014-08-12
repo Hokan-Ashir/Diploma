@@ -14,9 +14,16 @@ from pyhtmlanalyzer.full.commonURIAnalysisData import commonURIAnalysisData
 __author__ = 'hokan'
 
 class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
+    # TODO make constant, maybe in more common file
+    scriptHashingFunctionName = 'getPageHashValues'
+
     configDict = None
     openedAsXML = None
     listOfAnalyzeFunctions = []
+
+    # list of hashes from previously analyzed page
+    # fills and pass to analyzer from other function
+    listOfHashes = None
 
     # constructor
     def __init__(self, configDict, xmldata = None, pageReady = None, uri = None):
@@ -29,6 +36,14 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
             return
 
         self.listOfAnalyzeFunctions = commonFunctions.getAnalyzeFunctionList('analyzeFunctions', 'html.module')
+    #
+    ###################################################################################################################
+
+    def getListOfHashes(self):
+        return self.listOfHashes
+
+    def setListOfHashes(self, listOfHashes):
+        self.listOfHashes = listOfHashes
     #
     ###################################################################################################################
 
@@ -956,11 +971,20 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         self.setPageReady(pageReady)
         self.uri = uri
 
+        # in case too less processes
+        if numberOfProcesses <= 0:
+            numberOfProcesses = 1
         # in case too much process number
-        if numberOfProcesses > len(self.listOfAnalyzeFunctions):
+        elif numberOfProcesses > len(self.listOfAnalyzeFunctions):
             numberOfProcesses = len(self.listOfAnalyzeFunctions)
 
         resultDict = {}
+        # here we already performing analysis on page and can check need of analysis by
+        # checking hash values <b> before </b> for-loops
+        pageHashValues = getattr(self, self.scriptHashingFunctionName)()
+        if self.listOfHashes is not None and pageHashValues == self.listOfHashes:
+            return [resultDict, htmlAnalyzer.__name__]
+
         if numberOfProcesses > 1:
             numberOfFunctionsByProcess = len(self.listOfAnalyzeFunctions) / numberOfProcesses
             functionsNotInProcesses = len(self.listOfAnalyzeFunctions) % numberOfProcesses
@@ -1014,6 +1038,10 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
                 except TypeError, error:
                     # TODO write to log "No such function exists"
                     pass
+
+        # if we get here, so function calls above are correct and we can add hashes values to result dictionary
+        # this values will be extract later
+        resultDict[self.scriptHashingFunctionName] = pageHashValues
 
         return [resultDict, htmlAnalyzer.__name__]
     #

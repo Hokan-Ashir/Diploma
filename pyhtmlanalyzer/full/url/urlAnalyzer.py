@@ -137,8 +137,11 @@ class urlAnalyzer(commonURLFunctions, dnsFunctions, geoIPFunctions, whoisFunctio
             return
         self.uri = uri
 
+        # in case too less processes
+        if numberOfProcesses <= 0:
+            numberOfProcesses = 1
         # in case too much process number
-        if numberOfProcesses > len(self.listOfAnalyzeFunctions):
+        elif numberOfProcesses > len(self.listOfAnalyzeFunctions):
             numberOfProcesses = len(self.listOfAnalyzeFunctions)
 
         resultDict = {}
