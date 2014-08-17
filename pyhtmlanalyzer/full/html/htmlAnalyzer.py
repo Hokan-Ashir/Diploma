@@ -1,5 +1,6 @@
 from collections import defaultdict
 import hashlib
+import logging
 from multiprocessing import Queue
 import operator
 import timeit
@@ -935,8 +936,9 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
             if str(funcName).startswith("print") and callable(funcValue):
                 try:
                     getattr(self, funcName)()
-                except TypeError, error:
-                    # TODO write to log "No such function exists"
+                except Exception, error:
+                    logger = logging.getLogger(self.__class__.__name__)
+                    logger.exception(error)
                     pass
         end = timeit.default_timer()
         print("\nElapsed time: " + str(end - begin) + " seconds")
@@ -957,8 +959,9 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
             if str(funcName).startswith("getTotal") and callable(funcValue):
                 try:
                     resultDict[funcName] = getattr(self, funcName)()
-                except TypeError, error:
-                    # TODO write to log "No such function exists"
+                except Exception, error:
+                    logger = logging.getLogger(self.__class__.__name__)
+                    logger.exception(error)
                     pass
 
         return [resultDict, htmlAnalyzer.__name__]
@@ -970,13 +973,16 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
             kwargs['xmldata']
             kwargs['pageReady']
         except KeyError, error:
-            # TODO log
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.exception(error)
             print("Insufficient number of parameters")
             return
 
         if kwargs['xmldata'] is None or kwargs['pageReady'] is None:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning('Error in input parameters:\n xmldata:\t%s\n pageReady:\t%s' % (kwargs['xmldata'],
+                                                                                           kwargs['pageReady']))
             print("Insufficient number of parameters")
-            # TODO log
             return
 
         self.setXMLData(kwargs['xmldata'])
@@ -987,7 +993,8 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         try:
             numberOfProcesses = kwargs['numberOfProcesses']
         except KeyError, error:
-            # TODO log
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning(error)
             pass
 
         # in case too less processes
@@ -1042,8 +1049,9 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
                         if not ((type(functionCallResult) is int and functionCallResult == 0) or (type(
                                 functionCallResult) is float and functionCallResult == 0.0)):
                             resultDict[self.__listOfAnalyzeFunctions[-i]] = functionCallResult
-                    except TypeError, error:
-                        # TODO write to log "No such function exists"
+                    except Exception, error:
+                        logger = logging.getLogger(self.__class__.__name__)
+                        logger.exception(error)
                         pass
 
         else:
@@ -1054,8 +1062,9 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
                     if not ((type(functionCallResult) is int and functionCallResult == 0) or (type(
                             functionCallResult) is float and functionCallResult == 0.0)):
                         resultDict[funcName] = functionCallResult
-                except TypeError, error:
-                    # TODO write to log "No such function exists"
+                except Exception, error:
+                    logger = logging.getLogger(self.__class__.__name__)
+                    logger.exception(error)
                     pass
 
         # if we get here, so function calls above are correct and we can add hashes values to result dictionary

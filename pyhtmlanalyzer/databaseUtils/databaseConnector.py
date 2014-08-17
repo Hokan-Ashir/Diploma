@@ -1,3 +1,4 @@
+import logging
 from sqlalchemy import Integer, Float, String, Boolean, Column, create_engine
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.ext.declarative import declarative_base
@@ -41,7 +42,8 @@ class databaseConnector():
             elif item == 'Boolean':
                 typeObject = Boolean
             else:
-                # TODO log
+                logger = logging.getLogger()
+                logger.warning('Unrecognized database type: ' + str(item))
                 continue
 
             columnValues.append(Column(typeObject))
@@ -103,8 +105,9 @@ def __repr__ (self):
 
     def executeQuery(self, query):
         if self.__engine is None:
-            print('engine is none')
-            # TODO log
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.error('No engine exists. Query can not be executed\nQuery:\n\t%s' % query)
+            print('No engine exists. Query can not be executed\nQuery:\n\t%s' % query)
             return False
 
         Session = scoped_session(sessionmaker(bind=self.__engine, autocommit=True))
@@ -117,7 +120,8 @@ def __repr__ (self):
         except OperationalError, error:
             # dispatch transaction
             session.rollback()
-            # TODO log
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning(error)
             print(error)
             return False
 
@@ -160,7 +164,8 @@ def __repr__ (self):
             self.createDatabase(user, password, hostname, databaseName)
             self.useDatabase(user, password, hostname, databaseName)
         elif self.useDatabase(user, password, hostname, databaseName) == False:
-            # TODO log, database does not exists
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning('Database %s does not exists' % databaseName)
             return False
 
         # html module
@@ -176,7 +181,9 @@ def __repr__ (self):
 
         # we insufficient number of column names of column types
         if len(columnNames) != len(columnTypes):
-            # TODO throw exception & log
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning('Unequal number of column names (%s) and column types (%s)' % (str(columnNames),
+                                                                                        str(columnTypes)))
             return False
 
 
@@ -198,7 +205,9 @@ def __repr__ (self):
 
         # we insufficient number of column names of column types
         if len(columnNames) != len(columnTypes):
-            # TODO throw exception & log
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning('Unequal number of column names (%s) and column types (%s)' % (str(columnNames),
+                                                                                        str(columnTypes)))
             return False
 
 
@@ -220,7 +229,9 @@ def __repr__ (self):
 
         # we insufficient number of column names of column types
         if len(columnNames) != len(columnTypes):
-            # TODO throw exception & log
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning('Unequal number of column names (%s) and column types (%s)' % (str(columnNames),
+                                                                                        str(columnTypes)))
             return False
 
         # check if lists (both, cause we already know that they have same length) are not empty

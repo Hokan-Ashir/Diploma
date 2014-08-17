@@ -1,9 +1,12 @@
 #!/usr/bin/env/ python
 # -*- coding: utf-8 -*-
+import logging
 import timeit
 from pyhtmlanalyzer.pyHTMLAnalyzer import pyHTMLAnalyzer
 
 if __name__ == "__main__":
+    logging.basicConfig(filename='log.log', level=logging.DEBUG, filemode='w', format='\n%(levelname)s:%(name)s:%('
+                                                                                          'message)s')
     analyzer = pyHTMLAnalyzer("config")
 
     #analyzer.printAnalyzedPageFeatures("http://www.tutorialspoint.com/python/string_split.htm")

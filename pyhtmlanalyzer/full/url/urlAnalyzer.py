@@ -1,3 +1,4 @@
+import logging
 from multiprocessing import Queue
 import timeit
 from pyhtmlanalyzer.commonFunctions.commonFunctions import commonFunctions
@@ -95,8 +96,9 @@ class urlAnalyzer(commonURLFunctions, dnsFunctions, geoIPFunctions, whoisFunctio
                 if str(funcName).startswith("print") and callable(funcValue):
                     try:
                         getattr(self, funcName)()
-                    except TypeError:
-                        # TODO write to log "No such function exists"
+                    except Exception, error:
+                        logger = logging.getLogger(self.__class__.__name__)
+                        logger.exception(error)
                         pass
         end = timeit.default_timer()
         print("\nElapsed time: " + str(end - begin) + " seconds")
@@ -125,8 +127,9 @@ class urlAnalyzer(commonURLFunctions, dnsFunctions, geoIPFunctions, whoisFunctio
                 if str(funcName).startswith("getTotal") and callable(funcValue):
                     try:
                         resultDict[funcName] = getattr(self, funcName)()
-                    except TypeError:
-                        # TODO write to log "No such function exists"
+                    except Exception, error:
+                        logger = logging.getLogger(self.__class__.__name__)
+                        logger.exception(error)
                         pass
 
         return [resultDict, urlAnalyzer.__name__]
@@ -137,12 +140,14 @@ class urlAnalyzer(commonURLFunctions, dnsFunctions, geoIPFunctions, whoisFunctio
         try:
             kwargs['uri']
         except KeyError, error:
-            # TODO log
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning(error)
             print("Insufficient number of parameters")
             return
 
         if kwargs['uri'] is None:
-            # TODO log
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning('Error in input parameters:\n uri:\t%s' % (kwargs['uri']))
             print("Insufficient number of parameters")
             return
         self._uri = kwargs['uri']
@@ -151,7 +156,8 @@ class urlAnalyzer(commonURLFunctions, dnsFunctions, geoIPFunctions, whoisFunctio
         try:
             numberOfProcesses = kwargs['numberOfProcesses']
         except KeyError, error:
-            # TODO log
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning(error)
             pass
 
         # in case too less processes
@@ -200,8 +206,9 @@ class urlAnalyzer(commonURLFunctions, dnsFunctions, geoIPFunctions, whoisFunctio
                         if not ((type(functionCallResult) is int and functionCallResult == 0) or (type(
                                 functionCallResult) is float and functionCallResult == 0.0)):
                             resultDict[self.__listOfAnalyzeFunctions[-i]] = functionCallResult
-                    except TypeError:
-                        # TODO write to log "No such function exists"
+                    except Exception, error:
+                        logger = logging.getLogger(self.__class__.__name__)
+                        logger.exception(error)
                         pass
 
         else:
@@ -212,8 +219,9 @@ class urlAnalyzer(commonURLFunctions, dnsFunctions, geoIPFunctions, whoisFunctio
                     if not ((type(functionCallResult) is int and functionCallResult == 0) or (type(
                             functionCallResult) is float and functionCallResult == 0.0)):
                         resultDict[funcName] = functionCallResult
-                except TypeError:
-                    # TODO write to log "No such function exists"
+                except Exception, error:
+                    logger = logging.getLogger(self.__class__.__name__)
+                    logger.exception(error)
                     pass
 
         return [resultDict, urlAnalyzer.__name__]

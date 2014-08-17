@@ -3,6 +3,7 @@
 # solution for non-unicode symbols
 # taken from: http://godovdm.blogspot.ru/2012/02/python-27-unicode.html
 #from __future__ import unicode_literals
+import logging
 from multiprocessing import Queue
 from collections import defaultdict
 from copy import copy, deepcopy
@@ -1168,7 +1169,10 @@ class scriptAnalyzer(commonAnalysisData):
         if self.__currentlyAnalyzingScriptCode != None:
             if self.__currentlyAnalyzingScriptCode > (len(self.__listOfScriptTagsText)
                                                         + len(self.__listOfIncludedScriptFiles)):
-                # TODO log that
+                logger = logging.getLogger(self.__class__.__name__)
+                logger.warning('Currently analyzing script code number (%s) is more than all script number in '
+                               'page (%s)' % (self.__currentlyAnalyzingScriptCode, (len(self.__listOfScriptTagsText)
+                                                        + len(self.__listOfIncludedScriptFiles))))
                 return None
 
             #print(self.currentlyAnalyzingScriptCode)
@@ -1242,8 +1246,9 @@ class scriptAnalyzer(commonAnalysisData):
             if str(funcName).startswith("print") and callable(funcValue):
                 try:
                     getattr(self, funcName)()
-                except TypeError, error:
-                    # TODO write to log "No such function exists"
+                except Exception, error:
+                    logger = logging.getLogger(self.__class__.__name__)
+                    logger.exception(error)
                     pass
         end = timeit.default_timer()
         print("\nElapsed time: " + str(end - begin) + " seconds")
@@ -1261,8 +1266,9 @@ class scriptAnalyzer(commonAnalysisData):
             if str(funcName).startswith("getTotal") and callable(funcValue):
                 try:
                     resultDict[funcName] = getattr(self, funcName)()
-                except TypeError, error:
-                    # TODO write to log "No such function exists"
+                except Exception, error:
+                    logger = logging.getLogger(self.__class__.__name__)
+                    logger.exception(error)
                     pass
 
         return [resultDict, scriptAnalyzer.__name__]
@@ -1329,8 +1335,9 @@ class scriptAnalyzer(commonAnalysisData):
                                 functionCallResult[self._scriptHashingFunctionName][1])
                     del functionCallResult[self._scriptHashingFunctionName]
                     resultDict[hashValues] = functionCallResult
-                except TypeError, error:
-                    # TODO write to log "No such function exists"
+                except Exception, error:
+                    logger = logging.getLogger(self.__class__.__name__)
+                    logger.exception(error)
                     pass
 
         return resultDict
@@ -1355,8 +1362,9 @@ class scriptAnalyzer(commonAnalysisData):
                     if not ((type(functionCallResult) is int and functionCallResult == 0) or (type(
                             functionCallResult) is float and functionCallResult == 0.0)):
                         resultDict[funcName] = functionCallResult
-                except TypeError, error:
-                    # TODO write to log "No such function exists"
+                except Exception, error:
+                    logger = logging.getLogger(self.__class__.__name__)
+                    logger.exception(error)
                     pass
 
             # if we get here, so function calls above are correct and we can add hashes values to result dictionary
@@ -1382,8 +1390,9 @@ class scriptAnalyzer(commonAnalysisData):
                         if not ((type(functionCallResult) is int and functionCallResult == 0) or (type(
                                 functionCallResult) is float and functionCallResult == 0.0)):
                             resultInnerDict[funcName] = functionCallResult
-                    except TypeError, error:
-                        # TODO write to log "No such function exists"
+                    except Exception, error:
+                        logger = logging.getLogger(self.__class__.__name__)
+                        logger.exception(error)
                         pass
 
                 # if we get here, so function calls above are correct and we can add hashes values to result list
@@ -1399,12 +1408,15 @@ class scriptAnalyzer(commonAnalysisData):
             kwargs['xmldata']
             kwargs['pageReady']
         except KeyError, error:
-            # TODO log
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning(error)
             print("Insufficient number of parameters")
             return
 
         if kwargs['xmldata'] is None or kwargs['pageReady'] is None:
-            # TODO log
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning('Error in input parameters:\n xmldata:\t%s\n pageReady:\t%s' % (kwargs['xmldata'],
+                                                                                           kwargs['pageReady']))
             print("Insufficient number of parameters")
             return
 
@@ -1414,7 +1426,8 @@ class scriptAnalyzer(commonAnalysisData):
         try:
             numberOfProcesses = kwargs['numberOfProcesses']
         except KeyError, error:
-            # TODO log
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning(error)
             pass
 
         # in case too less processes

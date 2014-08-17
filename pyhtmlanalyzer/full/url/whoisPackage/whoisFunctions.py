@@ -1,3 +1,4 @@
+import logging
 import whois
 from pyhtmlanalyzer.full.commonURIAnalysisData import commonURIAnalysisData
 
@@ -20,7 +21,8 @@ class whoisFunctions(commonURIAnalysisData):
         try:
             return None if self.whoisData is None else self.whoisData.expiration_date
         except KeyError, error:
-            # TODO log that page has no updated date
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning('Page has no expiration dates\n\t %s' % error)
             pass
 
     def printURLExpirationDates(self):
@@ -34,7 +36,8 @@ class whoisFunctions(commonURIAnalysisData):
         try:
             return None if self.whoisData is None else self.whoisData.creation_date
         except KeyError, error:
-            # TODO log that page has no updated date
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning('Page has no registration dates\n\t %s' % error)
             pass
 
     def printURLRegistrationDates(self):
@@ -48,7 +51,8 @@ class whoisFunctions(commonURIAnalysisData):
         try:
             return None if self.whoisData is None else self.whoisData.updated_date
         except KeyError, error:
-            # TODO log that page has no updated date
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning('Page has no update dates\n\t %s' % error)
             pass
 
 

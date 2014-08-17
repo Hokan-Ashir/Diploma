@@ -1,4 +1,5 @@
 from copy import copy
+import logging
 import socket
 import re
 
@@ -24,19 +25,22 @@ class dnsFunctions(commonURIAnalysisData):
         try:
             self.__listOfMXRecords = dns.resolver.query(self._uri.split("://")[1].split("/")[0], 'MX')
         except dns.resolver.NoAnswer, error:
-            # TODO log that page has no MX records
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning('Page has no MX records\n\t %s' % error)
             pass
 
         try:
             self.__listOfARecords = dns.resolver.query(self._uri.split("://")[1].split("/")[0], 'A')
         except dns.resolver.NoAnswer, error:
-            # TODO log that page has no A records
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning('Page has no A records\n\t %s' % error)
             pass
 
         try:
             self.__listOfNSRecords = dns.resolver.query(self._uri.split("://")[1].split("/")[0], 'NS')
         except dns.resolver.NoAnswer, error:
-            # TODO log that page has no NS records
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning('Page has no NS records\n\t %s' % error)
             pass
 
 
@@ -261,8 +265,9 @@ class dnsFunctions(commonURIAnalysisData):
             try:
                 resolvedPTR = dns.resolver.query(reverseIP, 'PTR')[0]
                 listOfResolvedPTR.append(resolvedPTR)
-            except(dns.resolver.NXDOMAIN, dns.resolver.NoAnswer):
-                # TODO write to log "page has no NX Domain"
+            except (dns.resolver.NXDOMAIN, dns.resolver.NoAnswer), error:
+                logger = logging.getLogger(self.__class__.__name__)
+                logger.warning('Page has no MX domain\n\t %s' % error)
                 pass
             if onlyFirstIP:
                 break

@@ -1,3 +1,4 @@
+import logging
 import re
 
 __author__ = 'hokan'
@@ -84,8 +85,9 @@ class commonFunctions:
         result = None
         try:
             result = getattr(classInstance, methodName)(**arguments)
-        except TypeError, error:
-            # TODO write to log "No such function exists"
+        except Exception, error:
+            logger = logging.getLogger('callFunctionByNameQeued')
+            logger.exception(error)
             print(error)
             pass
 

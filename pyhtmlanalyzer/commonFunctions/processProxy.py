@@ -1,3 +1,4 @@
+import logging
 from multiprocessing import Process
 
 __author__ = 'hokan'
@@ -29,8 +30,9 @@ class processProxy(Process):
         else:
             try:
                 result = getattr(self.__classInstance, self.__methodName)(**self.__arguments)
-            except TypeError, error:
-                # TODO write to log "No such function exists"
+            except Exception, error:
+                logger = logging.getLogger(self.__class__.__name__)
+                logger.exception(error)
                 pass
 
         return result
