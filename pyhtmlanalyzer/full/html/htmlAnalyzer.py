@@ -14,6 +14,8 @@ from pyhtmlanalyzer.full.commonURIAnalysisData import commonURIAnalysisData
 __author__ = 'hokan'
 
 class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
+    __name__ = 'htmlAnalyzer'
+
     # TODO make constant, maybe in more common file
     scriptHashingFunctionName = 'getPageHashValues'
 
@@ -963,13 +965,30 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
     #
     ###################################################################################################################
 
-    def getAllAnalyzeReport(self, xmldata, pageReady, uri, numberOfProcesses = 1):
-        if xmldata is None or pageReady is None:
-                print("Insufficient number of parameters")
-                return
-        self.setXMLData(xmldata)
-        self.setPageReady(pageReady)
-        self.uri = uri
+    def getAllAnalyzeReport(self, **kwargs):
+        try:
+            kwargs['xmldata']
+            kwargs['pageReady']
+        except KeyError, error:
+            # TODO log
+            print("Insufficient number of parameters")
+            return
+
+        if kwargs['xmldata'] is None or kwargs['pageReady'] is None:
+            print("Insufficient number of parameters")
+            # TODO log
+            return
+
+        self.setXMLData(kwargs['xmldata'])
+        self.setPageReady(kwargs['pageReady'])
+        self.uri = kwargs['uri']
+
+        numberOfProcesses = 1
+        try:
+            numberOfProcesses = kwargs['numberOfProcesses']
+        except KeyError, error:
+            # TODO log
+            pass
 
         # in case too less processes
         if numberOfProcesses <= 0:

@@ -28,8 +28,8 @@ if __name__ == "__main__":
     listOfPageHashes = dic['htmlAnalyzer']['getPageHashValues']
     print(dic.items())
 
-    analyzer.getScriptModule().setListOfHashes(listOfHashes)
-    analyzer.getHTMLModule().setListOfHashes(listOfPageHashes)
+    analyzer.getModuleByName('scriptAnalyzer').setListOfHashes(listOfHashes)
+    analyzer.getModuleByName('htmlAnalyzer').setListOfHashes(listOfPageHashes)
 
     begin = timeit.default_timer()
     dic = analyzer.getNumberOfAnalyzedPageFeaturesByFunction('http://www.tutorialspoint.com/python/string_rstrip.htm')

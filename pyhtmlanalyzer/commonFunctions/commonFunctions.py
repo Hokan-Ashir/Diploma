@@ -39,12 +39,8 @@ class commonFunctions:
         configFile = open(configFileName, 'r')
         moduleFound = False
 
-        if includeFunctionReturnValueTypes:
-            # search for pair look like "functionName : functionReturnValueType"
-            regExp = re.compile(r'[^\n\s=,]+\s*:\s*[^\n\s=,]+')
-        else:
-            # search for "functionName"
-            regExp = re.compile(r'[^\n\s=,]+')
+        # search for pair look like "functionName : functionReturnValueType"
+        regExp = re.compile(r'[^\n\s=,]+\s*:\s*[^\n\s=,]+')
         for line in configFile:
             # decide which functions belongs to which module
             if line.startswith(moduleName):
@@ -52,11 +48,11 @@ class commonFunctions:
                 if parseResult == []:
                         return []
 
+                # also strip front and back spaces
                 if includeFunctionReturnValueTypes:
-                    # also strip front and back spaces
                     return [item.replace(' ', '').split(':') for item in parseResult]
                 else:
-                    return parseResult[1:]
+                    return [item.replace(' ', '').split(':')[0] for item in parseResult]
 
             # comments or not module that we are looking for
             if line.startswith("#") or moduleFound == False:
@@ -76,16 +72,18 @@ class commonFunctions:
     # q = Queue()
     # u = 72
     # foo = Foo()
-    # p1 = processProxy(None, [foo, [u], q, 'bar'], commonFunctions.callFunctionByName)
+    # p1 = processProxy(None, [foo, {'u' : u}, q, 'bar'], commonFunctions.callFunctionByNameQeued)
     # p1.run()
     #
     # l = q.get()
+    #
+    # output: ['bar', 237]
     #
     @staticmethod
     def callFunctionByNameQeued(classInstance, arguments, queue, methodName):
         result = None
         try:
-            result = getattr(classInstance, methodName)(*arguments)
+            result = getattr(classInstance, methodName)(**arguments)
         except TypeError, error:
             # TODO write to log "No such function exists"
             print(error)

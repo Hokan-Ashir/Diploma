@@ -1,7 +1,9 @@
+from collections import defaultdict
 from multiprocessing import Queue
 import re
 from pyhtmlanalyzer.commonFunctions.commonConnectionUtils import commonConnectionUtils
 from pyhtmlanalyzer.commonFunctions.commonFunctions import commonFunctions
+from pyhtmlanalyzer.commonFunctions.modulesRegister import modulesRegister
 from pyhtmlanalyzer.commonFunctions.processProxy import processProxy
 from pyhtmlanalyzer.full.html.htmlAnalyzer import htmlAnalyzer
 from pyhtmlanalyzer.full.script.scriptAnalyzer import scriptAnalyzer
@@ -10,50 +12,40 @@ from pyhtmlanalyzer.full.url.urlAnalyzer import urlAnalyzer
 __author__ = 'hokan'
 
 class pyHTMLAnalyzer:
-    htmlAnalyzerModule = None
-    scriptAnalyzerModule = None
-    urlAnalyzerModule = None
-
-    isHTMLModuleActive = True
-    isScriptMiduleActive = True
-    isURLModuleActive = True
+    __modulesRegister = None
+    __activeModulesDictionary = defaultdict(bool)
 
     def __init__(self, configFileName):
+        self.__modulesRegister = modulesRegister()
         configList = self.getConfigList(configFileName)
-        self.htmlAnalyzerModule = htmlAnalyzer(configList[0])
-        self.scriptAnalyzerModule = scriptAnalyzer(configList[1])
-        self.urlAnalyzerModule = urlAnalyzer(configList[2])
+        self.setModule(htmlAnalyzer(configList[0]))
+        self.setModule(scriptAnalyzer(configList[1]))
+        self.setModule(urlAnalyzer(configList[2]))
 
-    def getHTMLModule(self):
-        return self.htmlAnalyzerModule
+    # module section
+    def getModules(self):
+        return self.__modulesRegister.getClassInstanceDictionary()
 
-    def setHTMLModule(self, htmlModule):
-        self.htmlAnalyzerModule = htmlModule
+    def getModuleByName(self, moduleName):
+        return self.__modulesRegister.getClassInstance(moduleName)
 
-    def getScriptModule(self):
-        return self.scriptAnalyzerModule
+    def setModule(self, moduleInstance, moduleInstanceName = None):
+        self.__modulesRegister.registerClassInstance(moduleInstance, moduleInstanceName)
+        if moduleInstanceName is not None:
+            self.setIsActiveModule(moduleInstanceName)
+        else:
+            self.setIsActiveModule(moduleInstance.__name__)
 
-    def setScriptModule(self, scriptModule):
-        self.scriptAnalyzerModule = scriptModule
+    def removeModule(self, moduleName):
+        self.__modulesRegister.unregisterClassInstance(moduleName)
+        del self.__activeModulesDictionary[moduleName]
 
-    def getURLModule(self):
-        return self.urlAnalyzerModule
+    # isActive section
+    def setIsActiveModule(self, moduleName, isActive = True):
+        self.__activeModulesDictionary[moduleName] = isActive
 
-    def setURLModule(self, urlModule):
-        self.urlAnalyzerModule = urlModule
-
-    # returns active module list, order - html module, script module, url module
-    def getActiveModuleList(self):
-        return [self.isHTMLModuleActive, self.isScriptMiduleActive, self.isURLModuleActive]
-
-    def setIsHTMLModuleActive(self, isActive):
-        self.isHTMLModuleActive = isActive
-
-    def setIsScriptModuleActive(self, isActive):
-        self.isScriptMiduleActive = isActive
-
-    def setIsURLModuleActive(self, isActive):
-        self.isURLModuleActive = isActive
+    def getIsActiveModule(self, moduleName):
+        return self.__activeModulesDictionary[moduleName]
 
     # get config list for various analyzer modules
     def getConfigList(self, configFileName):
@@ -110,37 +102,23 @@ class pyHTMLAnalyzer:
             return
         resultDict = {}
         processQueue = Queue()
-        processesNumber = 0
+        proxyProcessesList = []
 
-        htmlAnalyzerProcess = None
-        jsAnalyzerProcess = None
-        urlAnalyzerProcess = None
-        if self.isHTMLModuleActive:
-            htmlAnalyzerProcess = processProxy(None, [self.htmlAnalyzerModule, [xmldata, pageReady, uri],
-                                                      processQueue, functionName], commonFunctions.callFunctionByNameQeued)
-            htmlAnalyzerProcess.start()
-            processesNumber += 1
+        # start process for each module
+        for moduleName, module in self.getModules().items():
+            if self.getIsActiveModule(moduleName):
+                # {'numberOfProcesses' : 1}
+                process = processProxy(None, [module, {'xmldata' : xmldata, 'pageReady' : pageReady, 'uri' : uri},
+                                              processQueue, functionName], commonFunctions.callFunctionByNameQeued)
+                proxyProcessesList.append(process)
+                process.start()
 
-        if self.isScriptMiduleActive:
-            jsAnalyzerProcess = processProxy(None, [self.scriptAnalyzerModule, [xmldata, pageReady, uri],
-                                                    processQueue, functionName], commonFunctions.callFunctionByNameQeued)
-            jsAnalyzerProcess.start()
-            processesNumber += 1
+        # wait for process joining
+        for process in proxyProcessesList:
+            process.join()
 
-        if self.isURLModuleActive:
-            urlAnalyzerProcess = processProxy(None, [self.urlAnalyzerModule, [uri], processQueue, functionName],
-                                              commonFunctions.callFunctionByNameQeued)
-            urlAnalyzerProcess.start()
-            processesNumber += 1
-
-        if htmlAnalyzerProcess is not None:
-            htmlAnalyzerProcess.join()
-        if jsAnalyzerProcess is not None:
-            jsAnalyzerProcess.join()
-        if urlAnalyzerProcess is not None:
-            urlAnalyzerProcess.join()
-
-        for i in xrange(0, processesNumber):
+        # gather all data
+        for i in xrange(0, len(proxyProcessesList)):
             resultList = processQueue.get()[1]
             # if function returns nothing (like print function, for example)
             if resultList is None or not resultList:
@@ -191,8 +169,8 @@ class pyHTMLAnalyzer:
             proxy.start()
 
         # wait for process joining
-        for i in xrange(0, len(proxyProcessesList)):
-            proxyProcessesList[i].join()
+        for process in proxyProcessesList:
+            process.join()
 
         # gather all data
         for i in xrange(0, len(proxyProcessesList)):

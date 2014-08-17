@@ -3,6 +3,7 @@ from sqlalchemy.exc import OperationalError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
 from pyhtmlanalyzer.commonFunctions.commonFunctions import commonFunctions
+from pyhtmlanalyzer.commonFunctions.modulesRegister import modulesRegister
 
 __author__ = 'hokan'
 
@@ -11,10 +12,12 @@ class databaseConnector():
     Base = None
     # database engine object
     engine = None
-    # ORM classes dictionary
-    classDict = {}
+    # used as storage to ORM classes dictionary
+    __modulesRegister = None
 
     def __init__(self, user = None, password = None, hostname = None, databaseName = None):
+        self.__modulesRegister = modulesRegister()
+
         if user is not None \
             and password is not None \
             and hostname is not None \
@@ -86,7 +89,7 @@ def __repr__ (self):
 
         SomeClass = commonFunctions.makeClass(tableName, [self.Base], columnNames, columnValues, methodsList,
                                         methodNamesList)
-        self.classDict[tableName] = SomeClass
+        self.__modulesRegister.registerORMClass(SomeClass, tableName)
         # creates table it self
         self.Base.metadata.create_all(self.engine)
 

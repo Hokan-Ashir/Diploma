@@ -21,6 +21,8 @@ from pyhtmlanalyzer.full.commonAnalysisData import commonAnalysisData
 __author__ = 'hokan'
 
 class scriptAnalyzer(commonAnalysisData):
+    __name__ = 'scriptAnalyzer'
+
     # TODO make constant, maybe in more common file
     scriptHashingFunctionName = 'getScriptContentHashing'
 
@@ -1392,11 +1394,28 @@ class scriptAnalyzer(commonAnalysisData):
 
         return resultDict
 
-    def getAllAnalyzeReport(self, xmldata, pageReady, uri, numberOfProcesses = 1):
-        if xmldata is None or pageReady is None:
-                print("Insufficient number of parameters")
-                return
-        self.initialization(xmldata, pageReady, uri)
+    def getAllAnalyzeReport(self, **kwargs):
+        try:
+            kwargs['xmldata']
+            kwargs['pageReady']
+        except KeyError, error:
+            # TODO log
+            print("Insufficient number of parameters")
+            return
+
+        if kwargs['xmldata'] is None or kwargs['pageReady'] is None:
+            # TODO log
+            print("Insufficient number of parameters")
+            return
+
+        self.initialization(kwargs['xmldata'], kwargs['pageReady'], kwargs['uri'])
+
+        numberOfProcesses = 1
+        try:
+            numberOfProcesses = kwargs['numberOfProcesses']
+        except KeyError, error:
+            # TODO log
+            pass
 
         # in case too less processes
         if numberOfProcesses <= 0:

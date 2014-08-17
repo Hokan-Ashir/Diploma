@@ -28,7 +28,7 @@ class processProxy(Process):
             result = self.methodName(*self.arguments)
         else:
             try:
-                result = getattr(self.classInstance, self.methodName)(*self.arguments)
+                result = getattr(self.classInstance, self.methodName)(**self.arguments)
             except TypeError, error:
                 # TODO write to log "No such function exists"
                 pass

@@ -12,6 +12,8 @@ __author__ = 'hokan'
 
 
 class urlAnalyzer(commonURLFunctions, dnsFunctions, geoIPFunctions, whoisFunctions, urlVoidFunctions):
+    __name__ = 'urlAnalyzer'
+
     configDict = None
     isCommonURLModuleActive = True
     isDNSModuleActive = True
@@ -131,11 +133,26 @@ class urlAnalyzer(commonURLFunctions, dnsFunctions, geoIPFunctions, whoisFunctio
     #
     ###################################################################################################################
 
-    def getAllAnalyzeReport(self, uri, numberOfProcesses = 1):
-        if uri is None:
+    def getAllAnalyzeReport(self, **kwargs):
+        try:
+            kwargs['uri']
+        except KeyError, error:
+            # TODO log
             print("Insufficient number of parameters")
             return
-        self.uri = uri
+
+        if kwargs['uri'] is None:
+            # TODO log
+            print("Insufficient number of parameters")
+            return
+        self.uri = kwargs['uri']
+
+        numberOfProcesses = 1
+        try:
+            numberOfProcesses = kwargs['numberOfProcesses']
+        except KeyError, error:
+            # TODO log
+            pass
 
         # in case too less processes
         if numberOfProcesses <= 0:
