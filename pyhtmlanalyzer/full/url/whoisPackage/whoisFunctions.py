@@ -13,7 +13,7 @@ class whoisFunctions(commonURIAnalysisData):
 
     # pre analysis method
     def retrieveWHOIShostInfo(self):
-         self.whoisData = whois.whois(self.__uri)
+         self.whoisData = whois.whois(self._uri)
 
     # expiration date
     def getURLExpirationDates(self):

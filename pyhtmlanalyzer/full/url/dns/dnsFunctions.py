@@ -22,19 +22,19 @@ class dnsFunctions(commonURIAnalysisData):
     # pre analysis method
     def retrieveDNShostInfo(self):
         try:
-            self.__listOfMXRecords = dns.resolver.query(self.__uri.split("://")[1].split("/")[0], 'MX')
+            self.__listOfMXRecords = dns.resolver.query(self._uri.split("://")[1].split("/")[0], 'MX')
         except dns.resolver.NoAnswer, error:
             # TODO log that page has no MX records
             pass
 
         try:
-            self.__listOfARecords = dns.resolver.query(self.__uri.split("://")[1].split("/")[0], 'A')
+            self.__listOfARecords = dns.resolver.query(self._uri.split("://")[1].split("/")[0], 'A')
         except dns.resolver.NoAnswer, error:
             # TODO log that page has no A records
             pass
 
         try:
-            self.__listOfNSRecords = dns.resolver.query(self.__uri.split("://")[1].split("/")[0], 'NS')
+            self.__listOfNSRecords = dns.resolver.query(self._uri.split("://")[1].split("/")[0], 'NS')
         except dns.resolver.NoAnswer, error:
             # TODO log that page has no NS records
             pass
@@ -211,7 +211,7 @@ class dnsFunctions(commonURIAnalysisData):
     def getRecordIPsNumber(self, recordType='MX'):
         try:
             # TODO optimize in switch-case style
-            return len(dns.resolver.query(self.__uri.split("://")[1].split("/")[0], '%s' % recordType))
+            return len(dns.resolver.query(self._uri.split("://")[1].split("/")[0], '%s' % recordType))
         except(dns.resolver.NXDOMAIN, dns.resolver.NoAnswer):
             print("\nNo %s dns record exists for this dns" % recordType)
             return None

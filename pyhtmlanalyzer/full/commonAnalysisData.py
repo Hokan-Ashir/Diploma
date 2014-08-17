@@ -2,28 +2,28 @@ __author__ = 'hokan'
 
 class commonAnalysisData:
     # class members
-    __xmldata = None
-    __pageReady = None
+    _xmldata = None
+    _pageReady = None
 
     # constructor
     def __init__(self, xmldata = None, pageReady = None):
-        self.__xmldata = xmldata
-        self.__pageReady = pageReady
+        self._xmldata = xmldata
+        self._pageReady = pageReady
     #
     ###################################################################################################################
 
     # setter and getter for pageReady
     def getPageReady(self):
-        return self.__pageReady
+        return self._pageReady
 
     def setPageReady(self, pageReady):
-        self.__pageReady = pageReady
+        self._pageReady = pageReady
     #
     ###################################################################################################################
 
     # setter and getter for xmlPageData
     def getXMLData(self):
-        return self.__xmldata
+        return self._xmldata
 
     def setXMLData(self, xmldata):
-        self.__xmldata = xmldata
+        self._xmldata = xmldata

@@ -30,7 +30,7 @@ class geoIPFunctions(commonURIAnalysisData):
                                  self.__ip2locationDBpasswordName,
                                  self.__ip2locationDBname)
 
-            ipAddressValuesList = dns.resolver.query(self.__uri.split("://")[1].split("/")[0], 'A')[0].address.split('.')
+            ipAddressValuesList = dns.resolver.query(self._uri.split("://")[1].split("/")[0], 'A')[0].address.split('.')
             ipAddressNumber = 16777216 * int(ipAddressValuesList[0]) \
                               + 65536 * int(ipAddressValuesList[1]) \
                               + 256 * int(ipAddressValuesList[2]) \

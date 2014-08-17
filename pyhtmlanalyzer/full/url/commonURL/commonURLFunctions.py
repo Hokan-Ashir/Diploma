@@ -20,10 +20,10 @@ class commonURLFunctions(commonURIAnalysisData):
 
     # the domain name length
     def getDomainNameLength(self):
-        if urlparse(self.__uri).port == None:
-            return len(urlparse(self.__uri).netloc)
+        if urlparse(self._uri).port == None:
+            return len(urlparse(self._uri).netloc)
         else:
-            return len(urlparse(self.__uri).netloc.split(':')[0])
+            return len(urlparse(self._uri).netloc.split(':')[0])
 
     def printDomainNameLength(self):
         print("\nDomain name is " + str(self.getDomainNameLength()) + " characters length")
@@ -31,7 +31,7 @@ class commonURLFunctions(commonURIAnalysisData):
 
     # the TLD of this URL
     def getURLTLD(self):
-        TLD = self.__uri.split('://')[1].split('/')[0].split('.')[-1]
+        TLD = self._uri.split('://')[1].split('/')[0].split('.')[-1]
         return None if TLD.isdigit() is True else TLD
 
     def printURLTDL(self):
@@ -45,7 +45,7 @@ class commonURLFunctions(commonURIAnalysisData):
 
     # the length of the file name appearing in the URL
     def getURLFileNameLength(self):
-        uri = self.__uri.split('://')[1]
+        uri = self._uri.split('://')[1]
 
         # in case of no file name in URL
         if uri.count('/') == 0:
@@ -66,7 +66,7 @@ class commonURLFunctions(commonURIAnalysisData):
     def getIPv4PresenceInURL(self):
         regExp = re.compile(
             r'(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)')
-        return True if re.findall(regExp, self.__uri) != None and re.findall(regExp, self.__uri) != [] else False
+        return True if re.findall(regExp, self._uri) != None and re.findall(regExp, self._uri) != [] else False
 
 
     def printIPv4PresenceInURL(self):
@@ -122,7 +122,7 @@ fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|     # fe80::7:8%eth0   fe80::7:8%
 ((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]).){3,3}
 (25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])           # 2001:db8:3:4::192.0.2.33  64:ff9b::192.0.2.33 (IPv4-Embedded IPv6 Address)
 )""", re.VERBOSE | re.IGNORECASE | re.DOTALL)
-        return True if re.findall(regExp, self.__uri) != None and re.findall(regExp, self.__uri) != [] else False
+        return True if re.findall(regExp, self._uri) != None and re.findall(regExp, self._uri) != [] else False
 
 
     def printIPv6PresenceInURL(self):
@@ -131,7 +131,7 @@ fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|     # fe80::7:8%eth0   fe80::7:8%
 
     # the absence of sub-domain
     def getSubdomainPresecnceInURL(self):
-        return True if self.__uri.split('://')[1].split('/')[0].split('.')[0] == 'www' else False
+        return True if self._uri.split('://')[1].split('/')[0].split('.')[0] == 'www' else False
 
     def printSubdomainPresenceInURL(self):
         print("\nSubdomain " + ("exists" if self.getSubdomainPresecnceInURL() else "do not exists") + " in url")
@@ -139,7 +139,7 @@ fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|     # fe80::7:8%eth0   fe80::7:8%
 
     # port presence in url
     def getPortPresenceInURL(self):
-        return True if urlparse(self.__uri).port is not None else False
+        return True if urlparse(self._uri).port is not None else False
 
     def printPortPresenceInURL(self):
         print("\nPort " + ("exists" if self.getPortPresenceInURL() else "do not exists") + " in url")
@@ -147,13 +147,13 @@ fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|     # fe80::7:8%eth0   fe80::7:8%
 
     # absolute and relative length of this URL
     def getAbsoluteAndRelativeURLLength(self):
-        return [len(self.__uri), len(urlparse(self.__uri).path)]
+        return [len(self._uri), len(urlparse(self._uri).path)]
 
     def getAbsoluteURLLength(self):
-        return len(self.__uri)
+        return len(self._uri)
 
     def getRelativeURLLength(self):
-        return len(urlparse(self.__uri).path)
+        return len(urlparse(self._uri).path)
 
     def printAbsoluteAndRelativeURLLength(self):
         resultList = self.getAbsoluteAndRelativeURLLength()
@@ -163,7 +163,7 @@ fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|     # fe80::7:8%eth0   fe80::7:8%
 
     # whether the original URL is relative
     def getRelativePathPresenceInURL(self):
-        return not bool(urlparse(self.__uri).netloc)
+        return not bool(urlparse(self._uri).netloc)
 
 
     def printRelativePathPresenceInURL(self):
@@ -180,7 +180,7 @@ fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|     # fe80::7:8%eth0   fe80::7:8%
 
         dictOfSuspiciousPatterns = defaultdict(bool)
         for pattern in listOfSuspiciousPatterns:
-            if self.__uri.rfind(pattern) != -1:
+            if self._uri.rfind(pattern) != -1:
                 dictOfSuspiciousPatterns[pattern] = True
 
         return dictOfSuspiciousPatterns
@@ -207,7 +207,7 @@ fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|     # fe80::7:8%eth0   fe80::7:8%
 
         dictOfSuspiciousFileNames = defaultdict(bool)
         for pattern in listOfSuspiciousFileNames:
-            if self.__uri.rfind(pattern) != -1:
+            if self._uri.rfind(pattern) != -1:
                 dictOfSuspiciousFileNames[pattern] = True
 
         return dictOfSuspiciousFileNames

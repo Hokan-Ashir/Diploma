@@ -48,7 +48,7 @@ class urlAnalyzer(commonURLFunctions, dnsFunctions, geoIPFunctions, whoisFunctio
     ###################################################################################################################
 
     def setURI(self, uri):
-        self.__uri = uri
+        self._uri = uri
         if self.__isURLVoidModuleActive:
             self.retrieveURLData()
         if self.__isDNSModuleActive:
@@ -108,7 +108,7 @@ class urlAnalyzer(commonURLFunctions, dnsFunctions, geoIPFunctions, whoisFunctio
         if uri is None:
             print("Insufficient number of parameters")
             return
-        self.__uri = uri
+        self._uri = uri
         resultDict = {}
         for className in urlAnalyzer.__bases__:
             if className.__name__ == commonURLFunctions.__name__ and not self.__isCommonURLModuleActive:
@@ -145,7 +145,7 @@ class urlAnalyzer(commonURLFunctions, dnsFunctions, geoIPFunctions, whoisFunctio
             # TODO log
             print("Insufficient number of parameters")
             return
-        self.__uri = kwargs['uri']
+        self._uri = kwargs['uri']
 
         numberOfProcesses = 1
         try:

@@ -24,7 +24,7 @@ class scriptAnalyzer(commonAnalysisData):
     __name__ = 'scriptAnalyzer'
 
     # TODO make constant, maybe in more common file
-    __scriptHashingFunctionName = 'getScriptContentHashing'
+    _scriptHashingFunctionName = 'getScriptContentHashing'
 
     __configDict = None
     __uri = None
@@ -1113,7 +1113,7 @@ class scriptAnalyzer(commonAnalysisData):
         self.setXMLData(xmldata)
         self.setPageReady(pageReady)
         self.__uri = uri
-        listOfInlineScriptTags = self.__xmldata.xpath('//script[not(@src)]')
+        listOfInlineScriptTags = self._xmldata.xpath('//script[not(@src)]')
 
         # we turn all text to upper register to speed up analysis in getObjectsWithSuspiciousContent() method
         # in which we can not to use re.I (case insensitive) flag
@@ -1122,7 +1122,7 @@ class scriptAnalyzer(commonAnalysisData):
 
         # NOTE: we do not make dict of files of file content, cause it's too redundant; instead we use hashing
         # but here we get only unique files
-        listOfFileScriptTags = self.__xmldata.xpath('//script[@src]')
+        listOfFileScriptTags = self._xmldata.xpath('//script[@src]')
         self.__listOfIncludedScriptFiles = []
         for tag in listOfFileScriptTags:
             fileName = tag.xpath('@src')[0]
@@ -1302,9 +1302,9 @@ class scriptAnalyzer(commonAnalysisData):
                 for j in xrange(0, len(proxyProcessesList)):
                     functionCallResult = processQueue.get()[1]
                     # get hash values of current piece of code, remove them from result and set into dictionary
-                    hashValues = (functionCallResult[self.__scriptHashingFunctionName][0],
-                                functionCallResult[self.__scriptHashingFunctionName][1])
-                    del functionCallResult[self.__scriptHashingFunctionName]
+                    hashValues = (functionCallResult[self._scriptHashingFunctionName][0],
+                                functionCallResult[self._scriptHashingFunctionName][1])
+                    del functionCallResult[self._scriptHashingFunctionName]
                     resultDict[hashValues] = functionCallResult
 
                 del proxyProcessesList[:]
@@ -1319,15 +1319,15 @@ class scriptAnalyzer(commonAnalysisData):
                     self.__currentlyAnalyzingScriptCode = totalNumberOfScriptCodes - 1 - i
 
                     # here we can can calculate hashes per script code, cause it's "number" defined with row above
-                    scriptPieceCodeHashes = getattr(self, self.__scriptHashingFunctionName)()
+                    scriptPieceCodeHashes = getattr(self, self._scriptHashingFunctionName)()
                     if self.__listOfHashes is not None and scriptPieceCodeHashes in self.__listOfHashes:
                         continue
 
                     functionCallResult = self.analyzeAllFunctions(oneProcess=True)
                     # get hash values of current piece of code, remove them from result and set into dictionary
-                    hashValues = (functionCallResult[self.__scriptHashingFunctionName][0],
-                                functionCallResult[self.__scriptHashingFunctionName][1])
-                    del functionCallResult[self.__scriptHashingFunctionName]
+                    hashValues = (functionCallResult[self._scriptHashingFunctionName][0],
+                                functionCallResult[self._scriptHashingFunctionName][1])
+                    del functionCallResult[self._scriptHashingFunctionName]
                     resultDict[hashValues] = functionCallResult
                 except TypeError, error:
                     # TODO write to log "No such function exists"
@@ -1344,7 +1344,7 @@ class scriptAnalyzer(commonAnalysisData):
 
             # here we already performing analysis on one piece of script code and can check need of analysis by
             # checking hash values <b> before </b> for-loop
-            scriptPieceCodeHashes = getattr(self, self.__scriptHashingFunctionName)()
+            scriptPieceCodeHashes = getattr(self, self._scriptHashingFunctionName)()
             if self.__listOfHashes is not None and scriptPieceCodeHashes in self.__listOfHashes:
                 return resultDict
 
@@ -1361,7 +1361,7 @@ class scriptAnalyzer(commonAnalysisData):
 
             # if we get here, so function calls above are correct and we can add hashes values to result dictionary
             # this values will be extract later
-            resultDict[self.__scriptHashingFunctionName] = scriptPieceCodeHashes
+            resultDict[self._scriptHashingFunctionName] = scriptPieceCodeHashes
 
         # in case we analyze all script from whole page in one process
         else:
@@ -1371,7 +1371,7 @@ class scriptAnalyzer(commonAnalysisData):
                 self.__currentlyAnalyzingScriptCode = i
 
                 # here we can can calculate hashes per script code, cause it's "number" defined with row above
-                scriptPieceCodeHashes = getattr(self, self.__scriptHashingFunctionName)()
+                scriptPieceCodeHashes = getattr(self, self._scriptHashingFunctionName)()
                 if self.__listOfHashes is not None and scriptPieceCodeHashes in self.__listOfHashes:
                     return resultDict
 

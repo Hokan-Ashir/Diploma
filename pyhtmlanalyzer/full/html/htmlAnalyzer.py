@@ -17,7 +17,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
     __name__ = 'htmlAnalyzer'
 
     # TODO make constant, maybe in more common file
-    __scriptHashingFunctionName = 'getPageHashValues'
+    _scriptHashingFunctionName = 'getPageHashValues'
 
     __configDict = None
     __openedAsXML = None
@@ -59,7 +59,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
 
         dictOfElementsWithSmallArea = {}
         for item in listOfTags:
-            dictOfElementsWithSmallArea[item] = len(self.__xmldata.xpath(
+            dictOfElementsWithSmallArea[item] = len(self._xmldata.xpath(
             '//%s[@width <= %f or @height <= %f or (number(@width) * number(@height)) <= %f]'
             % (item, widthLimit, heightLimit, squarePixelsLimit)))
         return dictOfElementsWithSmallArea
@@ -101,7 +101,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
 
         dictOfDuplicatedElementsCount = {}
         for item in listOfDuplicatedTags:
-            dictOfDuplicatedElementsCount[item] = self.__xmldata.xpath('count(//%s)' % item)
+            dictOfDuplicatedElementsCount[item] = self._xmldata.xpath('count(//%s)' % item)
         return dictOfDuplicatedElementsCount
 
 
@@ -132,8 +132,8 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         # first count length of content,
         # then check string with whitespaces has %whitespacePercentage% spaces;
         # furthermore we do not add strings without spaces at all ("and .." part of condition)
-        tooLongCharacterStringsCount = self.__xmldata.xpath('count(//text()[string-length() > %d])' % characterLength)
-        tooLessWhitespacesStringsCount = self.__xmldata.xpath(
+        tooLongCharacterStringsCount = self._xmldata.xpath('count(//text()[string-length() > %d])' % characterLength)
+        tooLessWhitespacesStringsCount = self._xmldata.xpath(
             'count(//text()[(1 - (string-length(translate(., \' \', \'\')) div string-length())) < %f '
             'and (string-length(translate(., \' \', \'\')) != string-length())])'
             % whitespacePercentage)
@@ -174,7 +174,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
             return
         dictOfVoidElementsWithContent = defaultdict(int)
         for tag in listOfVoidTagNames:
-            listOfTags = self.__xmldata.xpath('//%s' % tag)
+            listOfTags = self._xmldata.xpath('//%s' % tag)
             for item in listOfTags:
                 if item.tail != None and len(item.tail) > 0:
                     dictOfVoidElementsWithContent[tag] += 1
@@ -205,7 +205,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         for key in CLSID.clsidlist.keys():
             # we use value-of-classid-attribute.upper() cause we unsure that authors of malicious pages will
             # follow the rules
-            itemsCount = self.__xmldata.xpath('count(//object[%s = \'CLSID:%s\'])'
+            itemsCount = self._xmldata.xpath('count(//object[%s = \'CLSID:%s\'])'
                                             % (commonXPATHUtils.toUpperCase('@classid', False), key))
             if itemsCount > 0:
                 dictOfSuspiciousObjects[key] = itemsCount
@@ -214,7 +214,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
             # here we use key.upper() cause not all CLSNames in upper case
             # we also use value-of-progid-attribute.upper() cause we unsure that authors of malicious pages will
             # follow the rules
-            itemsCount = self.__xmldata.xpath("count(//object[%s = '%s'])"
+            itemsCount = self._xmldata.xpath("count(//object[%s = '%s'])"
                                             % (commonXPATHUtils.toUpperCase('@progid', False), str(key).upper()))
             if itemsCount > 0:
                 dictOfSuspiciousObjects[key] = itemsCount
@@ -248,7 +248,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
             return
         dictOfIncludedURLsOjects = {}
         for item in listOfTags:
-            dictOfIncludedURLsOjects[item] = self.__xmldata.xpath('count(//%s[@src])' % item)
+            dictOfIncludedURLsOjects[item] = self._xmldata.xpath('count(//%s[@src])' % item)
 
         return dictOfIncludedURLsOjects
 
@@ -281,7 +281,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
                 # pages redirecting to exploit servers.
                 # also includes https:// case
                 dictOfMaliciousPatternObjects[item]\
-                    = self.__xmldata.xpath('count(//meta[contains(%s, URL)'
+                    = self._xmldata.xpath('count(//meta[contains(%s, URL)'
                                          ' and (contains(%s, \'http://index.php?spl=\')'
                                          ' or contains(%s, \'https://index.php?spl=\'))])'
                                          % (commonXPATHUtils.toUpperCase('@content', False),
@@ -356,7 +356,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         for item in listOfBlockContentInlineTags:
             dictElementsOutOfPlace[item] = 0
 
-        listOfUnderRootElements = self.__xmldata.xpath('/*')[0].xpath('./*')
+        listOfUnderRootElements = self._xmldata.xpath('/*')[0].xpath('./*')
         for item in listOfUnderRootElements:
             # count number of tags outside root html-tag or in head or title
             if item.xpath('name(.)') == 'head':
@@ -387,7 +387,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         # count number of all block elements in block elements
         for tag in listOfNonBlockTags:
             # get all elements of type 'tag' from body (cause we already count out-of-body-tag elements)
-            listOfTagElements = self.__xmldata.xpath('/html/body//%s' % tag)
+            listOfTagElements = self._xmldata.xpath('/html/body//%s' % tag)
             for element in listOfTagElements:
                 for tag2 in listOfBlockLevelTags:
                     # check that parent of this tag has name from list of block-type tags
@@ -398,7 +398,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         # check number of special inline elements with block content
         for tag in listOfBlockContentInlineTags:
             # get all elements of type 'tag' from body (cause we already count out-of-body-tag elements)
-            listOfTagElements = self.__xmldata.xpath('/html/body//%s' % tag)
+            listOfTagElements = self._xmldata.xpath('/html/body//%s' % tag)
             for element in listOfTagElements:
                 # check that their parent has no text content
                 if (element.xpath('..')[0].text == '\n' or element.xpath('..')[0].text == None):
@@ -418,14 +418,14 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         #    dictElementsOutOfPlace['title'] += len(titleTagList) - 1
         #
         # but EVERY <title> tag may be misplaced, so we count <title> tags in valid <head>
-        numberOfTitleTagsUnderValidHead = self.__xmldata.xpath('count(/html/head//title)')
+        numberOfTitleTagsUnderValidHead = self._xmldata.xpath('count(/html/head//title)')
         if numberOfTitleTagsUnderValidHead >= 1:
             # here is at least one in-place <title>
             # subtract from all invalid <title> tags one valid
-            dictElementsOutOfPlace['title'] = self.__xmldata.xpath('count(//title)') - 1
+            dictElementsOutOfPlace['title'] = self._xmldata.xpath('count(//title)') - 1
         else:
             # otherwise all <title> tags are invalid
-            dictElementsOutOfPlace['title'] = self.__xmldata.xpath('count(//title)')
+            dictElementsOutOfPlace['title'] = self._xmldata.xpath('count(//title)')
 
         return dictElementsOutOfPlace
 
@@ -558,7 +558,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
 
     # number of hidden tags
     def getTotalNumberOfHiddenTags(self):
-        return self.__xmldata.xpath('count(//*[%s = \'true\'])' % commonXPATHUtils.toLowerCase('@hidden', False))
+        return self._xmldata.xpath('count(//*[%s = \'true\'])' % commonXPATHUtils.toLowerCase('@hidden', False))
 
     def printTotalNumberOfHiddenTags(self):
         numberOfHiddenTags = self.getTotalNumberOfHiddenTags()
@@ -572,8 +572,8 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
 
     # number of script elements
     def getNumberOfScriptElements(self):
-        numberOfInlineScriptElements = self.__xmldata.xpath('count(//script[not(@src)])')
-        numberOfIncludedScriptElements = self.__xmldata.xpath('count(//script[@src])')
+        numberOfInlineScriptElements = self._xmldata.xpath('count(//script[not(@src)])')
+        numberOfIncludedScriptElements = self._xmldata.xpath('count(//script[@src])')
         return [numberOfInlineScriptElements, numberOfIncludedScriptElements]
 
     def getTotalNumberOfScriptElements(self):
@@ -616,7 +616,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
 
         # javascript
         dictOfScriptElements['text/javascript'] \
-            = self.__xmldata.xpath('count(//script[%s = \'text/javascript\''
+            = self._xmldata.xpath('count(//script[%s = \'text/javascript\''
                                  ' and boolean(@src)'
                                  ' and @src != ""'
                                  ' and not(%s)])'
@@ -626,7 +626,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
                                                              False,
                                                              True)))
         dictOfScriptElements['application/javascript'] \
-            = self.__xmldata.xpath('count(//script[%s = \'application/javascript\''
+            = self._xmldata.xpath('count(//script[%s = \'application/javascript\''
                                  ' and boolean(@src)'
                                  ' and @src != ""'
                                  ' and not(%s)])'
@@ -636,7 +636,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
                                                              False,
                                                              True)))
         dictOfScriptElements['default']\
-            = self.__xmldata.xpath('count(//script[not(@type)'
+            = self._xmldata.xpath('count(//script[not(@type)'
                                  ' and boolean(@src)'
                                  ' and @src != ""'
                                  ' and not(%s)])'
@@ -647,7 +647,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
 
         # ecmascript
         dictOfScriptElements['text/ecmascript'] \
-            = self.__xmldata.xpath('count(//script[%s = \'text/ecmascript\''
+            = self._xmldata.xpath('count(//script[%s = \'text/ecmascript\''
                                  ' and boolean(@src)'
                                  ' and @src != ""'
                                  ' and not(%s)])'
@@ -657,7 +657,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
                                                              False,
                                                              True)))
         dictOfScriptElements['application/ecmascript']\
-            = self.__xmldata.xpath('count(//script[%s = \'application/ecmascript\''
+            = self._xmldata.xpath('count(//script[%s = \'application/ecmascript\''
                                  ' and boolean(@src)'
                                  ' and @src != ""'
                                  ' and not(%s)])'
@@ -670,7 +670,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         # vbscript
         # NOTE: possible file extensions (.vbs, .vbe, .wsf, .wsc), maybe some of them deprecated
         dictOfScriptElements['text/vbscript']\
-            = self.__xmldata.xpath('count(//script[%s = \'text/vbscript\''
+            = self._xmldata.xpath('count(//script[%s = \'text/vbscript\''
                                  ' and boolean(@src)'
                                  ' and @src != ""'
                                  ' and not(%s)])'
@@ -680,7 +680,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
                                                              False,
                                                              True)))
         dictOfScriptElements['text/vbscript'] \
-            = self.__xmldata.xpath('count(//script[%s = \'text/vbscript\''
+            = self._xmldata.xpath('count(//script[%s = \'text/vbscript\''
                                  ' and boolean(@src)'
                                  ' and @src != ""'
                                  ' and not(%s)])'
@@ -690,7 +690,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
                                                              False,
                                                              True)))
         dictOfScriptElements['text/vbscript'] \
-            = self.__xmldata.xpath('count(//script[%s = \'text/vbscript\''
+            = self._xmldata.xpath('count(//script[%s = \'text/vbscript\''
                                  ' and boolean(@src)'
                                  ' and @src != ""'
                                  ' and not(%s)])'
@@ -700,7 +700,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
                                                              False,
                                                              True)))
         dictOfScriptElements['text/vbscript'] \
-            = self.__xmldata.xpath('count(//script[%s = \'text/vbscript\''
+            = self._xmldata.xpath('count(//script[%s = \'text/vbscript\''
                                  ' and boolean(@src)'
                                  ' and @src != ""'
                                  ' and not(%s)])'
@@ -735,12 +735,12 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
     def getNumberOfTextCharactersInPage(self):
         # get all text nodes except script nodes (in which we must delete all comments before take len() call
         # NOTE: we ignore embed script code inside <script> tags with @src attribute, cause it can't be executed
-        listOfTextNodesExceptScript = self.__xmldata.xpath('//*[name() != \'script\']/text()')
+        listOfTextNodesExceptScript = self._xmldata.xpath('//*[name() != \'script\']/text()')
         numberOfCharactersInPage = 0
         for item in listOfTextNodesExceptScript:
             numberOfCharactersInPage += len(item)
 
-        listOfInlineScriptTextNodes = self.__xmldata.xpath('//script[not(@src)]/text()')
+        listOfInlineScriptTextNodes = self._xmldata.xpath('//script[not(@src)]/text()')
         for item in listOfInlineScriptTextNodes:
             # NOTE: only JS-comments
             # regexp for C/C++-like comments, also suitable for js-comments
@@ -759,7 +759,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
     # number of characters in page by xPath standards
     def getTotalNumberOfCharactersInPage(self):
         numberOfCharactersInPage = 0
-        listOfAllNodes = self.__xmldata.xpath('//*')
+        listOfAllNodes = self._xmldata.xpath('//*')
         for node in listOfAllNodes:
             # get node name; add 2 characters for open and close bracket
             # duplicate it for close tag, add 1 character for slash
@@ -777,12 +777,12 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
     # NOTE: only in text() of nodes, cause xPath can't count space in tags
     def getNumberOfWhitespaceCharactersInPage(self):
         # like in getNumberOfTextCharactersInPage()
-        listOfTextNodesExceptScript = self.__xmldata.xpath('//*[name() != \'script\']/text()')
+        listOfTextNodesExceptScript = self._xmldata.xpath('//*[name() != \'script\']/text()')
         numberOfCharactersInPage = 0
         for item in listOfTextNodesExceptScript:
             numberOfCharactersInPage += len(item.replace(" ", ""))
 
-        listOfInlineScriptTextNodes = self.__xmldata.xpath('//script[not(@src)]/text()')
+        listOfInlineScriptTextNodes = self._xmldata.xpath('//script[not(@src)]/text()')
         for item in listOfInlineScriptTextNodes:
             # additional '|\s' for replacing spaces in one turn
             regExp = re.compile(r'(/\*[^\*/]*\*/|//.*\n?|\s)')
@@ -795,7 +795,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         print("\nTotal number of text characters in page: " + str(self.getNumberOfTextCharactersInPage()))
         print("Total number of characters in page: " + str(self.getTotalNumberOfCharactersInPage()))
         print("Total number of whitespace characters in page: " + str(self.getNumberOfWhitespaceCharactersInPage()))
-        print("Total length of page: " + str(len(self.__pageReady)))
+        print("Total length of page: " + str(len(self._pageReady)))
 
     # - the percentage of unknown tags (impossible, case xpath can't see unknown tags)
     # NOTE but we can count number of characters of unknown tags (getFileLength() - getAllChars())
@@ -823,7 +823,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
     # result, then choose lesser one
     #
     def printNumberOfUnknownCharacters(self):
-        print("Unknown tags, comments and unrecognized features length: " + str(len(self.__pageReady) - self.getTotalNumberOfCharactersInPage()))
+        print("Unknown tags, comments and unrecognized features length: " + str(len(self._pageReady) - self.getTotalNumberOfCharactersInPage()))
     #
     ###################################################################################################################
 
@@ -845,7 +845,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         for tagName in listOfAllHTMLTagNames:
             expressionForAllNonHTMLNodes += 'name() != \'' + tagName + '\' and '
         expressionForAllNonHTMLNodes = re.sub(' and $', '', expressionForAllNonHTMLNodes)
-        return float(self.__xmldata.xpath('count(//*)') - self.__xmldata.xpath('count(//*[%s])' % expressionForAllNonHTMLNodes)) / self.__xmldata.xpath('count(//*)')
+        return float(self._xmldata.xpath('count(//*)') - self._xmldata.xpath('count(//*[%s])' % expressionForAllNonHTMLNodes)) / self._xmldata.xpath('count(//*)')
 
     def printPercentageOfUnknownTags(self):
         percentageOfUnknownTags = self.getPercentageOfUnknownTags()
@@ -860,10 +860,10 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
     # number of elements whose source is on an external domain
     def getNumberOfElementsWithExternalDomainSource(self):
         # in case of file analyzing we can't say anything about domain URI
-        if not str(self.__uri).startswith('http'):
+        if not str(self._uri).startswith('http'):
             return []
-        srcAttributeValuesList = self.__xmldata.xpath('//*[@src]/@src')
-        uriPathTillTDL = str(self.__uri).split('/')[0] + '//' + str(self.__uri).split('/')[2]
+        srcAttributeValuesList = self._xmldata.xpath('//*[@src]/@src')
+        uriPathTillTDL = str(self._uri).split('/')[0] + '//' + str(self._uri).split('/')[2]
         numberOfElementsWithExternalDomainSource = 0
         for item in srcAttributeValuesList:
             # assume that external domain sources not starts with:
@@ -902,8 +902,8 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
 
     # page hashing
     def getPageHashValues(self):
-        pageHashSHA256 = hashlib.sha256(self.__pageReady.encode('utf-8')).hexdigest()
-        pageHashSHA512 = hashlib.sha512(self.__pageReady.encode('utf-8')).hexdigest()
+        pageHashSHA256 = hashlib.sha256(self._pageReady.encode('utf-8')).hexdigest()
+        pageHashSHA512 = hashlib.sha512(self._pageReady.encode('utf-8')).hexdigest()
 
         return [pageHashSHA256, pageHashSHA512]
 
@@ -923,7 +923,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
                 return
         self.setXMLData(xmldata)
         self.setPageReady(pageReady)
-        self.__uri = uri
+        self._uri = uri
         if str(uri).lower().endswith(".xml"):
             self.__openedAsXML = True
         # FIXME remove in production
@@ -951,7 +951,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
                 return
         self.setXMLData(xmldata)
         self.setPageReady(pageReady)
-        self.__uri = uri
+        self._uri = uri
         resultDict = {}
         for funcName, funcValue in htmlAnalyzer.__dict__.items():
             if str(funcName).startswith("getTotal") and callable(funcValue):
@@ -981,7 +981,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
 
         self.setXMLData(kwargs['xmldata'])
         self.setPageReady(kwargs['pageReady'])
-        self.__uri = kwargs['uri']
+        self._uri = kwargs['uri']
 
         numberOfProcesses = 1
         try:
@@ -1000,7 +1000,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         resultDict = {}
         # here we already performing analysis on page and can check need of analysis by
         # checking hash values <b> before </b> for-loops
-        pageHashValues = getattr(self, self.__scriptHashingFunctionName)()
+        pageHashValues = getattr(self, self._scriptHashingFunctionName)()
         if self.__listOfHashes is not None and pageHashValues == self.__listOfHashes:
             return [resultDict, htmlAnalyzer.__name__]
 
@@ -1060,7 +1060,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
 
         # if we get here, so function calls above are correct and we can add hashes values to result dictionary
         # this values will be extract later
-        resultDict[self.__scriptHashingFunctionName] = pageHashValues
+        resultDict[self._scriptHashingFunctionName] = pageHashValues
 
         return [resultDict, htmlAnalyzer.__name__]
     #

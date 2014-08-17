@@ -13,7 +13,7 @@ class urlVoidFunctions(commonURIAnalysisData):
             self.retrieveURLData()
 
     def retrieveURLData(self):
-        if self.__uri is None:
+        if self._uri is None:
             print("\nURI is not set")
             return
 
@@ -24,7 +24,7 @@ class urlVoidFunctions(commonURIAnalysisData):
         result = commonConnectionUtils.openPage('http://api.urlvoid.com/api1000/'
                                                        + self.__API_KEY
                                                        + '/host/'
-                                                       + self.__uri.split("://")[1].split("/")[0])[0]
+                                                       + self._uri.split("://")[1].split("/")[0])[0]
 
         # if there exists any info about site (details tag exists) - save it
         if len(result.xpath('//details')) != 0:
@@ -37,7 +37,7 @@ class urlVoidFunctions(commonURIAnalysisData):
         return remainedQueries[0].xpath('//queriesremained/text()')[0]
 
     def getIsHostMalicious(self):
-        if self.__uri is None:
+        if self._uri is None:
             print("\nURI is not set")
             return None
 
@@ -55,7 +55,7 @@ class urlVoidFunctions(commonURIAnalysisData):
         print("Host is " + ('not' if isHostMalicious is False else '') + 'malicious')
 
     def getDetectedEnginesList(self):
-        if self.__uri is None:
+        if self._uri is None:
             print("\nURI is not set")
             return None
 
