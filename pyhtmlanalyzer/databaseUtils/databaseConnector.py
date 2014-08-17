@@ -9,9 +9,9 @@ __author__ = 'hokan'
 
 class databaseConnector():
     # Base class object, will be base class for any ORM class created
-    Base = None
+    __Base = None
     # database engine object
-    engine = None
+    __engine = None
     # used as storage to ORM classes dictionary
     __modulesRegister = None
 
@@ -22,9 +22,9 @@ class databaseConnector():
             and password is not None \
             and hostname is not None \
             and databaseName is not None:
-            self.engine = self.getDatabaseEngine(user, password, hostname, databaseName)
+            self.__engine = self.getDatabaseEngine(user, password, hostname, databaseName)
 
-        self.Base = declarative_base()
+        self.__Base = declarative_base()
 
     # columnNames and columnTypes must have same length
     def createTable(self, tableName, columnNames, columnTypes):
@@ -87,11 +87,11 @@ def __repr__ (self):
         columnNames.append('__tablename__')
         columnValues.append(tableName)
 
-        SomeClass = commonFunctions.makeClass(tableName, [self.Base], columnNames, columnValues, methodsList,
+        SomeClass = commonFunctions.makeClass(tableName, [self.__Base], columnNames, columnValues, methodsList,
                                         methodNamesList)
         self.__modulesRegister.registerORMClass(SomeClass, tableName)
         # creates table it self
-        self.Base.metadata.create_all(self.engine)
+        self.__Base.metadata.create_all(self.__engine)
 
         # fill with some data
         #Session = scoped_session(sessionmaker(bind=self.engine))
@@ -102,12 +102,12 @@ def __repr__ (self):
         #session.commit()
 
     def executeQuery(self, query):
-        if self.engine is None:
+        if self.__engine is None:
             print('engine is none')
             # TODO log
             return False
 
-        Session = scoped_session(sessionmaker(bind=self.engine, autocommit=True))
+        Session = scoped_session(sessionmaker(bind=self.__engine, autocommit=True))
         session = Session()
         try:
             session.begin()
@@ -122,21 +122,21 @@ def __repr__ (self):
             return False
 
     def dropDatabase(self, user, password, hostname, databaseName):
-        if self.engine is None:
-            self.engine = self.getDatabaseEngine(user, password, hostname, databaseName)
+        if self.__engine is None:
+            self.__engine = self.getDatabaseEngine(user, password, hostname, databaseName)
 
         return self.executeQuery('drop database %s' % databaseName)
 
 
     def createDatabase(self, user, password, hostname, databaseName):
-        if self.engine is None:
-            self.engine = self.getDatabaseEngine(user, password, hostname, databaseName)
+        if self.__engine is None:
+            self.__engine = self.getDatabaseEngine(user, password, hostname, databaseName)
 
         return self.executeQuery('create database %s' % databaseName)
 
     def useDatabase(self, user, password, hostname, databaseName):
-        if self.engine is None:
-            self.engine = self.getDatabaseEngine(user, password, hostname, databaseName)
+        if self.__engine is None:
+            self.__engine = self.getDatabaseEngine(user, password, hostname, databaseName)
 
         return self.executeQuery('use %s' % databaseName)
 
@@ -153,7 +153,7 @@ def __repr__ (self):
     # this method creates tables from config file and, if "recreateDatabase" set to True, recreates database
     # this method will return False in any case of problems, also if database doesn't exists
     def createDatabaseTables(self, user, password, hostname, databaseName, recreateDatabase = False):
-        self.engine = self.getDatabaseEngine(user, password, hostname, databaseName)
+        self.__engine = self.getDatabaseEngine(user, password, hostname, databaseName)
 
         if recreateDatabase:
             self.dropDatabase(user, password, hostname, databaseName)

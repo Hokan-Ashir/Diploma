@@ -5,39 +5,39 @@ from pyhtmlanalyzer.full.commonURIAnalysisData import commonURIAnalysisData
 __author__ = 'hokan'
 
 class geoIPFunctions(commonURIAnalysisData):
-    ip2locationDBhostName = 'localhost'
-    ip2locationDBuserName = 'root'
-    ip2locationDBpasswordName = 'root'
-    ip2locationDBname = 'ip2location'
-    hostGeoIpInfo = None
+    __ip2locationDBhostName = 'localhost'
+    __ip2locationDBuserName = 'root'
+    __ip2locationDBpasswordName = 'root'
+    __ip2locationDBname = 'ip2location'
+    __hostGeoIpInfo = None
 
     # constructor
     def __init__(self, uri):
         commonURIAnalysisData.__init__(self, uri)
 
     def setIPLocationDatabaseInfo(self, hostName, dbUser, dbPassword, dbName):
-        self.ip2locationDBhostName = hostName
-        self.ip2locationDBuserName = dbUser
-        self.ip2locationDBpasswordName = dbPassword
-        self.ip2locationDBname = dbName
+        self.__ip2locationDBhostName = hostName
+        self.__ip2locationDBuserName = dbUser
+        self.__ip2locationDBpasswordName = dbPassword
+        self.__ip2locationDBname = dbName
 
     # pre analysis method
     # taken from http://zetcode.com/db/mysqlpython/
     def retrieveGeoIPhostInfo(self):
         try:
-            connection = _mysql.connect(self.ip2locationDBhostName,
-                                 self.ip2locationDBuserName,
-                                 self.ip2locationDBpasswordName,
-                                 self.ip2locationDBname)
+            connection = _mysql.connect(self.__ip2locationDBhostName,
+                                 self.__ip2locationDBuserName,
+                                 self.__ip2locationDBpasswordName,
+                                 self.__ip2locationDBname)
 
-            ipAddressValuesList = dns.resolver.query(self.uri.split("://")[1].split("/")[0], 'A')[0].address.split('.')
+            ipAddressValuesList = dns.resolver.query(self.__uri.split("://")[1].split("/")[0], 'A')[0].address.split('.')
             ipAddressNumber = 16777216 * int(ipAddressValuesList[0]) \
                               + 65536 * int(ipAddressValuesList[1]) \
                               + 256 * int(ipAddressValuesList[2]) \
                               + int(ipAddressValuesList[3])
 
             connection.query("SELECT country_name, country_code, region_name, city_name, time_zone FROM ip2location_db11 WHERE (ip_from <= %s) AND (ip_to >= %s)" % (ipAddressNumber, ipAddressNumber))
-            self.hostGeoIpInfo = connection.use_result().fetch_row()[0]
+            self.__hostGeoIpInfo = connection.use_result().fetch_row()[0]
         except _mysql.Error, e:
             print "Error %d: %s" % (e.args[0], e.args[1])
         finally:
@@ -59,7 +59,7 @@ class geoIPFunctions(commonURIAnalysisData):
     #
     # country code
     def getCountryCode(self):
-        return self.hostGeoIpInfo[1]
+        return self.__hostGeoIpInfo[1]
 
     def printCountryCode(self):
         print("\nCountry code: %s" % self.getCountryCode())
@@ -71,7 +71,7 @@ class geoIPFunctions(commonURIAnalysisData):
     #
     # region
     def getRegion(self):
-        return self.hostGeoIpInfo[2]
+        return self.__hostGeoIpInfo[2]
 
     def printRegion(self):
         print("\nRegion: %s" % self.getRegion())
@@ -83,7 +83,7 @@ class geoIPFunctions(commonURIAnalysisData):
     #
     # time zone
     def getTimeZone(self):
-        return self.hostGeoIpInfo[4]
+        return self.__hostGeoIpInfo[4]
 
     def printTimeZone(self):
         print("\nTime zone: %s" % self.getTimeZone())

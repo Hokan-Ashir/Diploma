@@ -24,45 +24,45 @@ class scriptAnalyzer(commonAnalysisData):
     __name__ = 'scriptAnalyzer'
 
     # TODO make constant, maybe in more common file
-    scriptHashingFunctionName = 'getScriptContentHashing'
+    __scriptHashingFunctionName = 'getScriptContentHashing'
 
-    configDict = None
-    uri = None
-    listOfScriptTagsText = None
-    currentlyAnalyzingScriptCode = None
+    __configDict = None
+    __uri = None
+    __listOfScriptTagsText = None
+    __currentlyAnalyzingScriptCode = None
     # list of hashes from previously analyzed page
     # fills and pass to analyzer from other function
-    listOfHashes = None
+    __listOfHashes = None
 
     # this list contain string like "X:Y", where X is real source line in script, and Y is order number in parser list
     # this complication is for cases when site consists of created several very long lines of html-code
-    listOfScriptTagsTextSourcelines = None
-    listOfIncludedScriptFiles = None
-    listOfIncludedScriptFilesContent = None
-    commentsRegExp = None
-    quotedStringsRegExp = None
-    dictOfSymbolsProbability = None
+    __listOfScriptTagsTextSourcelines = None
+    __listOfIncludedScriptFiles = None
+    __listOfIncludedScriptFilesContent = None
+    __commentsRegExp = None
+    __quotedStringsRegExp = None
+    __dictOfSymbolsProbability = None
 
-    listOfAnalyzeFunctions = []
+    __listOfAnalyzeFunctions = []
 
     # constructor
     def __init__(self, configDict, xmldata = None, pageReady = None):
         commonAnalysisData.__init__(self, xmldata, pageReady)
         if configDict is not None:
-            self.configDict = configDict
+            self.__configDict = configDict
         else:
             print("\nInvalid parameters")
             return
 
-        self.listOfAnalyzeFunctions = commonFunctions.getAnalyzeFunctionList('analyzeFunctions', 'script.module')
+        self.__listOfAnalyzeFunctions = commonFunctions.getAnalyzeFunctionList('analyzeFunctions', 'script.module')
     #
     ###################################################################################################################
 
     def getListOfHashes(self):
-        return self.listOfHashes
+        return self.__listOfHashes
 
     def setListOfHashes(self, listOfHashes):
-        self.listOfHashes = listOfHashes
+        self.__listOfHashes = listOfHashes
     #
     ###################################################################################################################
 
@@ -91,7 +91,7 @@ class scriptAnalyzer(commonAnalysisData):
     # number of setTimeout(), setInterval() function calls
     def getNumberOfSetTimeoutIntervalCalls(self):
         try:
-            listOfFunctions = self.configDict['script.set.timeout.functions']
+            listOfFunctions = self.__configDict['script.set.timeout.functions']
         except:
             print("\nNone list of set timeout-like functions, can't perform analysis")
             return
@@ -127,7 +127,7 @@ class scriptAnalyzer(commonAnalysisData):
     # then calculates number of keyWordCharacters as (totalNumberOfCharacters - numberOfCharactersWithoutKeyWords)
     def getKeywordsToWordsRatio(self):
         try:
-            commonListOfKeyWords = self.configDict['script.keywords']
+            commonListOfKeyWords = self.__configDict['script.keywords']
         except:
             print("\nNone keywords list - can't perform analysis")
             return
@@ -193,7 +193,7 @@ class scriptAnalyzer(commonAnalysisData):
     # TODO ask this ^
     def getNumberOfBuiltInFunctions(self):
         try:
-            listOfBuiltInFunctions = self.configDict["script.built.in.functions"]
+            listOfBuiltInFunctions = self.__configDict["script.built.in.functions"]
         except:
             print("\nNone list of built-in functions - can't perform analysis")
             return
@@ -256,7 +256,7 @@ class scriptAnalyzer(commonAnalysisData):
             return arguments
 
         totalScriptLineLength = 0
-        numberOfScriptLines = len(self.listOfScriptTagsText) + len(self.listOfIncludedScriptFiles)
+        numberOfScriptLines = len(self.__listOfScriptTagsText) + len(self.__listOfIncludedScriptFiles)
         totalScriptLineLength = self.analyzeFunction(callbackFunction, totalScriptLineLength, True, False)
 
         # division by zero exception
@@ -328,7 +328,7 @@ class scriptAnalyzer(commonAnalysisData):
         listOfQuotedStrings = []
         # get all quoted strings via regExp (see initialize method)
         for string in listOfLongStrings:
-            listOfQuotedStrings += re.findall(self.quotedStringsRegExp, string)
+            listOfQuotedStrings += re.findall(self.__quotedStringsRegExp, string)
 
         numberOfQuotedStrings = len(listOfQuotedStrings)
 
@@ -366,7 +366,7 @@ class scriptAnalyzer(commonAnalysisData):
         listOfQuotedStrings = []
         # get all quoted strings via regExp (see initialize method)
         for string in listOfLongStrings:
-            listOfQuotedStrings += re.findall(self.quotedStringsRegExp, string)
+            listOfQuotedStrings += re.findall(self.__quotedStringsRegExp, string)
 
         numberOfQuotedStrings = len(listOfQuotedStrings)
 
@@ -422,7 +422,7 @@ class scriptAnalyzer(commonAnalysisData):
     # number of suspicious strings
     def getNumberOfSuspiciousStrings(self, stringLength = -1, separatorList = ['\n', ';']):
         try:
-            listOfSuspiciousTags = self.configDict["script.suspicious.tags"]
+            listOfSuspiciousTags = self.__configDict["script.suspicious.tags"]
         except:
             print("\nNone list of suspicious tags, can't perform analysis")
             return
@@ -585,17 +585,17 @@ class scriptAnalyzer(commonAnalysisData):
 
         # in case we're running getScriptEntropy for each script separately, we must recalculate entropy dictionary
         # for every script piece
-        if (self.dictOfSymbolsProbability is None or self.currentlyAnalyzingScriptCode is not None):
+        if (self.__dictOfSymbolsProbability is None or self.__currentlyAnalyzingScriptCode is not None):
             # in case we're calculating entropy for each piece of code
             # so dictionary must be removed and recreated
-            if self.dictOfSymbolsProbability is not None:
-                del self.dictOfSymbolsProbability
+            if self.__dictOfSymbolsProbability is not None:
+                del self.__dictOfSymbolsProbability
 
-            self.dictOfSymbolsProbability = self.getWholeScriptEntropyStatistics()
+            self.__dictOfSymbolsProbability = self.getWholeScriptEntropyStatistics()
 
         # calculate entropy
         entropy = 0.0
-        arguments = [entropy, self.dictOfSymbolsProbability]
+        arguments = [entropy, self.__dictOfSymbolsProbability]
         arguments = self.analyzeFunction(callbackFunction, arguments, True, False)
         arguments[0] *= -1
         return arguments[0]
@@ -625,25 +625,25 @@ class scriptAnalyzer(commonAnalysisData):
                     continue
 
                 if inlineTagContent:
-                    arguments[self.listOfScriptTagsTextSourcelines[i]] += (dictOfSymbolsProbability[letter] * log(dictOfSymbolsProbability[letter], 2))
+                    arguments[self.__listOfScriptTagsTextSourcelines[i]] += (dictOfSymbolsProbability[letter] * log(dictOfSymbolsProbability[letter], 2))
                 else:
-                    arguments[self.listOfIncludedScriptFiles[i]] += (dictOfSymbolsProbability[letter] * log(dictOfSymbolsProbability[letter], 2))
+                    arguments[self.__listOfIncludedScriptFiles[i]] += (dictOfSymbolsProbability[letter] * log(dictOfSymbolsProbability[letter], 2))
 
             if inlineTagContent:
-                arguments[self.listOfScriptTagsTextSourcelines[i]] *= -1
+                arguments[self.__listOfScriptTagsTextSourcelines[i]] *= -1
             else:
-                arguments[self.listOfIncludedScriptFiles[i]] *= -1
+                arguments[self.__listOfIncludedScriptFiles[i]] *= -1
 
             return arguments
 
-        for i in xrange(len(self.listOfScriptTagsText)):
+        for i in xrange(len(self.__listOfScriptTagsText)):
             # deleting comments
-            text = re.sub(self.commentsRegExp, '', self.listOfScriptTagsText[i])
+            text = re.sub(self.__commentsRegExp, '', self.__listOfScriptTagsText[i])
             dictOfEntropy = callbackFunction(text, dictOfEntropy, i, True)
 
-        for i in xrange(len(self.listOfIncludedScriptFilesContent)):
+        for i in xrange(len(self.__listOfIncludedScriptFilesContent)):
             # deleting comments
-            scriptContent = re.sub(self.commentsRegExp, '', self.listOfIncludedScriptFilesContent[i])
+            scriptContent = re.sub(self.__commentsRegExp, '', self.__listOfIncludedScriptFilesContent[i])
             dictOfEntropy = callbackFunction(scriptContent, dictOfEntropy, i, False)
 
         return dictOfEntropy
@@ -685,15 +685,15 @@ class scriptAnalyzer(commonAnalysisData):
 
          # in case we're running getScriptEntropy for each script separately, we must recalculate entropy dictionary
         # for every script piece
-        if (self.dictOfSymbolsProbability is None or self.currentlyAnalyzingScriptCode is not None):
+        if (self.__dictOfSymbolsProbability is None or self.__currentlyAnalyzingScriptCode is not None):
             # in case we're calculating entropy for each piece of code
             # so dictionary must be removed and recreated
-            if self.dictOfSymbolsProbability is not None:
-                del self.dictOfSymbolsProbability
+            if self.__dictOfSymbolsProbability is not None:
+                del self.__dictOfSymbolsProbability
 
-            self.dictOfSymbolsProbability = self.getWholeScriptEntropyStatistics()
+            self.__dictOfSymbolsProbability = self.getWholeScriptEntropyStatistics()
 
-        arguments = [maximumEntropy, stringWithMaximumEntropy, self.dictOfSymbolsProbability]
+        arguments = [maximumEntropy, stringWithMaximumEntropy, self.__dictOfSymbolsProbability]
         arguments = self.analyzeFunction(callbackFunction, arguments, True, False)
 
         if withStringWithMaxEntropy:
@@ -742,20 +742,20 @@ class scriptAnalyzer(commonAnalysisData):
                     stringWithMaximumEntropy = string
 
             if inlineTagContent:
-                dictOfTagsEntropy[self.listOfScriptTagsTextSourcelines[i]] = [maximumEntropy, stringWithMaximumEntropy]
+                dictOfTagsEntropy[self.__listOfScriptTagsTextSourcelines[i]] = [maximumEntropy, stringWithMaximumEntropy]
             else:
-                dictOfTagsEntropy[self.listOfIncludedScriptFiles[i]] = [maximumEntropy, stringWithMaximumEntropy]
+                dictOfTagsEntropy[self.__listOfIncludedScriptFiles[i]] = [maximumEntropy, stringWithMaximumEntropy]
 
             return arguments
 
-        for i in xrange(len(self.listOfScriptTagsText)):
+        for i in xrange(len(self.__listOfScriptTagsText)):
             # deleting comments
-            text = re.sub(self.commentsRegExp, '', self.listOfScriptTagsText[i])
+            text = re.sub(self.__commentsRegExp, '', self.__listOfScriptTagsText[i])
             dictOfTagsEntropy = callbackFunction(text, dictOfTagsEntropy, i, True)
 
-        for i in xrange(len(self.listOfIncludedScriptFilesContent)):
+        for i in xrange(len(self.__listOfIncludedScriptFilesContent)):
             # deleting comments
-            scriptContent = re.sub(self.commentsRegExp, '', self.listOfIncludedScriptFilesContent[i])
+            scriptContent = re.sub(self.__commentsRegExp, '', self.__listOfIncludedScriptFilesContent[i])
             dictOfTagsEntropy = callbackFunction(scriptContent, dictOfTagsEntropy, i, False)
 
         return dictOfTagsEntropy
@@ -777,7 +777,7 @@ class scriptAnalyzer(commonAnalysisData):
     # the entropy of the strings declared in the script (probability from all script)
     def getEntropyOfStringsDeclaredInScriptByWholeScript(self):
         def callbackFunction(text, arguments):
-            listOfStrings = re.findall(self.quotedStringsRegExp, text)
+            listOfStrings = re.findall(self.__quotedStringsRegExp, text)
             for string in listOfStrings:
                 entropy = 0.0
                 for letter in string:
@@ -789,11 +789,11 @@ class scriptAnalyzer(commonAnalysisData):
                 arguments[0][string] = entropy
             return arguments
 
-        if (self.dictOfSymbolsProbability is None):
-            self.dictOfSymbolsProbability = self.getWholeScriptEntropyStatistics()
+        if (self.__dictOfSymbolsProbability is None):
+            self.__dictOfSymbolsProbability = self.getWholeScriptEntropyStatistics()
 
         dictOfStringsEntropy = {}
-        arguments = [dictOfStringsEntropy, self.dictOfSymbolsProbability]
+        arguments = [dictOfStringsEntropy, self.__dictOfSymbolsProbability]
         arguments = self.analyzeFunction(callbackFunction, arguments, True, False)
         return arguments[0]
 
@@ -822,7 +822,7 @@ class scriptAnalyzer(commonAnalysisData):
                 dictOfSymbolsProbability[key] /= len(text)
 
             # get all quoted strings via regExp
-            listOfStrings = re.findall(self.quotedStringsRegExp, text)
+            listOfStrings = re.findall(self.__quotedStringsRegExp, text)
             for string in listOfStrings:
                 entropy = 0.0
                 for letter in string:
@@ -855,40 +855,40 @@ class scriptAnalyzer(commonAnalysisData):
         dictOfScriptTagsHashed = {}
         def callbackFunction(text, arguments, i, inlineTagContent):
             if inlineTagContent:
-                arguments[self.listOfScriptTagsTextSourcelines[i]] = [hashlib.sha256(text.encode('utf-8')).hexdigest(),
+                arguments[self.__listOfScriptTagsTextSourcelines[i]] = [hashlib.sha256(text.encode('utf-8')).hexdigest(),
                                                                       hashlib.sha512(text.encode('utf-8')).hexdigest()]
             else:
-                arguments[self.listOfIncludedScriptFiles[i]] = [hashlib.sha256(text.encode('utf-8')).hexdigest(),
+                arguments[self.__listOfIncludedScriptFiles[i]] = [hashlib.sha256(text.encode('utf-8')).hexdigest(),
                                                                 hashlib.sha512(text.encode('utf-8')).hexdigest()]
 
             return arguments
 
-        for i in xrange(len(self.listOfScriptTagsText)):
-            text = copy(self.listOfScriptTagsText[i])
+        for i in xrange(len(self.__listOfScriptTagsText)):
+            text = copy(self.__listOfScriptTagsText[i])
             if not includeComments:
                 # deleting comments
-                text = re.sub(self.commentsRegExp, '', self.listOfScriptTagsText[i])
+                text = re.sub(self.__commentsRegExp, '', self.__listOfScriptTagsText[i])
             dictOfScriptTagsHashed = callbackFunction(text, dictOfScriptTagsHashed, i, True)
 
-        for i in xrange(len(self.listOfIncludedScriptFilesContent)):
-            scriptContent = copy(self.listOfIncludedScriptFilesContent[i])
+        for i in xrange(len(self.__listOfIncludedScriptFilesContent)):
+            scriptContent = copy(self.__listOfIncludedScriptFilesContent[i])
             if not includeComments:
                 # deleting comments
-                scriptContent = re.sub(self.commentsRegExp, '', self.listOfIncludedScriptFilesContent[i])
+                scriptContent = re.sub(self.__commentsRegExp, '', self.__listOfIncludedScriptFilesContent[i])
             dictOfScriptTagsHashed = callbackFunction(scriptContent, dictOfScriptTagsHashed, i, False)
 
         return dictOfScriptTagsHashed
 
     def getScriptContentHashing(self, includeComments = False):
-        if self.currentlyAnalyzingScriptCode >= len(self.listOfScriptTagsText):
-            text = copy(self.listOfIncludedScriptFilesContent[self.currentlyAnalyzingScriptCode - len(self
-            .listOfScriptTagsText)])
+        if self.__currentlyAnalyzingScriptCode >= len(self.__listOfScriptTagsText):
+            text = copy(self.__listOfIncludedScriptFilesContent[self.__currentlyAnalyzingScriptCode - len(self
+            .__listOfScriptTagsText)])
         else:
-            text = copy(self.listOfScriptTagsText[self.currentlyAnalyzingScriptCode])
+            text = copy(self.__listOfScriptTagsText[self.__currentlyAnalyzingScriptCode])
 
         if not includeComments:
             # deleting comments
-            text = re.sub(self.commentsRegExp, '', text)
+            text = re.sub(self.__commentsRegExp, '', text)
 
         return [hashlib.sha256(text.encode('utf-8')).hexdigest(), hashlib.sha512(text.encode('utf-8')).hexdigest()]
 
@@ -907,13 +907,13 @@ class scriptAnalyzer(commonAnalysisData):
     # number of event attachments
     def getNumberOfEventAttachments(self):
         try:
-            listOfEvents = self.configDict["script.events"]
+            listOfEvents = self.__configDict["script.events"]
         except:
             print("\nNone list of events, can't perform analysis")
             return
 
         try:
-            listOfAttachmentFunctionsEvents = self.configDict["script.event.functions"]
+            listOfAttachmentFunctionsEvents = self.__configDict["script.event.functions"]
         except:
             print("\nNone list of event attachment functions, can't perform analysis")
             return
@@ -973,7 +973,7 @@ class scriptAnalyzer(commonAnalysisData):
     def getNumberOfDirectStringAssignments(self):
         # get all quoted strings via regExp (see initialize method)
         def callbackFunction(text, arguments):
-            arguments += len(re.findall(self.quotedStringsRegExp, text))
+            arguments += len(re.findall(self.__quotedStringsRegExp, text))
             return arguments
 
         numberOfDirectStringAssignments = 0
@@ -992,7 +992,7 @@ class scriptAnalyzer(commonAnalysisData):
     # number of string modification functions
     def getNumberOfStringModificationFunctions(self):
         try:
-            listOfStringModificationFunctions = self.configDict["script.string.modification.functions"]
+            listOfStringModificationFunctions = self.__configDict["script.string.modification.functions"]
         except:
             print("\nNone list of string modification functions, can't perform analysis")
             return
@@ -1022,7 +1022,7 @@ class scriptAnalyzer(commonAnalysisData):
     # number of built-in functions commonly used for deobfuscation
     def getNumberBuiltInDeobfuscationFunctions(self):
         try:
-            listOfDeobfuscationFunctions = self.configDict["script.deobfuscation.functions"]
+            listOfDeobfuscationFunctions = self.__configDict["script.deobfuscation.functions"]
         except:
             print("\nNone list of deobfuscation functions, can't perform analysis")
             return
@@ -1052,7 +1052,7 @@ class scriptAnalyzer(commonAnalysisData):
     # number of DOM modification functions
     def getNumberOfDOMModificationFunctions(self):
         try:
-            listOfDOMModifyingMethods = self.configDict["script.DOM.modifying.methods"]
+            listOfDOMModifyingMethods = self.__configDict["script.DOM.modifying.methods"]
         except:
             print("\nNone list of DOM-modifying functions, can't perform analysis")
             return
@@ -1082,7 +1082,7 @@ class scriptAnalyzer(commonAnalysisData):
     # number of fingerprinting functions
     def getNumberOfFingerPrintingFunctions(self):
         try:
-            listOfFingerprintingFunctions = self.configDict["script.fingerprinting.functions"]
+            listOfFingerprintingFunctions = self.__configDict["script.fingerprinting.functions"]
         except:
             print("\nNone list of fingerprinting functions, can't perform analysis")
             return
@@ -1112,32 +1112,32 @@ class scriptAnalyzer(commonAnalysisData):
     def initialization(self, xmldata, pageReady, uri):
         self.setXMLData(xmldata)
         self.setPageReady(pageReady)
-        self.uri = uri
-        listOfInlineScriptTags = self.xmldata.xpath('//script[not(@src)]')
+        self.__uri = uri
+        listOfInlineScriptTags = self.__xmldata.xpath('//script[not(@src)]')
 
         # we turn all text to upper register to speed up analysis in getObjectsWithSuspiciousContent() method
         # in which we can not to use re.I (case insensitive) flag
-        self.listOfScriptTagsText = [item.xpath('text()')[0].upper() for item in listOfInlineScriptTags]
-        self.listOfScriptTagsTextSourcelines = [str(item.sourceline) + ":" + str(listOfInlineScriptTags.index(item)) for item in listOfInlineScriptTags]
+        self.__listOfScriptTagsText = [item.xpath('text()')[0].upper() for item in listOfInlineScriptTags]
+        self.__listOfScriptTagsTextSourcelines = [str(item.sourceline) + ":" + str(listOfInlineScriptTags.index(item)) for item in listOfInlineScriptTags]
 
         # NOTE: we do not make dict of files of file content, cause it's too redundant; instead we use hashing
         # but here we get only unique files
-        listOfFileScriptTags = self.xmldata.xpath('//script[@src]')
-        self.listOfIncludedScriptFiles = []
+        listOfFileScriptTags = self.__xmldata.xpath('//script[@src]')
+        self.__listOfIncludedScriptFiles = []
         for tag in listOfFileScriptTags:
             fileName = tag.xpath('@src')[0]
-            if fileName not in self.listOfIncludedScriptFiles:
-                self.listOfIncludedScriptFiles.append(fileName)
+            if fileName not in self.__listOfIncludedScriptFiles:
+                self.__listOfIncludedScriptFiles.append(fileName)
 
-        self.listOfIncludedScriptFilesContent = []
-        for filePath in self.listOfIncludedScriptFiles:
-            openedFile = commonConnectionUtils.openRelativeScriptObject(self.uri, filePath)
+        self.__listOfIncludedScriptFilesContent = []
+        for filePath in self.__listOfIncludedScriptFiles:
+            openedFile = commonConnectionUtils.openRelativeScriptObject(self.__uri, filePath)
             if openedFile == []:
                 continue
 
             # we turn all text to upper register to speed up analysis in getObjectsWithSuspiciousContent() method
             # in which we can not to use re.I (case insensitive) flag
-            self.listOfIncludedScriptFilesContent.append(openedFile[1].upper())
+            self.__listOfIncludedScriptFilesContent.append(openedFile[1].upper())
 
         # NOTE: only JS-comments
         # regexp for C/C++-like comments, also suitable for js-comments
@@ -1148,7 +1148,7 @@ class scriptAnalyzer(commonAnalysisData):
         # // - begin of C++-like comment
         # .* - any symbol 0+ times
         # \n?) - until end of line, which can be off
-        self.commentsRegExp = re.compile(r'(/\*[^\*/]*\*/|//.*\n?)')
+        self.__commentsRegExp = re.compile(r'(/\*[^\*/]*\*/|//.*\n?)')
 
         # get all quoted strings via regExp
         # (?:" - begin on quoted via "-symbol string and passive regExp group
@@ -1159,56 +1159,56 @@ class scriptAnalyzer(commonAnalysisData):
         # (?:\'[^'\n]*[\'\n])
         # this double-part regexp needed in case when
         # one type of quotes appears in quoted string via other type of quotes
-        self.quotedStringsRegExp = re.compile(r'(?:"[^"\n]*["\n])|(?:\'[^\'\n]*[\'\n])')
+        self.__quotedStringsRegExp = re.compile(r'(?:"[^"\n]*["\n])|(?:\'[^\'\n]*[\'\n])')
     #
     ###################################################################################################################
 
     def analyzeFunction(self, callbackFunction, callbackArgument, removeComments = True, removeQuotedStrings = True):
         # in case we would like to analyze one, specific piece of script
-        if self.currentlyAnalyzingScriptCode != None:
-            if self.currentlyAnalyzingScriptCode > (len(self.listOfScriptTagsText)
-                                                        + len(self.listOfIncludedScriptFiles)):
+        if self.__currentlyAnalyzingScriptCode != None:
+            if self.__currentlyAnalyzingScriptCode > (len(self.__listOfScriptTagsText)
+                                                        + len(self.__listOfIncludedScriptFiles)):
                 # TODO log that
                 return None
 
             #print(self.currentlyAnalyzingScriptCode)
-            if self.currentlyAnalyzingScriptCode >= len(self.listOfScriptTagsText):
-                text = self.listOfIncludedScriptFilesContent[self.currentlyAnalyzingScriptCode - len(self.listOfScriptTagsText)]
+            if self.__currentlyAnalyzingScriptCode >= len(self.__listOfScriptTagsText):
+                text = self.__listOfIncludedScriptFilesContent[self.__currentlyAnalyzingScriptCode - len(self.__listOfScriptTagsText)]
             else:
-                text = self.listOfScriptTagsText[self.currentlyAnalyzingScriptCode]
+                text = self.__listOfScriptTagsText[self.__currentlyAnalyzingScriptCode]
 
             if removeComments:
                 # deleting comments
-                text = re.sub(self.commentsRegExp, '', text)
+                text = re.sub(self.__commentsRegExp, '', text)
 
             if removeQuotedStrings:
                 # remove all quoted strings via regExp
-                text = re.sub(self.quotedStringsRegExp, '', text)
+                text = re.sub(self.__quotedStringsRegExp, '', text)
 
             callbackArgument = callbackFunction(text, callbackArgument)
             return callbackArgument
         else:
             # in case we would like to analyze every script in page/file
             #begin = timeit.default_timer()
-            for text in self.listOfScriptTagsText:
+            for text in self.__listOfScriptTagsText:
                 if removeComments:
                     # deleting comments
-                    text = re.sub(self.commentsRegExp, '', text)
+                    text = re.sub(self.__commentsRegExp, '', text)
 
                 if removeQuotedStrings:
                     # remove all quoted strings via regExp
-                    text = re.sub(self.quotedStringsRegExp, '', text)
+                    text = re.sub(self.__quotedStringsRegExp, '', text)
 
                 callbackArgument = callbackFunction(text, callbackArgument)
 
-            for scriptContent in self.listOfIncludedScriptFilesContent:
+            for scriptContent in self.__listOfIncludedScriptFilesContent:
                 if removeComments:
                     # deleting comments
-                    scriptContent = re.sub(self.commentsRegExp, '', scriptContent)
+                    scriptContent = re.sub(self.__commentsRegExp, '', scriptContent)
 
                 if removeQuotedStrings:
                     # remove all quoted strings via regExp
-                    scriptContent = re.sub(self.quotedStringsRegExp, '', scriptContent)
+                    scriptContent = re.sub(self.__quotedStringsRegExp, '', scriptContent)
 
                 # for future: in case callbackFunction can be list, so we check that before functions using
                 # so as in inline js-code
@@ -1270,7 +1270,7 @@ class scriptAnalyzer(commonAnalysisData):
     ###################################################################################################################
 
     def parallelViaScriptCodePieces(self, numberOfProcesses):
-        totalNumberOfScriptCodes = len(self.listOfScriptTagsText) + len(self.listOfIncludedScriptFiles)
+        totalNumberOfScriptCodes = len(self.__listOfScriptTagsText) + len(self.__listOfIncludedScriptFiles)
         # adapt function for script nodes - for every script piece of code make own process
         #if numberOfProcesses == 0:
         #    numberOfProcesses = len(self.listOfScriptTagsText) + len(self.listOfIncludedScriptFiles)
@@ -1288,7 +1288,7 @@ class scriptAnalyzer(commonAnalysisData):
             # start process for each function
             for i in xrange(0, numberOfScriptCodePiecesByProcess):
                 for j in xrange(0, numberOfProcesses):
-                    self.currentlyAnalyzingScriptCode = i * numberOfProcesses + j
+                    self.__currentlyAnalyzingScriptCode = i * numberOfProcesses + j
                     proxy = processProxy(None, [self, [True], processQueue, 'analyzeAllFunctions'],
                                                 commonFunctions.callFunctionByNameQeued)
                     proxyProcessesList.append(proxy)
@@ -1302,9 +1302,9 @@ class scriptAnalyzer(commonAnalysisData):
                 for j in xrange(0, len(proxyProcessesList)):
                     functionCallResult = processQueue.get()[1]
                     # get hash values of current piece of code, remove them from result and set into dictionary
-                    hashValues = (functionCallResult[self.scriptHashingFunctionName][0],
-                                functionCallResult[self.scriptHashingFunctionName][1])
-                    del functionCallResult[self.scriptHashingFunctionName]
+                    hashValues = (functionCallResult[self.__scriptHashingFunctionName][0],
+                                functionCallResult[self.__scriptHashingFunctionName][1])
+                    del functionCallResult[self.__scriptHashingFunctionName]
                     resultDict[hashValues] = functionCallResult
 
                 del proxyProcessesList[:]
@@ -1316,18 +1316,18 @@ class scriptAnalyzer(commonAnalysisData):
         if scriptCodesNotInProcesses != 0:
             for i in xrange(0, scriptCodesNotInProcesses):
                 try:
-                    self.currentlyAnalyzingScriptCode = totalNumberOfScriptCodes - 1 - i
+                    self.__currentlyAnalyzingScriptCode = totalNumberOfScriptCodes - 1 - i
 
                     # here we can can calculate hashes per script code, cause it's "number" defined with row above
-                    scriptPieceCodeHashes = getattr(self, self.scriptHashingFunctionName)()
-                    if self.listOfHashes is not None and scriptPieceCodeHashes in self.listOfHashes:
+                    scriptPieceCodeHashes = getattr(self, self.__scriptHashingFunctionName)()
+                    if self.__listOfHashes is not None and scriptPieceCodeHashes in self.__listOfHashes:
                         continue
 
                     functionCallResult = self.analyzeAllFunctions(oneProcess=True)
                     # get hash values of current piece of code, remove them from result and set into dictionary
-                    hashValues = (functionCallResult[self.scriptHashingFunctionName][0],
-                                functionCallResult[self.scriptHashingFunctionName][1])
-                    del functionCallResult[self.scriptHashingFunctionName]
+                    hashValues = (functionCallResult[self.__scriptHashingFunctionName][0],
+                                functionCallResult[self.__scriptHashingFunctionName][1])
+                    del functionCallResult[self.__scriptHashingFunctionName]
                     resultDict[hashValues] = functionCallResult
                 except TypeError, error:
                     # TODO write to log "No such function exists"
@@ -1344,11 +1344,11 @@ class scriptAnalyzer(commonAnalysisData):
 
             # here we already performing analysis on one piece of script code and can check need of analysis by
             # checking hash values <b> before </b> for-loop
-            scriptPieceCodeHashes = getattr(self, self.scriptHashingFunctionName)()
-            if self.listOfHashes is not None and scriptPieceCodeHashes in self.listOfHashes:
+            scriptPieceCodeHashes = getattr(self, self.__scriptHashingFunctionName)()
+            if self.__listOfHashes is not None and scriptPieceCodeHashes in self.__listOfHashes:
                 return resultDict
 
-            for funcName in self.listOfAnalyzeFunctions:
+            for funcName in self.__listOfAnalyzeFunctions:
                 try:
                     functionCallResult = getattr(self, funcName)()
                     # if in result dict value = 0 - do not insert it
@@ -1361,21 +1361,21 @@ class scriptAnalyzer(commonAnalysisData):
 
             # if we get here, so function calls above are correct and we can add hashes values to result dictionary
             # this values will be extract later
-            resultDict[self.scriptHashingFunctionName] = scriptPieceCodeHashes
+            resultDict[self.__scriptHashingFunctionName] = scriptPieceCodeHashes
 
         # in case we analyze all script from whole page in one process
         else:
             resultDict = {}
             resultInnerDict = {}
-            for i in xrange(0, len(self.listOfScriptTagsText) + len(self.listOfIncludedScriptFiles)):
-                self.currentlyAnalyzingScriptCode = i
+            for i in xrange(0, len(self.__listOfScriptTagsText) + len(self.__listOfIncludedScriptFiles)):
+                self.__currentlyAnalyzingScriptCode = i
 
                 # here we can can calculate hashes per script code, cause it's "number" defined with row above
-                scriptPieceCodeHashes = getattr(self, self.scriptHashingFunctionName)()
-                if self.listOfHashes is not None and scriptPieceCodeHashes in self.listOfHashes:
+                scriptPieceCodeHashes = getattr(self, self.__scriptHashingFunctionName)()
+                if self.__listOfHashes is not None and scriptPieceCodeHashes in self.__listOfHashes:
                     return resultDict
 
-                for funcName in self.listOfAnalyzeFunctions:
+                for funcName in self.__listOfAnalyzeFunctions:
                     try:
                         functionCallResult = getattr(self, funcName)()
                         # if in result dict value = 0 - do not insert it
@@ -1421,8 +1421,8 @@ class scriptAnalyzer(commonAnalysisData):
         if numberOfProcesses <= 0:
             numberOfProcesses = 1
         # in case too much process number
-        elif numberOfProcesses > len(self.listOfAnalyzeFunctions):
-            numberOfProcesses = len(self.listOfAnalyzeFunctions)
+        elif numberOfProcesses > len(self.__listOfAnalyzeFunctions):
+            numberOfProcesses = len(self.__listOfAnalyzeFunctions)
 
         resultDict = {}
         # parallel by script codes - in limiting case one process per script piece

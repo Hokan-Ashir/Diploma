@@ -11,9 +11,9 @@ from pyhtmlanalyzer.full.commonURIAnalysisData import commonURIAnalysisData
 __author__ = 'hokan'
 
 class dnsFunctions(commonURIAnalysisData):
-    listOfMXRecords = None
-    listOfARecords = None
-    listOfNSRecords = None
+    __listOfMXRecords = None
+    __listOfARecords = None
+    __listOfNSRecords = None
 
     # constructor
     def __init__(self, uri):
@@ -22,19 +22,19 @@ class dnsFunctions(commonURIAnalysisData):
     # pre analysis method
     def retrieveDNShostInfo(self):
         try:
-            self.listOfMXRecords = dns.resolver.query(self.uri.split("://")[1].split("/")[0], 'MX')
+            self.__listOfMXRecords = dns.resolver.query(self.__uri.split("://")[1].split("/")[0], 'MX')
         except dns.resolver.NoAnswer, error:
             # TODO log that page has no MX records
             pass
 
         try:
-            self.listOfARecords = dns.resolver.query(self.uri.split("://")[1].split("/")[0], 'A')
+            self.__listOfARecords = dns.resolver.query(self.__uri.split("://")[1].split("/")[0], 'A')
         except dns.resolver.NoAnswer, error:
             # TODO log that page has no A records
             pass
 
         try:
-            self.listOfNSRecords = dns.resolver.query(self.uri.split("://")[1].split("/")[0], 'NS')
+            self.__listOfNSRecords = dns.resolver.query(self.__uri.split("://")[1].split("/")[0], 'NS')
         except dns.resolver.NoAnswer, error:
             # TODO log that page has no NS records
             pass
@@ -78,14 +78,14 @@ class dnsFunctions(commonURIAnalysisData):
     def getMXRecordFirstIP(self, getTTL=False):
         try:
             maximumPreference = 0
-            for i in xrange(0, len(self.listOfMXRecords)):
-                if self.listOfMXRecords[i].preference >= maximumPreference:
-                    maximumPreference = self.listOfMXRecords[i].preference
+            for i in xrange(0, len(self.__listOfMXRecords)):
+                if self.__listOfMXRecords[i].preference >= maximumPreference:
+                    maximumPreference = self.__listOfMXRecords[i].preference
 
             if getTTL:
-                return dns.resolver.query(self.listOfMXRecords[i].exchange, 'A').ttl
+                return dns.resolver.query(self.__listOfMXRecords[i].exchange, 'A').ttl
 
-            return dns.resolver.query(self.listOfMXRecords[i].exchange, 'A')[0].address
+            return dns.resolver.query(self.__listOfMXRecords[i].exchange, 'A')[0].address
         except(dns.resolver.NXDOMAIN, dns.resolver.NoAnswer):
             print("\nNo MX dns record exists for this dns")
             return None
@@ -124,11 +124,11 @@ class dnsFunctions(commonURIAnalysisData):
     def getARecordFirstIP(self, getTTL=False):
         try:
             #listOfARecords = dns.resolver.query(self.uri.split("://")[1].split("/")[0], 'A')
-            listOfARecords = [ipAddress.address for ipAddress in self.listOfARecords]
+            listOfARecords = [ipAddress.address for ipAddress in self.__listOfARecords]
             listOfARecords.sort(key=lambda x: [int(y) for y in x.split('.')])
 
             if getTTL:
-                return self.listOfARecords.ttl
+                return self.__listOfARecords.ttl
 
             return listOfARecords[0]
         except(dns.resolver.NXDOMAIN, dns.resolver.NoAnswer):
@@ -169,7 +169,7 @@ class dnsFunctions(commonURIAnalysisData):
     def getNSRecordFirstIP(self, getTTL=False):
         try:
             #listOfNSRecords = dns.resolver.query(self.uri.split("://")[1].split("/")[0], 'NS')
-            listOfNSRecords = [".".join(record.target).rstrip(".") for record in self.listOfNSRecords]
+            listOfNSRecords = [".".join(record.target).rstrip(".") for record in self.__listOfNSRecords]
             listOfNSRecords.sort(key=lambda x: [y for y in x.split('.')])
 
             if getTTL:
@@ -211,7 +211,7 @@ class dnsFunctions(commonURIAnalysisData):
     def getRecordIPsNumber(self, recordType='MX'):
         try:
             # TODO optimize in switch-case style
-            return len(dns.resolver.query(self.uri.split("://")[1].split("/")[0], '%s' % recordType))
+            return len(dns.resolver.query(self.__uri.split("://")[1].split("/")[0], '%s' % recordType))
         except(dns.resolver.NXDOMAIN, dns.resolver.NoAnswer):
             print("\nNo %s dns record exists for this dns" % recordType)
             return None
@@ -256,7 +256,7 @@ class dnsFunctions(commonURIAnalysisData):
     def getResolvedPTR(self, onlyFirstIP=True):
         #ipAddresses = dns.resolver.query(self.uri.split("://")[1].split("/")[0], 'A')
         listOfResolvedPTR = []
-        for ipAddress in self.listOfARecords:#ipAddresses:
+        for ipAddress in self.__listOfARecords:#ipAddresses:
             reverseIP = reversename.from_address("%s" % ipAddress.address)
             try:
                 resolvedPTR = dns.resolver.query(reverseIP, 'PTR')[0]
@@ -294,7 +294,7 @@ class dnsFunctions(commonURIAnalysisData):
             print("\nNo PTR dns record exists for this dns")
             return False
 
-        ipAddresses = copy(self.listOfARecords)#dns.resolver.query(self.uri.split("://")[1].split("/")[0], 'A')
+        ipAddresses = copy(self.__listOfARecords)#dns.resolver.query(self.uri.split("://")[1].split("/")[0], 'A')
         if onlyFirstIP:
             ipAddresses = [ipAddresses[0]]
 

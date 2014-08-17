@@ -14,13 +14,13 @@ __author__ = 'hokan'
 class urlAnalyzer(commonURLFunctions, dnsFunctions, geoIPFunctions, whoisFunctions, urlVoidFunctions):
     __name__ = 'urlAnalyzer'
 
-    configDict = None
-    isCommonURLModuleActive = True
-    isDNSModuleActive = True
-    isGeoIPModuleActive = True
-    isWhoIsModuleActive = True
-    isURLVoidModuleActive = True
-    listOfAnalyzeFunctions = []
+    __configDict = None
+    __isCommonURLModuleActive = True
+    __isDNSModuleActive = True
+    __isGeoIPModuleActive = True
+    __isWhoIsModuleActive = True
+    __isURLVoidModuleActive = True
+    __listOfAnalyzeFunctions = []
 
     # constructor
     def __init__(self, configDict, uri=None):
@@ -33,29 +33,29 @@ class urlAnalyzer(commonURLFunctions, dnsFunctions, geoIPFunctions, whoisFunctio
             print("\nInvalid parameters")
             return
 
-        self.configDict = configDict
-        self.listOfAnalyzeFunctions = commonFunctions.getAnalyzeFunctionList('analyzeFunctions', 'url.module')
+        self.__configDict = configDict
+        self.__listOfAnalyzeFunctions = commonFunctions.getAnalyzeFunctionList('analyzeFunctions', 'url.module')
     #
     ###################################################################################################################
 
     def setActiveModules(self, commonURLModule, dnsModule, geoIPModule, whoisModule, urlVoidModule):
-        self.isCommonURLModuleActive = commonURLModule
-        self.isDNSModuleActive = dnsModule
-        self.isGeoIPModuleActive = geoIPModule
-        self.isWhoIsModuleActive = whoisModule
-        self.isURLVoidModuleActive = urlVoidModule
+        self.__isCommonURLModuleActive = commonURLModule
+        self.__isDNSModuleActive = dnsModule
+        self.__isGeoIPModuleActive = geoIPModule
+        self.__isWhoIsModuleActive = whoisModule
+        self.__isURLVoidModuleActive = urlVoidModule
     #
     ###################################################################################################################
 
     def setURI(self, uri):
-        self.uri = uri
-        if self.isURLVoidModuleActive:
+        self.__uri = uri
+        if self.__isURLVoidModuleActive:
             self.retrieveURLData()
-        if self.isDNSModuleActive:
+        if self.__isDNSModuleActive:
             self.retrieveDNShostInfo()
-        if self.isWhoIsModuleActive:
+        if self.__isWhoIsModuleActive:
             self.retrieveWHOIShostInfo()
-        if self.isGeoIPModuleActive:
+        if self.__isGeoIPModuleActive:
             self.retrieveGeoIPhostInfo()
     #
     ###################################################################################################################
@@ -81,15 +81,15 @@ class urlAnalyzer(commonURLFunctions, dnsFunctions, geoIPFunctions, whoisFunctio
         print("\n\nurl Analyser ----------------------")
         begin = timeit.default_timer()
         for className in urlAnalyzer.__bases__:
-            if className.__name__ == commonURLFunctions.__name__ and not self.isCommonURLModuleActive:
+            if className.__name__ == commonURLFunctions.__name__ and not self.__isCommonURLModuleActive:
                 continue
-            if className.__name__ == dnsFunctions.__name__ and not self.isDNSModuleActive:
+            if className.__name__ == dnsFunctions.__name__ and not self.__isDNSModuleActive:
                 continue
-            if className.__name__ == geoIPFunctions.__name__ and not self.isGeoIPModuleActive:
+            if className.__name__ == geoIPFunctions.__name__ and not self.__isGeoIPModuleActive:
                 continue
-            if className.__name__ == whoisFunctions.__name__ and not self.isWhoIsModuleActive:
+            if className.__name__ == whoisFunctions.__name__ and not self.__isWhoIsModuleActive:
                 continue
-            if className.__name__ == urlVoidFunctions.__name__ and not self.isURLVoidModuleActive:
+            if className.__name__ == urlVoidFunctions.__name__ and not self.__isURLVoidModuleActive:
                 continue
             for funcName, funcValue in className.__dict__.items():
                 if str(funcName).startswith("print") and callable(funcValue):
@@ -108,18 +108,18 @@ class urlAnalyzer(commonURLFunctions, dnsFunctions, geoIPFunctions, whoisFunctio
         if uri is None:
             print("Insufficient number of parameters")
             return
-        self.uri = uri
+        self.__uri = uri
         resultDict = {}
         for className in urlAnalyzer.__bases__:
-            if className.__name__ == commonURLFunctions.__name__ and not self.isCommonURLModuleActive:
+            if className.__name__ == commonURLFunctions.__name__ and not self.__isCommonURLModuleActive:
                 continue
-            if className.__name__ == dnsFunctions.__name__ and not self.isDNSModuleActive:
+            if className.__name__ == dnsFunctions.__name__ and not self.__isDNSModuleActive:
                 continue
-            if className.__name__ == geoIPFunctions.__name__ and not self.isGeoIPModuleActive:
+            if className.__name__ == geoIPFunctions.__name__ and not self.__isGeoIPModuleActive:
                 continue
-            if className.__name__ == whoisFunctions.__name__ and not self.isWhoIsModuleActive:
+            if className.__name__ == whoisFunctions.__name__ and not self.__isWhoIsModuleActive:
                 continue
-            if className.__name__ == urlVoidFunctions.__name__ and not self.isURLVoidModuleActive:
+            if className.__name__ == urlVoidFunctions.__name__ and not self.__isURLVoidModuleActive:
                 continue
             for funcName, funcValue in className.__dict__.items():
                 if str(funcName).startswith("getTotal") and callable(funcValue):
@@ -145,7 +145,7 @@ class urlAnalyzer(commonURLFunctions, dnsFunctions, geoIPFunctions, whoisFunctio
             # TODO log
             print("Insufficient number of parameters")
             return
-        self.uri = kwargs['uri']
+        self.__uri = kwargs['uri']
 
         numberOfProcesses = 1
         try:
@@ -158,20 +158,20 @@ class urlAnalyzer(commonURLFunctions, dnsFunctions, geoIPFunctions, whoisFunctio
         if numberOfProcesses <= 0:
             numberOfProcesses = 1
         # in case too much process number
-        elif numberOfProcesses > len(self.listOfAnalyzeFunctions):
-            numberOfProcesses = len(self.listOfAnalyzeFunctions)
+        elif numberOfProcesses > len(self.__listOfAnalyzeFunctions):
+            numberOfProcesses = len(self.__listOfAnalyzeFunctions)
 
         resultDict = {}
         if numberOfProcesses > 1:
-            numberOfFunctionsByProcess = len(self.listOfAnalyzeFunctions) / numberOfProcesses
-            functionsNotInProcesses = len(self.listOfAnalyzeFunctions) % numberOfProcesses
+            numberOfFunctionsByProcess = len(self.__listOfAnalyzeFunctions) / numberOfProcesses
+            functionsNotInProcesses = len(self.__listOfAnalyzeFunctions) % numberOfProcesses
             processQueue = Queue()
             proxyProcessesList = []
             resultDict = {}
             # start process for each function
             for i in xrange(0, numberOfFunctionsByProcess):
                 for j in xrange(0, numberOfProcesses):
-                    proxy = processProxy(None, [self, [], processQueue, self.listOfAnalyzeFunctions[i * numberOfProcesses + j]],
+                    proxy = processProxy(None, [self, [], processQueue, self.__listOfAnalyzeFunctions[i * numberOfProcesses + j]],
                                         commonFunctions.callFunctionByNameQeued)
                     proxyProcessesList.append(proxy)
                     proxy.start()
@@ -195,17 +195,17 @@ class urlAnalyzer(commonURLFunctions, dnsFunctions, geoIPFunctions, whoisFunctio
             if functionsNotInProcesses != 0:
                 for i in xrange(0, functionsNotInProcesses):
                     try:
-                        functionCallResult = getattr(self, self.listOfAnalyzeFunctions[-i])()
+                        functionCallResult = getattr(self, self.__listOfAnalyzeFunctions[-i])()
                         # if in result dict value = 0 - do not insert it
                         if not ((type(functionCallResult) is int and functionCallResult == 0) or (type(
                                 functionCallResult) is float and functionCallResult == 0.0)):
-                            resultDict[self.listOfAnalyzeFunctions[-i]] = functionCallResult
+                            resultDict[self.__listOfAnalyzeFunctions[-i]] = functionCallResult
                     except TypeError:
                         # TODO write to log "No such function exists"
                         pass
 
         else:
-            for funcName in self.listOfAnalyzeFunctions:
+            for funcName in self.__listOfAnalyzeFunctions:
                 try:
                     functionCallResult = getattr(self, funcName)()
                     # if in result dict value = 0 - do not insert it
