@@ -32,19 +32,29 @@ class commonFunctions:
         return out + text[last_pos:].replace(old, new)
 
     @staticmethod
-    def getAnalyzeFunctionList(configFileName, moduleName):
+    def getAnalyzeFunctionList(configFileName, moduleName, includeFunctionReturnValueTypes = False):
         if moduleName is None or moduleName == '':
             return None
 
         configFile = open(configFileName, 'r')
         moduleFound = False
-        regExp = re.compile(r'[^\n\s=,]+')
+
+        if includeFunctionReturnValueTypes:
+            # search for pair look like "functionName : functionReturnValueType"
+            regExp = re.compile(r'[^\n\s=,]+\s*:\s*[^\n\s=,]+')
+        else:
+            # search for "functionName"
+            regExp = re.compile(r'[^\n\s=,]+')
         for line in configFile:
             # decide which functions belongs to which module
             if line.startswith(moduleName):
                 parseResult = re.findall(regExp, line)
                 if parseResult == []:
-                    return []
+                        return []
+
+                if includeFunctionReturnValueTypes:
+                    # also strip front and back spaces
+                    return [item.replace(' ', '').split(':') for item in parseResult]
                 else:
                     return parseResult[1:]
 
@@ -82,3 +92,48 @@ class commonFunctions:
             pass
 
         return queue.put([methodName, result])
+
+    @staticmethod
+    # inspired by:
+    # http://www.pythonexamples.org/2011/01/12/how-to-dynamically-create-a-class-at-runtime-in-python/
+    # http://stackoverflow.com/questions/209840/map-two-lists-into-a-dictionary-in-python
+    # http://dietbuddha.blogspot.ru/2012/12/python-metaprogramming-dynamically.html
+
+    # classMemberList and classMemberListValues must have same length
+    # methodsList and methodNameList also must have same length
+    def makeClass(className, baseClasses, classMemberList, classMemberListValues = None, methodsList = None,
+                  methodNameList = None):
+        # TODO check of other input parameters
+
+        # make dict of new class with specific members ...
+        dictOfClassFields = {}
+        if classMemberListValues is None:
+            for item in classMemberList:
+                dictOfClassFields[item] = None
+        else:
+            for i in xrange(0, len(classMemberList)):
+                dictOfClassFields[classMemberList[i]] = classMemberListValues[i]
+            #dictOfClassFields = dict(zip(classMemberList, classMemberListValues))
+
+        # ... and also attach specific class methods
+        # NOTE: all methods/functions you would like to add MUST have method-like signature (first parameter must be 'self')
+        # i.e:
+        # def f (self, x)
+        # 	print('in f function ' + str(x))
+        #
+        if methodsList is not None:
+            for i in xrange(0, len(methodNameList)):
+                # also possible to extract methods names from method itself
+                # dictOfClassFields[methodsList[i].__name__] = methodsList[i]
+
+                # but methodNameList needed to make possible to change __XXXXX__ methods content
+                dictOfClassFields[methodNameList[i]] = methodsList[i]
+
+        # create new class with specific class members ...
+        newClass = type(
+                className,
+                tuple(baseClasses),
+                dictOfClassFields
+            )
+
+        return newClass

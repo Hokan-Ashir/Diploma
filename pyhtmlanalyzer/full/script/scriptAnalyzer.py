@@ -660,7 +660,7 @@ class scriptAnalyzer(commonAnalysisData):
     ###################################################################################################################
 
     # maximum entropy of all the script's strings (as whole script)
-    def getMaximumEntropyOfWholeScriptStrings(self, separatorList = ['\n', ';']):
+    def getMaximumEntropyOfWholeScriptStrings(self, separatorList = ['\n', ';'], withStringWithMaxEntropy = False):
         separator = '|'.join(separatorList)
         def callbackFunction(text, arguments):
             entropy = 0.0
@@ -693,10 +693,15 @@ class scriptAnalyzer(commonAnalysisData):
 
         arguments = [maximumEntropy, stringWithMaximumEntropy, self.dictOfSymbolsProbability]
         arguments = self.analyzeFunction(callbackFunction, arguments, True, False)
-        return [arguments[0], arguments[1]]
+
+        if withStringWithMaxEntropy:
+            return [arguments[0], arguments[1]]
+        else:
+            return arguments[0]
 
     def printMaximumEntropyOfWholeScriptStrings(self, separatorList = ['\n', ';']):
-        listOfMaximumStringEntropy = self.getMaximumEntropyOfWholeScriptStrings(separatorList)
+        listOfMaximumStringEntropy = self.getMaximumEntropyOfWholeScriptStrings(separatorList,
+                                                                                withStringWithMaxEntropy=True)
         if listOfMaximumStringEntropy[0] == 0.0:
             print("\nNone script nodes - can't calculate string maximum entropy (whole script)")
             return

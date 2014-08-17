@@ -149,6 +149,12 @@ fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|     # fe80::7:8%eth0   fe80::7:8%
     def getAbsoluteAndRelativeURLLength(self):
         return [len(self.uri), len(urlparse(self.uri).path)]
 
+    def getAbsoluteURLLength(self):
+        return len(self.uri)
+
+    def getRelativeURLLength(self):
+        return len(urlparse(self.uri).path)
+
     def printAbsoluteAndRelativeURLLength(self):
         resultList = self.getAbsoluteAndRelativeURLLength()
         print("\nAbsolute URL path length: %s characters" % resultList[0])
