@@ -35,7 +35,9 @@ class urlAnalyzer(commonURLFunctions, dnsFunctions, geoIPFunctions, whoisFunctio
             return
 
         self.__configDict = configDict
-        self.__listOfAnalyzeFunctions = commonFunctions.getAnalyzeFunctionList('analyzeFunctions', 'url.module')
+        result = commonFunctions.getModuleContent('config', r'[^\n\s=,]+\s*:\s*[^\n\s=,]+', 'Extractors functions',
+                                                  'urlAnalyzer')
+        self.__listOfAnalyzeFunctions = [item.split(':')[0].replace(' ', '') for item in result]
     #
     ###################################################################################################################
 
@@ -151,6 +153,7 @@ class urlAnalyzer(commonURLFunctions, dnsFunctions, geoIPFunctions, whoisFunctio
             print("Insufficient number of parameters")
             return
         self._uri = kwargs['uri']
+        self.setURI(self._uri)
 
         numberOfProcesses = 1
         try:

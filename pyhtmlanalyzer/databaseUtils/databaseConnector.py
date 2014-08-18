@@ -106,7 +106,7 @@ def __repr__ (self):
     def executeQuery(self, query):
         if self.__engine is None:
             logger = logging.getLogger(self.__class__.__name__)
-            logger.error('No engine exists. Query can not be executed\nQuery:\n\t%s' % query)
+            logger.warning('No engine exists. Query can not be executed\nQuery:\n\t%s' % query)
             print('No engine exists. Query can not be executed\nQuery:\n\t%s' % query)
             return False
 
@@ -168,74 +168,28 @@ def __repr__ (self):
             logger.warning('Database %s does not exists' % databaseName)
             return False
 
-        # html module
-        htmlTableColumns = commonFunctions.getAnalyzeFunctionList('analyzeFunctions', 'html.module', True)
+        result = commonFunctions.getSectionContent('config', r'[^\n\s=,]+\s*:\s*[^\n\s=,]+', 'Extractors functions')
+        for key, value in result.items():
+            tableColumns = [item.replace(' ', '').split(':') for item in value]
 
-        # strip 'get' from the beginning of each method and decapitalize first letter
-        columnNames = []
-        for item in htmlTableColumns:
-            tempString = item[0].lstrip('get')
-            columnNames.append(tempString[0].lower() + tempString[1:])
+            # strip 'get' from the beginning of each method and decapitalize first letter
+            columnNames = []
+            for item in tableColumns:
+                tempString = item[0].lstrip('get')
+                columnNames.append(tempString[0].lower() + tempString[1:])
 
-        columnTypes = [item[1] for item in htmlTableColumns]
+            columnTypes = [item[1] for item in tableColumns]
 
-        # we insufficient number of column names of column types
-        if len(columnNames) != len(columnTypes):
-            logger = logging.getLogger(self.__class__.__name__)
-            logger.warning('Unequal number of column names (%s) and column types (%s)' % (str(columnNames),
-                                                                                        str(columnTypes)))
-            return False
-
-
-        # check if lists (both, cause we already know that they have same length) are not empty
-        if columnNames:
-            self.createTable('htmlAnalyzer', columnNames, columnTypes)
-
-        ############################################################################################################
-        # script module
-        scriptColumns = commonFunctions.getAnalyzeFunctionList('analyzeFunctions', 'script.module', True)
-
-         # strip 'get' from the beginning of each method and decapitalize first letter
-        columnNames = []
-        for item in scriptColumns:
-            tempString = item[0].lstrip('get')
-            columnNames.append(tempString[0].lower() + tempString[1:])
-
-        columnTypes = [item[1] for item in scriptColumns]
-
-        # we insufficient number of column names of column types
-        if len(columnNames) != len(columnTypes):
-            logger = logging.getLogger(self.__class__.__name__)
-            logger.warning('Unequal number of column names (%s) and column types (%s)' % (str(columnNames),
-                                                                                        str(columnTypes)))
-            return False
+            # we insufficient number of column names of column types
+            if len(columnNames) != len(columnTypes):
+                logger = logging.getLogger(self.__class__.__name__)
+                logger.warning('Unequal number of column names (%s) and column types (%s)' % (str(columnNames),
+                                                                                            str(columnTypes)))
+                return False
 
 
-        # check if lists (both, cause we already know that they have same length) are not empty
-        if columnNames:
-            self.createTable('scriptAnalyzer', columnNames, columnTypes)
-
-        ############################################################################################################
-        # url module
-        urlColumns = commonFunctions.getAnalyzeFunctionList('analyzeFunctions', 'url.module', True)
-
-         # strip 'get' from the beginning of each method and decapitalize first letter
-        columnNames = []
-        for item in urlColumns:
-            tempString = item[0].lstrip('get')
-            columnNames.append(tempString[0].lower() + tempString[1:])
-
-        columnTypes = [item[1] for item in urlColumns]
-
-        # we insufficient number of column names of column types
-        if len(columnNames) != len(columnTypes):
-            logger = logging.getLogger(self.__class__.__name__)
-            logger.warning('Unequal number of column names (%s) and column types (%s)' % (str(columnNames),
-                                                                                        str(columnTypes)))
-            return False
-
-        # check if lists (both, cause we already know that they have same length) are not empty
-        if columnNames:
-            self.createTable('urlAnalyzer', columnNames, columnTypes)
+            # check if lists (both, cause we already know that they have same length) are not empty
+            if columnNames:
+                self.createTable(key, columnNames, columnTypes)
 
         return True

@@ -1,4 +1,5 @@
-[html analyzer features]
+{Extractors features}
+[htmlAnalyzer]
 html.elements.with.small.area = div, iframe, object
 
 html.non.dulpicated.elemets = html, head, title, body
@@ -31,7 +32,7 @@ html.no.block.content.inline.elements = ins, del
 html.all.tag.names = !DOCTYPE, a, abbr, acronym, address, applet, area, article, aside, audio, b, base, basefont, bdi, bdo, big, blockquote, body, br, button, canvas, caption, center, cite, code, col, colgroup, command, datalist, dd, del, details, dfn, dialog, dir, div, dl, dt, em, embed, fieldset, figcaption, figure, font, footer, form, frame, frameset, head, header, hgroup, h1, h2, h3, h4, h5, h6, hr, i, iframe, img, input, ins, kbd, keygen, label, legend, li, link, main, map, mark, menu, meta, meter, nav, noframes, noscript, object, ol, optgroup, option, output, p, param, pre, progress, q, rp, rt, ruby, s, samp, script, section, select, small, source, span, strike, strong, style, sub, summary, sup, table, tbody, td, textarea, tfoot, th, thead, time, title, tr, track, tt, u, ul, var, video, wbr
 
 ########################################################################################################################
-[script analyzer features]
+[scriptAnalyzer]
 script.set.timeout.functions = setTimeout, setInterval
 
 # lists of keywords is taken from: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Reserved_Words
@@ -85,9 +86,126 @@ script.DOM.modifying.methods = createElement, createAttribute, setAttribute, cre
 script.fingerprinting.functions = navigator.userAgent, navigator.language, screen.colorDepth, getTimezoneOffset, window.localStorage, window.sessionStorage, window.indexedDB, document.body.addBehavior, window.openDatabase, navigator.cpuClass, navigator.platform, navigator.doNotTrack
 
 ########################################################################################################################
-[url.analyzer.features]
+[urlAnalyzer]
 # list of suspicious file names
 url.suspicious.file.names = swfNode.php, pdfNode.php
 
 # list of suspicious patterns
 url.suspicious.patterns = swfNode.php, pdfNode.php
+
+{Extractors functions}
+# This lists of functions are used to automatically perform analysis with exactly this functions
+# so we do not use "getPageHashValues" in this list, cause hashes are not considered as analysis data
+# but used in storage case
+
+# We also do not pass here "getPagesPercentageMismatch", just because we must have another page to compare to
+
+[htmlAnalyzer]
+getTotalNumberOfElementsWithSmallArea : Integer,
+getTotalNumberOfDuplicatedElements : Integer,
+getTotalNumberOfElementsWithSuspiciousContent : Integer,
+getTotalNumberOfVoidElementsWithContent : Integer,
+getTotalNumberOfObjectsWithSuspiciousContent : Integer,
+getTotalNumberOfIncludedURLs : Integer,
+getTotalNumberOfKnownMaliciousPatternObjects : Integer,
+getTotalNumberOutOfPlaceTags : Integer,
+getTotalNumberOfHiddenTags : Integer,
+getTotalNumberOfScriptElements : Integer,
+getTotalNumberOfScriptElementsWithWrongFileExtension : Integer,
+getNumberOfTextCharactersInPage : Integer,
+getTotalNumberOfCharactersInPage : Integer,
+getNumberOfWhitespaceCharactersInPage : Integer,
+getPercentageOfUnknownTags : Float,
+getNumberOfElementsWithExternalDomainSource : Integer,
+getExternalDomainToInternalDomainSourceElementsRatio : Float
+
+# Do not consider this functions, cause they produce LARGE amount of data, that cant pass _fast_ through queue
+# while running analyzing via another process:
+# getScriptNodesEntropy, getMaximumEntropyOfScriptStrings, getEntropyOfStringsDeclaredInScriptByWholeScript,
+# getEntropyOfStringsDeclaredInScriptByNodes
+
+# Do not consider "getAverageScriptLength" cause it calculate average length of all script code pieces
+# also do not consider "getScriptContentHashing" function, cause it's used for storing data, not analysing it
+
+[scriptAnalyzer]
+
+getNumberOfEvalFunctionCalls : Integer,
+getTotalNumberOfSetTimeoutIntervalCalls : Integer,
+getKeywordsToWordsRatio : Integer,
+getNumberOfLongStrings : Integer,
+getTotalNumberOfBuiltInFunctions : Integer,
+getScriptWhitespacePercentage : Float,
+getAverageLengthOfStringsUsedInScript : Integer,
+getNumberCharactersInScriptContent : Integer,
+getShellcodeExistenceProbability : Float,
+getShellcodeExistenceProbabilityAdvanced : Float,
+getTotalNumberOfIFrameStrings : Integer,
+getTotalNumberOfSuspiciousStrings : Integer,
+getMaximumLengthOfScriptStrings : Integer,
+getTotalNumberOfObjectsWithSuspiciousContent : Integer,
+getTotalNumberOfLongVariableOrFunction : Integer,
+getScriptWholeEntropy : Integer,
+getMaximumEntropyOfWholeScriptStrings : Integer,
+getNumberOfEventAttachments : Integer,
+getNumberOfDirectStringAssignments : Integer,
+getNumberOfStringModificationFunctions : Integer,
+getNumberBuiltInDeobfuscationFunctions : Integer,
+getNumberOfDOMModificationFunctions : Integer,
+getNumberOfFingerPrintingFunctions : Integer
+
+[urlAnalyzer]
+# TODO make for these function names database types
+# getSuspiciousPatternsPresence,
+# getSuspiciousFileNamesPresence,
+# getMXRecordFirstIP,
+# getMXRecordFirstIPTTL,
+# getMXRecordFirstIPASNumber,
+# getARecordFirstIP,
+# getARecordFirstIPTTL,
+# getARecordFirstIPASNumber,
+# getNSRecordFirstIP,
+# getNSRecordFirstIPTTL,
+# getNSRecordFirstIPASNumber,
+# getMXRecordIPsNumber,
+# getARecordIPsNumber,
+# getNSRecordIPsNumber,
+# getResolvedPTR,
+# getDetectedEnginesList,
+# getURLExpirationDates,
+# getURLRegistrationDates,
+# getURLUpdateDate
+
+getDomainNameLength : Integer,
+getURLTLD : String,
+getURLFileNameLength : String,
+getIPv4PresenceInURL : Boolean,
+getIPv6PresenceInURL : Boolean,
+getSubdomainPresecnceInURL : Boolean,
+getPortPresenceInURL : Boolean,
+getAbsoluteURLLength : Integer,
+getRelativeURLLength : Integer,
+getRelativePathPresenceInURL : Boolean,
+getSuspiciousPatternsPresence,
+getSuspiciousFileNamesPresence,
+getMXRecordFirstIP,
+getMXRecordFirstIPTTL,
+getMXRecordFirstIPASNumber,
+getARecordFirstIP,
+getARecordFirstIPTTL,
+getARecordFirstIPASNumber,
+getNSRecordFirstIP,
+getNSRecordFirstIPTTL,
+getNSRecordFirstIPASNumber,
+getMXRecordIPsNumber,
+getARecordIPsNumber,
+getNSRecordIPsNumber,
+getResolvedPTR,
+getAandPTRIPsEquality : Boolean,
+getCountryCode : String,
+getRegion : String,
+getTimeZone : String,
+getIsHostMalicious : Boolean,
+getDetectedEnginesList,
+getURLExpirationDates,
+getURLRegistrationDates,
+getURLUpdateDate

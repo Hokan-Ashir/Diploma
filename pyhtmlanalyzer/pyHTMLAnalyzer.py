@@ -1,6 +1,6 @@
 from collections import defaultdict
+import logging
 from multiprocessing import Queue
-import re
 from pyhtmlanalyzer.commonFunctions.commonConnectionUtils import commonConnectionUtils
 from pyhtmlanalyzer.commonFunctions.commonFunctions import commonFunctions
 from pyhtmlanalyzer.commonFunctions.modulesRegister import modulesRegister
@@ -49,45 +49,38 @@ class pyHTMLAnalyzer:
 
     # get config list for various analyzer modules
     def getConfigList(self, configFileName):
-        configFile = open(configFileName, 'r')
+        result = commonFunctions.getSectionContent(configFileName, r'[^\n\s=,]+',
+                                                    'Extractors features')
+
+        # html features
         htmlConfigDict = {}
+        try:
+            for item in result['htmlAnalyzer']:
+                htmlConfigDict[item[0]] = item[1:]
+        except KeyError, error:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.exception(error)
+            pass
+
+        # script features
         scriptConfigDict = {}
+        try:
+            for item in result['scriptAnalyzer']:
+                scriptConfigDict[item[0]] = item[1:]
+        except KeyError, error:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.exception(error)
+            pass
+
+        # uri features
         urlConfigDict = {}
-        currentModule = ""
-        regExp = re.compile(r'[^\n\s=,]+')
-        for line in configFile:
-            # comments
-            if line.startswith("#"):
-                continue
-
-            # decide which functions belongs to which module
-            if line == '[html analyzer features]\n':
-                currentModule = 'html'
-                continue
-            elif line == '[script analyzer features]\n':
-                currentModule = 'script'
-                continue
-            elif line == '[url.analyzer.features]\n':
-                currentModule = "url"
-                continue
-
-            parseResult = re.findall(regExp, line)
-            if parseResult == []:
-                continue
-
-            # html features
-            if currentModule == 'html':
-                htmlConfigDict[parseResult[0]] = parseResult[1:]
-
-            # script features
-            elif currentModule == 'script':
-                scriptConfigDict[parseResult[0]] = parseResult[1:]
-
-            # url features
-            elif currentModule == 'url':
-                urlConfigDict[parseResult[0]] = parseResult[1:]
-
-        configFile.close()
+        try:
+            for item in result['urlAnalyzer']:
+                urlConfigDict[item[0]] = item[1:]
+        except KeyError, error:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.exception(error)
+            pass
 
         return [htmlConfigDict, scriptConfigDict, urlConfigDict]
 

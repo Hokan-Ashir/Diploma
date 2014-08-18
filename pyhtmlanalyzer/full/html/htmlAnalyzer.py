@@ -38,7 +38,9 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
             print("\nInvalid parameters")
             return
 
-        self.__listOfAnalyzeFunctions = commonFunctions.getAnalyzeFunctionList('analyzeFunctions', 'html.module')
+        result = commonFunctions.getModuleContent('config', r'[^\n\s=,]+\s*:\s*[^\n\s=,]+', 'Extractors functions',
+                                                  'htmlAnalyzer')
+        self.__listOfAnalyzeFunctions = [item.split(':')[0].replace(' ', '') for item in result]
     #
     ###################################################################################################################
 

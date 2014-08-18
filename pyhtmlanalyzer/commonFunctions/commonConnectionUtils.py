@@ -1,3 +1,4 @@
+import logging
 import lxml
 import lxml.html
 import os
@@ -18,6 +19,7 @@ class commonConnectionUtils:
 
     @staticmethod
     def openPage(url):
+        page = None
         try:
             accept = 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
             user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11'
@@ -33,7 +35,19 @@ class commonConnectionUtils:
         except urllib2.HTTPError, e:
             print("Cannot open page - reason: " + str(e))
             return []
-        return [lxml.html.document_fromstring(pageReady), pageReady]
+
+        try:
+            xmldata = lxml.html.document_fromstring(pageReady)
+        except ValueError, error:
+            # in case "Unicode strings with encoding declaration are not supported." error
+            # try to read page once more, but without decoding
+            logger = logging.getLogger('commonConnectionUtils')
+            logger.warning(error)
+            # encode to utf-8 backwards
+            pageReady = pageReady.encode('utf-8')
+            xmldata = lxml.html.document_fromstring(pageReady)
+
+        return [xmldata, pageReady]
 
     @staticmethod
     def openRelativeScriptObject(uri, filePath):
