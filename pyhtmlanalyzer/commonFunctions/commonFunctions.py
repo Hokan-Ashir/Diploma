@@ -257,3 +257,10 @@ class commonFunctions:
         )
 
         return newClass
+
+    @staticmethod
+    def makeClassByDictionary(className, baseClasses, classMemberDictionary, methodsList=None, methodNameList=None):
+        return commonFunctions.makeClass(className, baseClasses,
+                                  classMemberDictionary.keys(),
+                                  classMemberDictionary.values(),
+                                  methodsList, methodNameList)

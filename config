@@ -209,3 +209,39 @@ getDetectedEnginesList,
 getURLExpirationDates,
 getURLRegistrationDates,
 getURLUpdateDate
+
+{Extra columns}
+[htmlAnalyzer]
+hashValuesFk : Integer
+
+[scriptAnalyzer]
+pageFk : Integer
+hashValuesFk : Integer
+
+{Extra tables}
+[hashValues]
+hash256 : String
+hash512 : String
+
+[page]
+url : String
+htmlAnalysisFk : Integer
+urlAnalysisFk : Integer
+isValid : Boolean
+
+{Table relations}
+# currently support only one FK per column
+# TODO improve that
+# [tableName in which foreign key will be created]
+# column_which_will_be_used_as_FK : tableName_to_which_FK_points : field_of_table_to_which_FK_points
+#
+[page]
+htmlAnalysisFk : htmlAnalyzer : id
+urlAnalysisFk : urlAnalyzer : id
+
+[scriptAnalyzer]
+pageFk : page : id
+hashValuesFk : hashValues : id
+
+[htmlAnalyzer]
+hashValuesFk : hashValues : id
