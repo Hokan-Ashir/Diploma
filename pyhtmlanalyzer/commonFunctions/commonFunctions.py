@@ -206,7 +206,6 @@ class commonFunctions:
         except Exception, error:
             logger = logging.getLogger('callFunctionByNameQeued')
             logger.exception(error)
-            print(error)
             pass
 
         return queue.put([methodName, result])

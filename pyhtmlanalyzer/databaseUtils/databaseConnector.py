@@ -2,11 +2,12 @@ import logging
 from sqlalchemy import Integer, Float, String, Boolean, Column, create_engine, ForeignKey
 from sqlalchemy.exc import OperationalError, NoReferencedTableError
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import scoped_session, sessionmaker, relationship
+from sqlalchemy.orm import scoped_session, sessionmaker, relationship, load_only
 from pyhtmlanalyzer.commonFunctions.commonFunctions import commonFunctions
 from pyhtmlanalyzer.commonFunctions.modulesRegister import modulesRegister
 
 __author__ = 'hokan'
+
 
 class databaseConnector(object):
     __instance = None
@@ -24,6 +25,17 @@ class databaseConnector(object):
     __extraColumns = 'Extra columns'
     __tableRelations = 'Table relations'
 
+    # predefined id-column name
+    __id = 'id'
+
+    # stores relations between tables in one place, fills ONLY when database creates itself
+    # with corresponding getter this allows analyzer to fill foreign keys after all modules have proceeded
+    # i.e.:
+    # analyzer begins analysis of page, creates row in page-table
+    # then all analyzer-modules make their computations and (possibly) return foreign keys
+    # after that analyzer insert all foreign keys and completes page analysis
+    __tableRelationsDictionary = None
+
     # declared as singleton
     # TODO check multi-threading
     def __new__(cls):
@@ -32,16 +44,25 @@ class databaseConnector(object):
 
         return cls.__instance
 
-    def __init__(self, user = None, password = None, hostname = None, databaseName = None):
+    def __init__(self, user=None, password=None, hostname=None, databaseName=None):
         self.__modulesRegister = modulesRegister()
 
         if user is not None \
             and password is not None \
             and hostname is not None \
             and databaseName is not None:
-            self.__engine = self.getDatabaseEngine(user, password, hostname, databaseName)
+            self.getDatabaseEngine(user, password, hostname, databaseName)
 
         self.__Base = declarative_base()
+
+    #
+    def getTablesRelationDictionary(self):
+        return self.__tableRelationsDictionary
+
+    def detachObject(self, classInstance):
+        Session = scoped_session(sessionmaker(self.__engine))
+        session = Session()
+        session.expunge(classInstance)
 
     # columnNames and columnTypes must have same length
     def createTable(self, tableName, columns, tablesRelations, createTablesSeparately):
@@ -138,7 +159,7 @@ def __repr__ (self):
         methodNamesList = ['__init__', '__repr__']
 
         # at last append id member to class ...
-        columns['id'] = Column(Integer, primary_key=True)
+        columns[self.__id] = Column(Integer, primary_key=True)
 
         # ... and __tablename__ member to class
         columns['__tablename__'] = tableName
@@ -168,58 +189,196 @@ def __repr__ (self):
         if self.__engine is None:
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning('No engine exists. Query can not be executed\nQuery:\n\t%s' % query)
-            print('No engine exists. Query can not be executed\nQuery:\n\t%s' % query)
             return False
 
-        Session = scoped_session(sessionmaker(bind=self.__engine, autocommit=True))
+        Session = scoped_session(sessionmaker(self.__engine))
         session = Session()
         try:
-            session.begin()
             session.execute(query)
             session.commit()
+            session.close()
             return True
         except OperationalError, error:
             # dispatch transaction
             session.rollback()
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning(error)
-            print(error)
             return False
+
+    def __operatorNameToMethodName(self, operatorName):
+        if operatorName == '==':
+            operatorMethodName = '__eq__'
+        elif operatorName == '!=':
+            operatorMethodName = '__ne__'
+        elif operatorName == '>':
+            operatorMethodName = '__gt__'
+        elif operatorName == '>=':
+            operatorMethodName = '__ge__'
+        elif operatorName == '<':
+            operatorMethodName = '__lt__'
+        elif operatorName == '<=':
+            operatorMethodName = '__le__'
+        else:
+            operatorMethodName = '__eq__'
+
+        return operatorMethodName
+
+    # classInstances must be list
+    def insertObjectList(self, classInstances):
+        if self.__engine is None:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning('No engine exists. insertObjectList can not been proceeds')
+            return False
+
+        Session = scoped_session(sessionmaker(self.__engine))
+        session = Session()
+        try:
+            session.add_all(classInstances)
+            session.commit()
+            session.close()
+            return True
+        except OperationalError, error:
+            # dispatch transaction
+            session.rollback()
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning(error)
+            return False
+
+    def insertObject(self, classInstance):
+        if self.__engine is None:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning('No engine exists. insertObject can not been proceeds')
+            return False
+
+        Session = scoped_session(sessionmaker(self.__engine))
+        session = Session()
+        try:
+            session.add(classInstance)
+            session.commit()
+            session.close()
+            return True
+        except OperationalError, error:
+            # dispatch transaction
+            session.rollback()
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning(error)
+            return False
+
+
+    def deleteObject(self, classInstance, filterColumn=None, filterValue=None, operatorName='=='):
+        Session = scoped_session(sessionmaker(self.__engine))
+        session = Session()
+        operatorMethodName = self.__operatorNameToMethodName(operatorName)
+        try:
+            if filterColumn is None \
+                or filterValue is None:
+                session.delete(classInstance)
+            else:
+                # get classObject for delete-with-where query
+                session.query(classInstance.__class__).filter(
+                    getattr(getattr(classInstance.__class__, filterColumn), operatorMethodName)(filterValue)
+                ).delete(synchronize_session=False)
+
+            session.commit()
+            session.close()
+        except Exception, error:
+            session.rollback()
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning(error)
+
+    def update(self, classObject, idValue, columnUpdateName, columnUpdateValue, operatorName='=='):
+        Session = scoped_session(sessionmaker(self.__engine))
+        session = Session()
+        operatorMethodName = self.__operatorNameToMethodName(operatorName)
+        try:
+            session\
+                .query(classObject)\
+                .filter(getattr(getattr(classObject, self.__id), operatorMethodName)(idValue))\
+                .update({columnUpdateName : columnUpdateValue})
+            session.commit()
+            session.close()
+        except Exception, error:
+            session.rollback()
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning(error)
+
+    # columnNames must be list
+    # TODO currently supports only one filter per column
+    def select(self, classObject, columnNames=None, filterColumn=None, filterValue=None, operatorName='=='):
+        if self.__engine is None:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning('No engine exists. select can not been proceeds')
+            return False
+
+        Session = scoped_session(sessionmaker(self.__engine))
+        session = Session()
+        operatorMethodName = self.__operatorNameToMethodName(operatorName)
+        try:
+            if columnNames is None:
+                if filterColumn is None \
+                    or filterValue is None:
+                    result = session.query(classObject).all()
+                else:
+                    result = session.query(classObject)\
+                        .filter(getattr(getattr(classObject, filterColumn), operatorMethodName)(filterValue)).all()
+
+            else:
+                if filterColumn is None \
+                    or filterValue is None:
+                    # we can use such syntax, but we possible do not know which exactly columns need to select,
+                    # and also this solution take additional resources to build field-objects
+                    #return session.query(classObject.field1, classObject.field2)
+
+                    # woks with SQLAlchemy >= 0.9.0
+                    result = session.query(classObject).options(load_only(*columnNames)).all()
+                else:
+                    result = session.query(classObject).options(load_only(*columnNames))\
+                        .filter(getattr(getattr(classObject, filterColumn), operatorMethodName)(filterValue)).all()
+            session.close()
+            return result
+
+        except OperationalError, error:
+            # dispatch transaction
+            session.rollback()
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning(error)
+            return None
+
 
     def dropDatabase(self, user, password, hostname, databaseName):
         if self.__engine is None:
-            self.__engine = self.getDatabaseEngine(user, password, hostname, databaseName)
+            self.getDatabaseEngine(user, password, hostname, databaseName)
 
         return self.executeRawQuery('drop database %s' % databaseName)
 
 
     def createDatabase(self, user, password, hostname, databaseName):
         if self.__engine is None:
-            self.__engine = self.getDatabaseEngine(user, password, hostname, databaseName)
+            self.getDatabaseEngine(user, password, hostname, databaseName)
 
         return self.executeRawQuery('create database %s' % databaseName)
 
+
     def useDatabase(self, user, password, hostname, databaseName):
         if self.__engine is None:
-            self.__engine = self.getDatabaseEngine(user, password, hostname, databaseName)
+            self.getDatabaseEngine(user, password, hostname, databaseName)
 
         return self.executeRawQuery('use %s' % databaseName)
 
-    def getDatabaseEngine(self, user, password, hostname, databaseName, createIfNotExists = False):
+
+    def getDatabaseEngine(self, user, password, hostname, databaseName, createIfNotExists=False):
         connectionString = 'mysql://' + user + ':' + password + '@' + hostname
-        engine = create_engine(connectionString, encoding='latin1', echo=True)
+        self.__engine = create_engine(connectionString, encoding='latin1', echo=True)
 
         if createIfNotExists:
             self.createDatabase(user, password, hostname, databaseName)
             self.useDatabase(user, password, hostname, databaseName)
 
-        return engine
-
     # this method creates tables from config file and, if "recreateDatabase" set to True, recreates database
     # this method will return False in any case of problems, also if database doesn't exists
-    def createDatabaseTables(self, user, password, hostname, databaseName, recreateDatabase = False,
-                             createTablesSeparately = True):
-        self.__engine = self.getDatabaseEngine(user, password, hostname, databaseName)
+    def createDatabaseTables(self, user, password, hostname, databaseName, recreateDatabase=False,
+                             createTablesSeparately=True):
+        self.getDatabaseEngine(user, password, hostname, databaseName)
 
         if recreateDatabase:
             self.dropDatabase(user, password, hostname, databaseName)
@@ -241,7 +400,7 @@ def __repr__ (self):
         extraColumns = commonFunctions.getSectionContent('config', r'[^\n\s=,]+\s*:\s*[^\n\s=,]+', self.__extraColumns)
 
         # load tables relations
-        tablesRelations = commonFunctions.getSectionContent('config', r'[^\n\s=,]+\s*:\s*[^\n\s=,]+\s*:\s*[^\n\s=,]+',
+        self.__tableRelationsDictionary = commonFunctions.getSectionContent('config', r'[^\n\s=,]+\s*:\s*[^\n\s=,]+\s*:\s*[^\n\s=,]+',
                                                             self.__tableRelations)
 
         # append to analysing tables extra tables
@@ -267,7 +426,7 @@ def __repr__ (self):
             if len(columnNames) != len(columnTypes):
                 logger = logging.getLogger(self.__class__.__name__)
                 logger.warning('Unequal number of column names (%s) and column types (%s)' % (str(columnNames),
-                                                                                            str(columnTypes)))
+                                                                                              str(columnTypes)))
                 continue
 
             # check if lists (both, cause we already know that they have same length) are not empty
@@ -281,7 +440,7 @@ def __repr__ (self):
             columns = dict(zip(columnNames, columnTypes))
 
             try:
-                self.createTable(key, columns, tablesRelations, createTablesSeparately)
+                self.createTable(key, columns, self.__tableRelationsDictionary, createTablesSeparately)
             except NoReferencedTableError, error:
                 # this error will raise if we try to create tables separately,
                 # but tables themselves has relations
