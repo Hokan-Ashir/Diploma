@@ -1,6 +1,6 @@
 __author__ = 'hokan'
 
-class commonAnalysisData:
+class commonAnalysisData(object):
     # class members
     _xmldata = None
     _pageReady = None

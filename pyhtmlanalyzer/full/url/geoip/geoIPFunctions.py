@@ -1,19 +1,45 @@
 import _mysql
+import logging
 import dns.resolver
+from pyhtmlanalyzer.commonFunctions import configNames
+from pyhtmlanalyzer.commonFunctions.commonFunctions import commonFunctions
 from pyhtmlanalyzer.full.commonURIAnalysisData import commonURIAnalysisData
 
 __author__ = 'hokan'
 
 class geoIPFunctions(commonURIAnalysisData):
-    __ip2locationDBhostName = 'localhost'
     __ip2locationDBuserName = 'root'
     __ip2locationDBpasswordName = 'root'
+    __ip2locationDBhostName = 'localhost'
     __ip2locationDBname = 'ip2location'
     __hostGeoIpInfo = None
+
+    # predefined database info section/module/parameters name from config file
+    __databaseInfoSectionName = 'IP2Location database'
 
     # constructor
     def __init__(self, uri):
         commonURIAnalysisData.__init__(self, uri)
+
+    # get database info from file
+    def setIPLocationDatabaseInfoFromFile(self):
+        databaseInfo = commonFunctions.getSectionContent(configNames.configFileName, r'[^\n\s=,]+',
+                                                         self.__databaseInfoSectionName)
+        try:
+            info = databaseInfo[configNames.databaseInfoModuleName]
+            for item in info:
+                if item[0] == configNames.user:
+                    self.__ip2locationDBuserName = item[1]
+                elif item[0] == configNames.password:
+                    self.__ip2locationDBpasswordName = item[1]
+                elif item[0] == configNames.host:
+                    self.__ip2locationDBhostName = item[1]
+                elif item[0] == configNames.database:
+                    self.__ip2locationDBname = item[1]
+
+        except KeyError, error:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning(error)
 
     def setIPLocationDatabaseInfo(self, hostName, dbUser, dbPassword, dbName):
         self.__ip2locationDBhostName = hostName

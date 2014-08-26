@@ -2,12 +2,13 @@
 # -*- coding: utf-8 -*-
 import logging
 import timeit
+from pyhtmlanalyzer.commonFunctions import configNames
 from pyhtmlanalyzer.pyHTMLAnalyzer import pyHTMLAnalyzer
 
 if __name__ == "__main__":
     logging.basicConfig(filename='log.log', level=logging.DEBUG, filemode='w', format='\n%(levelname)s:%(name)s:%('
                                                                                           'message)s')
-    analyzer = pyHTMLAnalyzer("config")
+    analyzer = pyHTMLAnalyzer(configNames.configFileName)
 
     #analyzer.printAnalyzedPageFeatures("http://www.tutorialspoint.com/python/string_split.htm")
     #dic = analyzer.getTotalNumberOfAnalyzedPageFeatures("http://www.tutorialspoint.com/python/string_split.htm")
@@ -50,7 +51,6 @@ if __name__ == "__main__":
     # - browser-plugin - must save malicious url for post-analysis, black/white-listing
     # - statistics-class so as example and graphics
     # - cashing
-    # - multi-threading
     # - optimizations
     # kinda class-variables for listOfAllStrings, listOfScriptFiles, listOfScriptNodes etc.
     # http://www.ibm.com/developerworks/ru/library/x-hiperfparse/

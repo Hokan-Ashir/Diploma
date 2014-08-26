@@ -13,10 +13,12 @@ import re
 import timeit
 import libemu
 from pyhtmlanalyzer import CLSID
-from pyhtmlanalyzer.commonFunctions import jsVariableRegExp
+from pyhtmlanalyzer.commonFunctions import jsVariableRegExp, configNames
 from pyhtmlanalyzer.commonFunctions.commonConnectionUtils import commonConnectionUtils
 from pyhtmlanalyzer.commonFunctions.commonFunctions import commonFunctions
+from pyhtmlanalyzer.commonFunctions.modulesRegister import modulesRegister
 from pyhtmlanalyzer.commonFunctions.processProxy import processProxy
+from pyhtmlanalyzer.databaseUtils.databaseConnector import databaseConnector
 from pyhtmlanalyzer.full.commonAnalysisData import commonAnalysisData
 
 __author__ = 'hokan'
@@ -55,8 +57,9 @@ class scriptAnalyzer(commonAnalysisData):
             print("\nInvalid parameters")
             return
 
-        result = commonFunctions.getModuleContent('config', r'[^\n\s=,]+\s*:\s*[^\n\s=,]+', 'Extractors functions',
-                                                  'scriptAnalyzer')
+        result = commonFunctions.getModuleContent(configNames.configFileName, r'[^\n\s=,]+\s*:\s*[^\n\s=,]+',
+                                                  'Extractors functions',
+                                                  self.__class__.__name__)
         self.__listOfAnalyzeFunctions = [item.split(':')[0].replace(' ', '') for item in result]
     #
     ###################################################################################################################
@@ -1423,6 +1426,23 @@ class scriptAnalyzer(commonAnalysisData):
             return
 
         self.initialization(kwargs['xmldata'], kwargs['pageReady'], kwargs['uri'])
+
+        # get previous hash values of script pieces, corresponding to this page
+        listOfPreviousHashes = []
+        connector = databaseConnector()
+        register = modulesRegister()
+        pageId = connector.select(register.getORMClass('page'), [configNames.id], 'url', self.__uri)
+        if pageId:
+            previousHashValuesFks = connector.select(register.getORMClass(self.__class__.__name__),
+                                                     ['pageFk'], 'pageFk',pageId)
+            for fk in previousHashValuesFks:
+                previousHashValues = connector.select(register.getORMClass('hashValues'), None, configNames.id, fk)
+                if previousHashValues is not None \
+                    and previousHashValues:
+                    listOfPreviousHashes.append(previousHashValues)
+
+        if listOfPreviousHashes:
+            self.__listOfHashes = listOfPreviousHashes
 
         numberOfProcesses = 1
         try:

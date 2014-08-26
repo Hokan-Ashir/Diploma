@@ -3,6 +3,7 @@ from sqlalchemy import Integer, Float, String, Boolean, Column, create_engine, F
 from sqlalchemy.exc import OperationalError, NoReferencedTableError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker, relationship, load_only
+from pyhtmlanalyzer.commonFunctions import configNames
 from pyhtmlanalyzer.commonFunctions.commonFunctions import commonFunctions
 from pyhtmlanalyzer.commonFunctions.modulesRegister import modulesRegister
 
@@ -24,9 +25,6 @@ class databaseConnector(object):
     __extraTables = 'Extra tables'
     __extraColumns = 'Extra columns'
     __tableRelations = 'Table relations'
-
-    # predefined id-column name
-    __id = 'id'
 
     # stores relations between tables in one place, fills ONLY when database creates itself
     # with corresponding getter this allows analyzer to fill foreign keys after all modules have proceeded
@@ -106,7 +104,7 @@ class databaseConnector(object):
 
                         # create relation-object
                         relationColumns.append(['relation_%s' % relation[1],
-                                                relationship('%s' % relation[1][0].upper() + relation[1][1:])])
+                                                relationship('%s' % relation[1])])
                         break
 
             columns[columnName] = Column(typeObject, foreignKey)
@@ -159,7 +157,7 @@ def __repr__ (self):
         methodNamesList = ['__init__', '__repr__']
 
         # at last append id member to class ...
-        columns[self.__id] = Column(Integer, primary_key=True)
+        columns[configNames.id] = Column(Integer, primary_key=True)
 
         # ... and __tablename__ member to class
         columns['__tablename__'] = tableName
@@ -168,10 +166,9 @@ def __repr__ (self):
         for item in relationColumns:
             columns[item[0]] = item[1]
 
-        className = tableName[0].upper() + tableName[1:]
-        SomeClass = commonFunctions.makeClassByDictionary(className, [self.__Base], columns,
+        SomeClass = commonFunctions.makeClassByDictionary(tableName, [self.__Base], columns,
                                                           methodsList, methodNamesList)
-        self.__modulesRegister.registerORMClass(SomeClass, className)
+        self.__modulesRegister.registerORMClass(SomeClass, tableName)
 
         if createTablesSeparately:
             # creates table it self
@@ -235,14 +232,15 @@ def __repr__ (self):
         try:
             session.add_all(classInstances)
             session.commit()
+            result = [classInstance.id for classInstance in classInstances]
             session.close()
-            return True
+            return result
         except OperationalError, error:
             # dispatch transaction
             session.rollback()
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning(error)
-            return False
+            return None
 
     def insertObject(self, classInstance):
         if self.__engine is None:
@@ -255,14 +253,15 @@ def __repr__ (self):
         try:
             session.add(classInstance)
             session.commit()
+            result = classInstance.id
             session.close()
-            return True
+            return result
         except OperationalError, error:
             # dispatch transaction
             session.rollback()
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning(error)
-            return False
+            return None
 
 
     def deleteObject(self, classInstance, filterColumn=None, filterValue=None, operatorName='=='):
@@ -293,7 +292,7 @@ def __repr__ (self):
         try:
             session\
                 .query(classObject)\
-                .filter(getattr(getattr(classObject, self.__id), operatorMethodName)(idValue))\
+                .filter(getattr(getattr(classObject, configNames.id), operatorMethodName)(idValue))\
                 .update({columnUpdateName : columnUpdateValue})
             session.commit()
             session.close()
@@ -369,6 +368,7 @@ def __repr__ (self):
     def getDatabaseEngine(self, user, password, hostname, databaseName, createIfNotExists=False):
         connectionString = 'mysql://' + user + ':' + password + '@' + hostname
         self.__engine = create_engine(connectionString, encoding='latin1', echo=True)
+        self.useDatabase(user, password, hostname, databaseName)
 
         if createIfNotExists:
             self.createDatabase(user, password, hostname, databaseName)
@@ -390,17 +390,17 @@ def __repr__ (self):
             return False
 
         # load analysing tables
-        tables = commonFunctions.getSectionContent('config', r'[^\n\s=,]+\s*:\s*[^\n\s=,]+', 'Extractors functions')
+        tables = commonFunctions.getSectionContent(configNames.configFileName, r'[^\n\s=,]+\s*:\s*[^\n\s=,]+', 'Extractors functions')
 
         # load extra tables
-        extraTables = commonFunctions.getSectionContent('config', r'[^\n\s=,]+\s*:\s*[^\n\s=,]+',
+        extraTables = commonFunctions.getSectionContent(configNames.configFileName, r'[^\n\s=,]+\s*:\s*[^\n\s=,]+',
                                                         self.__extraTables)
 
         # load extra columns
-        extraColumns = commonFunctions.getSectionContent('config', r'[^\n\s=,]+\s*:\s*[^\n\s=,]+', self.__extraColumns)
+        extraColumns = commonFunctions.getSectionContent(configNames.configFileName, r'[^\n\s=,]+\s*:\s*[^\n\s=,]+', self.__extraColumns)
 
         # load tables relations
-        self.__tableRelationsDictionary = commonFunctions.getSectionContent('config', r'[^\n\s=,]+\s*:\s*[^\n\s=,]+\s*:\s*[^\n\s=,]+',
+        self.__tableRelationsDictionary = commonFunctions.getSectionContent(configNames.configFileName, r'[^\n\s=,]+\s*:\s*[^\n\s=,]+\s*:\s*[^\n\s=,]+',
                                                             self.__tableRelations)
 
         # append to analysing tables extra tables

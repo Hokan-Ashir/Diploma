@@ -185,30 +185,30 @@ getPortPresenceInURL : Boolean,
 getAbsoluteURLLength : Integer,
 getRelativeURLLength : Integer,
 getRelativePathPresenceInURL : Boolean,
-getSuspiciousPatternsPresence,
-getSuspiciousFileNamesPresence,
-getMXRecordFirstIP,
-getMXRecordFirstIPTTL,
-getMXRecordFirstIPASNumber,
-getARecordFirstIP,
-getARecordFirstIPTTL,
-getARecordFirstIPASNumber,
-getNSRecordFirstIP,
-getNSRecordFirstIPTTL,
-getNSRecordFirstIPASNumber,
-getMXRecordIPsNumber,
-getARecordIPsNumber,
-getNSRecordIPsNumber,
-getResolvedPTR,
+#getSuspiciousPatternsPresence,
+#getSuspiciousFileNamesPresence,
+#getMXRecordFirstIP,
+#getMXRecordFirstIPTTL,
+#getMXRecordFirstIPASNumber,
+#getARecordFirstIP,
+#getARecordFirstIPTTL,
+#getARecordFirstIPASNumber,
+#getNSRecordFirstIP,
+#getNSRecordFirstIPTTL,
+#getNSRecordFirstIPASNumber,
+#getMXRecordIPsNumber,
+#getARecordIPsNumber,
+#getNSRecordIPsNumber,
+#getResolvedPTR,
 getAandPTRIPsEquality : Boolean,
 getCountryCode : String,
 getRegion : String,
 getTimeZone : String,
 getIsHostMalicious : Boolean,
-getDetectedEnginesList,
-getURLExpirationDates,
-getURLRegistrationDates,
-getURLUpdateDate
+#getDetectedEnginesList,
+#getURLExpirationDates,
+#getURLRegistrationDates,
+#getURLUpdateDate
 
 {Extra columns}
 [htmlAnalyzer]
@@ -245,3 +245,17 @@ hashValuesFk : hashValues : id
 
 [htmlAnalyzer]
 hashValuesFk : hashValues : id
+
+{Analyze functions database}
+[database]
+user = root
+password = root
+host = localhost
+database = test
+
+{IP2Location database}
+[database]
+user = root
+password = root
+host = localhost
+database = ip2location

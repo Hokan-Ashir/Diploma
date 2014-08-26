@@ -1,6 +1,7 @@
 import logging
 from multiprocessing import Queue
 import timeit
+from pyhtmlanalyzer.commonFunctions import configNames
 from pyhtmlanalyzer.commonFunctions.commonFunctions import commonFunctions
 from pyhtmlanalyzer.commonFunctions.processProxy import processProxy
 from pyhtmlanalyzer.full.url.commonURL.commonURLFunctions import commonURLFunctions
@@ -35,8 +36,8 @@ class urlAnalyzer(commonURLFunctions, dnsFunctions, geoIPFunctions, whoisFunctio
             return
 
         self.__configDict = configDict
-        result = commonFunctions.getModuleContent('config', r'[^\n\s=,]+\s*:\s*[^\n\s=,]+', 'Extractors functions',
-                                                  'urlAnalyzer')
+        result = commonFunctions.getModuleContent(configNames.configFileName, r'[^\n\s=,]+\s*:\s*[^\n\s=,]+', 'Extractors functions',
+                                                  self.__class__.__name__)
         self.__listOfAnalyzeFunctions = [item.split(':')[0].replace(' ', '') for item in result]
     #
     ###################################################################################################################

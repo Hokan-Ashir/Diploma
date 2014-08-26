@@ -1,6 +1,6 @@
 __author__ = 'hokan'
 
-class commonURIAnalysisData:
+class commonURIAnalysisData(object):
     _uri = None
 
     # constructor

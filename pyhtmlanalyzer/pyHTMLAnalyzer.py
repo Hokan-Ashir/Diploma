@@ -1,10 +1,12 @@
 from collections import defaultdict
 import logging
 from multiprocessing import Queue
+from pyhtmlanalyzer.commonFunctions import configNames
 from pyhtmlanalyzer.commonFunctions.commonConnectionUtils import commonConnectionUtils
 from pyhtmlanalyzer.commonFunctions.commonFunctions import commonFunctions
 from pyhtmlanalyzer.commonFunctions.modulesRegister import modulesRegister
 from pyhtmlanalyzer.commonFunctions.processProxy import processProxy
+from pyhtmlanalyzer.databaseUtils.databaseConnector import databaseConnector
 from pyhtmlanalyzer.full.html.htmlAnalyzer import htmlAnalyzer
 from pyhtmlanalyzer.full.script.scriptAnalyzer import scriptAnalyzer
 from pyhtmlanalyzer.full.url.urlAnalyzer import urlAnalyzer
@@ -15,12 +17,45 @@ class pyHTMLAnalyzer:
     __modulesRegister = None
     __activeModulesDictionary = defaultdict(bool)
 
+    # predefined section name of analyzed functions
+    __databaseSectionName = 'Analyze functions database'
+
     def __init__(self, configFileName):
         self.__modulesRegister = modulesRegister()
         configList = self.getConfigList(configFileName)
+        self.createDatabaseFromFile(configFileName)
         self.setModule(htmlAnalyzer(configList[0]))
         self.setModule(scriptAnalyzer(configList[1]))
         self.setModule(urlAnalyzer(configList[2]))
+
+    def createDatabaseFromFile(self, configFileName):
+        databaseInfo = commonFunctions.getSectionContent(configFileName, r'[^\n\s=,]+',
+                                                         self.__databaseSectionName)
+        user = None
+        password = None
+        hostName = None
+        databaseName = None
+        try:
+            info = databaseInfo[configNames.databaseInfoModuleName]
+            for item in info:
+                if item[0] == configNames.user:
+                    user = item[1]
+                elif item[0] == configNames.password:
+                    password = item[1]
+                elif item[0] == configNames.host:
+                    hostName = item[1]
+                elif item[0] == configNames.database:
+                    databaseName = item[1]
+
+        except KeyError, error:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning(error)
+
+        connector = databaseConnector()
+        #connector.createDatabase(user, password, hostname, databaseName)
+        connector.createDatabaseTables(user, password, hostName, databaseName, recreateDatabase=True,
+                                       createTablesSeparately=False)
+
 
     # module section
     def getModules(self):
@@ -176,5 +211,116 @@ class pyHTMLAnalyzer:
 
     def getTotalNumberOfAnalyzedFilesFeatures(self, listOfFiles):
         return self.getTotalNumberOfAnalyzedObjectsFeatures(listOfFiles, False)
+
+    # TODO replace with neuro-net
+    def analyzeObjectStub(self, analyzeData):
+        return True
+
+    def updateObjects(self, analyzeData, pageRowId):
+        connector = databaseConnector()
+        register = modulesRegister()
+        tableRelationsDictionary = connector.getTablesRelationDictionary()
+        for moduleName, moduleValue in analyzeData.items():
+            if not moduleValue:
+                continue
+
+            # search for foreign keys in relations connected to "page" table
+            for relation in tableRelationsDictionary['page']:
+                parsedRelation = relation.replace(' ', '').split(':')
+                if moduleName == parsedRelation[1]:
+                    # found "slave"-table, get its foreign key
+                    # TODO improve on relations
+                    connector.select(register.getORMClass(moduleName), [configNames.id], parsedRelation[0], )
+
+            # TODO get fk on existing tables via tableRelationsDictionary and pageRowId
+            connector.update(register.getORMClass(moduleName), )
+            print()
+
+    def insertObjects(self, analyzeData, pageRowId):
+        connector = databaseConnector()
+        register = modulesRegister()
+        insertedIdsDict = {}
+        # insert all modules data ...
+        for moduleName, moduleValue in analyzeData.items():
+            if not moduleValue:
+                continue
+
+            Class = register.getORMClass(moduleName)
+            # NOTE all types of analyzed functions must present in config file,
+            # cause you can get all function names right from result dictionary a.k.a moduleValue
+            newObject = Class(moduleValue)
+            # TODO only FK on id-columns!
+            insertedIdsDict[moduleName] = connector.insertObject(newObject)
+
+        # ... attach table relations
+        tableRelationsDictionary = connector.getTablesRelationDictionary()
+        for tableName, relationList in tableRelationsDictionary:
+            for relation in relationList:
+                parsedRelation = relation.replace(' ', '').split(':')
+                # search for "slave"-table
+                # check if we have inserted id that will serve as FK for some (tableName) table
+                if parsedRelation[1] in insertedIdsDict:
+                    # search for "master"-table
+                    # search for id of table row, which corresponds to "master"-table
+                    try:
+                        masterTableRowId = insertedIdsDict[tableName]
+                    except KeyError, error:
+                        # "master"-table is not one of that currently filled, maybe this is "Page" table?
+                        if tableName == 'page':
+                            masterTableRowId = pageRowId
+                        else:
+                            # this relation do not affect created tables or "Page" table, pass it
+                            continue
+
+                    # update "master"-table
+                    connector.update(register.getORMClass(tableName), masterTableRowId, parsedRelation[0],
+                                     insertedIdsDict[parsedRelation[1]])
+
+                # no "slave"-table in created tables, maybe "slave"-table is "Page" table?
+                elif parsedRelation[1] == 'page':
+                        # search for "master"-table
+                        # search for id of table row, which corresponds to "master"-table
+                        try:
+                            masterTableRowId = insertedIdsDict[tableName]
+                        except KeyError, error:
+                            # TODO page cannot reference itself
+                            # no "master"-table in created tables, page cannot reference itself, so pass this relation
+                            continue
+
+                        # update "master"-table
+                        connector.update(register.getORMClass(tableName), masterTableRowId, parsedRelation[0],
+                                        parsedRelation[1])
+
+
+    def analyzeObjects(self, listOfObjects, isPages = True):
+        connector = databaseConnector()
+        register = modulesRegister()
+
+        # get analyze data itself
+        resultDict = self.getTotalNumberOfAnalyzedObjectsFeatures(listOfObjects, isPages)
+        for analyzedObjectName, analyzedObjectValue in resultDict.items():
+
+            # get isValid-solution
+            isValid = self.analyzeObjectStub(analyzedObjectValue)
+
+            # update or insert data
+            pageRow = connector.select(register.getORMClass('page'), [configNames.id], 'url', analyzedObjectName)
+            if pageRow:
+                # page row already exists
+                connector.update(register.getORMClass('page'), pageRow[0].id, 'isValid', isValid)
+                self.updateObjects(analyzedObjectValue, pageRow[0].id)
+            else:
+                # page row doesn't exists - create new one and all data within
+                Page = register.getORMClass('page')
+                newPage = Page(analyzedObjectName, isValid)
+                pageRowId = connector.insertObject(newPage)
+                self.insertObjects(analyzedObjectValue, pageRowId)
+
+
+    def analyzePages(self, listOfPages):
+        self.analyzeObjects(listOfPages)
+
+    def analyzeFiles(self, listOfFiles):
+        self.analyzeObjects(listOfFiles, False)
     #
     ###################################################################################################################

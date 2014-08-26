@@ -6,9 +6,12 @@ import operator
 import timeit
 import re
 from pyhtmlanalyzer import CLSID
+from pyhtmlanalyzer.commonFunctions import configNames
 from pyhtmlanalyzer.commonFunctions.commonFunctions import commonFunctions
 from pyhtmlanalyzer.commonFunctions.commonXPATHUtils import commonXPATHUtils
+from pyhtmlanalyzer.commonFunctions.modulesRegister import modulesRegister
 from pyhtmlanalyzer.commonFunctions.processProxy import processProxy
+from pyhtmlanalyzer.databaseUtils.databaseConnector import databaseConnector
 from pyhtmlanalyzer.full.commonAnalysisData import commonAnalysisData
 from pyhtmlanalyzer.full.commonURIAnalysisData import commonURIAnalysisData
 
@@ -38,8 +41,9 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
             print("\nInvalid parameters")
             return
 
-        result = commonFunctions.getModuleContent('config', r'[^\n\s=,]+\s*:\s*[^\n\s=,]+', 'Extractors functions',
-                                                  'htmlAnalyzer')
+        result = commonFunctions.getModuleContent(configNames.configFileName, r'[^\n\s=,]+\s*:\s*[^\n\s=,]+',
+                                                  'Extractors functions',
+                                                  self.__class__.__name__)
         self.__listOfAnalyzeFunctions = [item.split(':')[0].replace(' ', '') for item in result]
     #
     ###################################################################################################################
@@ -990,6 +994,17 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         self.setXMLData(kwargs['xmldata'])
         self.setPageReady(kwargs['pageReady'])
         self._uri = kwargs['uri']
+
+        # get previous hash values, corresponding to this page
+        connector = databaseConnector()
+        register = modulesRegister()
+        previousHashValuesFk = connector.select(register.getORMClass('page'), ['htmlAnalysisFk'])
+        if previousHashValuesFk:
+            previousHashValues = connector.select(register.getORMClass('hashValues'), None, configNames.id,
+                                                  previousHashValuesFk)
+            if previousHashValues is not None \
+                and previousHashValues:
+                self.__listOfHashes = previousHashValues
 
         numberOfProcesses = 1
         try:
