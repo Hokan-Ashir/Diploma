@@ -1026,7 +1026,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         # checking hash values <b> before </b> for-loops
         pageHashValues = getattr(self, self._scriptHashingFunctionName)()
         if self.__listOfHashes is not None and pageHashValues == self.__listOfHashes:
-            return [resultDict, htmlAnalyzer.__name__]
+            return [[resultDict], htmlAnalyzer.__name__]
 
         if numberOfProcesses > 1:
             numberOfFunctionsByProcess = len(self.__listOfAnalyzeFunctions) / numberOfProcesses
@@ -1037,7 +1037,9 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
             # start process for each function
             for i in xrange(0, numberOfFunctionsByProcess):
                 for j in xrange(0, numberOfProcesses):
-                    proxy = processProxy(None, [self, [], processQueue, self.__listOfAnalyzeFunctions[i * numberOfProcesses + j]],
+                    proxy = processProxy(None, [self, {},
+                                                processQueue,
+                                                self.__listOfAnalyzeFunctions[i * numberOfProcesses + j]],
                                         commonFunctions.callFunctionByNameQeued)
                     proxyProcessesList.append(proxy)
                     proxy.start()
@@ -1086,9 +1088,10 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
 
         # if we get here, so function calls above are correct and we can add hashes values to result dictionary
         # this values will be extract later
-        resultDict[self._scriptHashingFunctionName] = pageHashValues
+        hashValues = [{'hash256': pageHashValues[0], 'hash512': pageHashValues[1]}]
+        resultDict['hashValues'] = hashValues
 
-        return [resultDict, htmlAnalyzer.__name__]
+        return [[resultDict], htmlAnalyzer.__name__]
     #
     ###################################################################################################################
 

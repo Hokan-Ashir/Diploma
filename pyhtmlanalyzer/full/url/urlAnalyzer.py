@@ -181,7 +181,9 @@ class urlAnalyzer(commonURLFunctions, dnsFunctions, geoIPFunctions, whoisFunctio
             # start process for each function
             for i in xrange(0, numberOfFunctionsByProcess):
                 for j in xrange(0, numberOfProcesses):
-                    proxy = processProxy(None, [self, [], processQueue, self.__listOfAnalyzeFunctions[i * numberOfProcesses + j]],
+                    proxy = processProxy(None, [self, {},
+                                                processQueue,
+                                                self.__listOfAnalyzeFunctions[i * numberOfProcesses + j]],
                                         commonFunctions.callFunctionByNameQeued)
                     proxyProcessesList.append(proxy)
                     proxy.start()
@@ -228,7 +230,7 @@ class urlAnalyzer(commonURLFunctions, dnsFunctions, geoIPFunctions, whoisFunctio
                     logger.exception(error)
                     pass
 
-        return [resultDict, urlAnalyzer.__name__]
+        return [[resultDict], urlAnalyzer.__name__]
     #
     ###################################################################################################################
 

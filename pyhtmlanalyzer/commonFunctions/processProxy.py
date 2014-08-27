@@ -25,12 +25,12 @@ class processProxy(Process):
 
     def run(self):
         result = None
-        if self.__classInstance is None:
-            result = self.__methodName(*self.__arguments)
-        else:
-            try:
+        try:
+            if self.__classInstance is None:
+                result = self.__methodName(*self.__arguments)
+            else:
                 result = getattr(self.__classInstance, self.__methodName)(**self.__arguments)
-            except Exception, error:
+        except Exception, error:
                 logger = logging.getLogger(self.__class__.__name__)
                 logger.exception(error)
                 pass

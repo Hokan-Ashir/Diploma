@@ -1294,13 +1294,13 @@ class scriptAnalyzer(commonAnalysisData):
         scriptCodesNotInProcesses = totalNumberOfScriptCodes % numberOfProcesses
         processQueue = Queue()
         proxyProcessesList = []
-        resultDict = {}
+        resultList = []
         try:
             # start process for each function
             for i in xrange(0, numberOfScriptCodePiecesByProcess):
                 for j in xrange(0, numberOfProcesses):
                     self.__currentlyAnalyzingScriptCode = i * numberOfProcesses + j
-                    proxy = processProxy(None, [self, [True], processQueue, 'analyzeAllFunctions'],
+                    proxy = processProxy(None, [self, {'oneProcess' : True}, processQueue, 'analyzeAllFunctions'],
                                                 commonFunctions.callFunctionByNameQeued)
                     proxyProcessesList.append(proxy)
                     proxy.start()
@@ -1312,11 +1312,7 @@ class scriptAnalyzer(commonAnalysisData):
                 # gather all data
                 for j in xrange(0, len(proxyProcessesList)):
                     functionCallResult = processQueue.get()[1]
-                    # get hash values of current piece of code, remove them from result and set into dictionary
-                    hashValues = (functionCallResult[self._scriptHashingFunctionName][0],
-                                functionCallResult[self._scriptHashingFunctionName][1])
-                    del functionCallResult[self._scriptHashingFunctionName]
-                    resultDict[hashValues] = functionCallResult
+                    resultList.append(functionCallResult)
 
                 del proxyProcessesList[:]
         except Exception, exception:
@@ -1335,17 +1331,13 @@ class scriptAnalyzer(commonAnalysisData):
                         continue
 
                     functionCallResult = self.analyzeAllFunctions(oneProcess=True)
-                    # get hash values of current piece of code, remove them from result and set into dictionary
-                    hashValues = (functionCallResult[self._scriptHashingFunctionName][0],
-                                functionCallResult[self._scriptHashingFunctionName][1])
-                    del functionCallResult[self._scriptHashingFunctionName]
-                    resultDict[hashValues] = functionCallResult
+                    resultList.append(functionCallResult)
                 except Exception, error:
                     logger = logging.getLogger(self.__class__.__name__)
                     logger.exception(error)
                     pass
 
-        return resultDict
+        return resultList
 
     # analyze all list of analyze functions in one process
     def analyzeAllFunctions(self, oneProcess = False):
@@ -1374,11 +1366,12 @@ class scriptAnalyzer(commonAnalysisData):
 
             # if we get here, so function calls above are correct and we can add hashes values to result dictionary
             # this values will be extract later
-            resultDict[self._scriptHashingFunctionName] = scriptPieceCodeHashes
+            resultDict['hashValues'] = [{'hash256' : scriptPieceCodeHashes[0],
+                                         'hash512' : scriptPieceCodeHashes[1]}]
 
         # in case we analyze all script from whole page in one process
         else:
-            resultDict = {}
+            resultDict = []
             resultInnerDict = {}
             for i in xrange(0, len(self.__listOfScriptTagsText) + len(self.__listOfIncludedScriptFiles)):
                 self.__currentlyAnalyzingScriptCode = i
@@ -1402,7 +1395,9 @@ class scriptAnalyzer(commonAnalysisData):
 
                 # if we get here, so function calls above are correct and we can add hashes values to result list
                 # with analyzed data
-                resultDict[(scriptPieceCodeHashes[0], scriptPieceCodeHashes[1])] = deepcopy(resultInnerDict)
+                resultInnerDict['hashValues'] = [{'hash256' : scriptPieceCodeHashes[0],
+                                             'hash512' : scriptPieceCodeHashes[1]}]
+                resultDict.append(deepcopy(resultInnerDict))
                 for key in resultInnerDict.keys():
                     del resultInnerDict[key]
 
@@ -1459,14 +1454,13 @@ class scriptAnalyzer(commonAnalysisData):
         elif numberOfProcesses > len(self.__listOfAnalyzeFunctions):
             numberOfProcesses = len(self.__listOfAnalyzeFunctions)
 
-        resultDict = {}
         # parallel by script codes - in limiting case one process per script piece
         if numberOfProcesses > 1:
-            resultDict = self.parallelViaScriptCodePieces(numberOfProcesses)
+            resultList = self.parallelViaScriptCodePieces(numberOfProcesses)
         else:
-            resultDict = self.analyzeAllFunctions()
+            resultList = self.analyzeAllFunctions()
 
-        return [resultDict, scriptAnalyzer.__name__]
+        return [resultList, scriptAnalyzer.__name__]
     #
     ###################################################################################################################
 
