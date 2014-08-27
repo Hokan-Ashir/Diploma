@@ -196,9 +196,9 @@ class urlAnalyzer(commonURLFunctions, dnsFunctions, geoIPFunctions, whoisFunctio
                 for j in xrange(0, len(proxyProcessesList)):
                     functionCallResult = processQueue.get()
                     # if in result dict value = 0 - do not insert it
-                    if not ((type(functionCallResult[1]) is int and functionCallResult[1] == 0) or (type(
-                            functionCallResult[1]) is float and functionCallResult[1] == 0.0)):
-                        resultDict[functionCallResult[0]] = functionCallResult[1]
+                    #if not ((type(functionCallResult[1]) is int and functionCallResult[1] == 0) or (type(
+                    #        functionCallResult[1]) is float and functionCallResult[1] == 0.0)):
+                    resultDict[functionCallResult[0]] = functionCallResult[1]
 
                 del proxyProcessesList[:]
 
@@ -209,9 +209,9 @@ class urlAnalyzer(commonURLFunctions, dnsFunctions, geoIPFunctions, whoisFunctio
                     try:
                         functionCallResult = getattr(self, self.__listOfAnalyzeFunctions[-i])()
                         # if in result dict value = 0 - do not insert it
-                        if not ((type(functionCallResult) is int and functionCallResult == 0) or (type(
-                                functionCallResult) is float and functionCallResult == 0.0)):
-                            resultDict[self.__listOfAnalyzeFunctions[-i]] = functionCallResult
+                        #if not ((type(functionCallResult) is int and functionCallResult == 0) or (type(
+                        #        functionCallResult) is float and functionCallResult == 0.0)):
+                        resultDict[self.__listOfAnalyzeFunctions[-i]] = functionCallResult
                     except Exception, error:
                         logger = logging.getLogger(self.__class__.__name__)
                         logger.exception(error)
@@ -222,9 +222,9 @@ class urlAnalyzer(commonURLFunctions, dnsFunctions, geoIPFunctions, whoisFunctio
                 try:
                     functionCallResult = getattr(self, funcName)()
                     # if in result dict value = 0 - do not insert it
-                    if not ((type(functionCallResult) is int and functionCallResult == 0) or (type(
-                            functionCallResult) is float and functionCallResult == 0.0)):
-                        resultDict[funcName] = functionCallResult
+                    #if not ((type(functionCallResult) is int and functionCallResult == 0) or (type(
+                    #        functionCallResult) is float and functionCallResult == 0.0)):
+                    resultDict[funcName] = functionCallResult
                 except Exception, error:
                     logger = logging.getLogger(self.__class__.__name__)
                     logger.exception(error)

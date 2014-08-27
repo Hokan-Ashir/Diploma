@@ -143,7 +143,7 @@ def __init__ (self, %s):
         # create __repr__ method
         reprCode = ('''
 def __repr__ (self):
-    return '<%s(%s)> %% (%s)'
+    return '<%s(%s)>' %% (%s)
         ''' % (
             tableName,
             ('%s, ' * len(methodsColumns))[:-2],

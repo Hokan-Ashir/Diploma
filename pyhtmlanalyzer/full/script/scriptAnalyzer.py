@@ -1356,9 +1356,9 @@ class scriptAnalyzer(commonAnalysisData):
                 try:
                     functionCallResult = getattr(self, funcName)()
                     # if in result dict value = 0 - do not insert it
-                    if not ((type(functionCallResult) is int and functionCallResult == 0) or (type(
-                            functionCallResult) is float and functionCallResult == 0.0)):
-                        resultDict[funcName] = functionCallResult
+                    #if not ((type(functionCallResult) is int and functionCallResult == 0) or (type(
+                    #        functionCallResult) is float and functionCallResult == 0.0)):
+                    resultDict[funcName] = functionCallResult
                 except Exception, error:
                     logger = logging.getLogger(self.__class__.__name__)
                     logger.exception(error)
@@ -1385,9 +1385,9 @@ class scriptAnalyzer(commonAnalysisData):
                     try:
                         functionCallResult = getattr(self, funcName)()
                         # if in result dict value = 0 - do not insert it
-                        if not ((type(functionCallResult) is int and functionCallResult == 0) or (type(
-                                functionCallResult) is float and functionCallResult == 0.0)):
-                            resultInnerDict[funcName] = functionCallResult
+                        #if not ((type(functionCallResult) is int and functionCallResult == 0) or (type(
+                        #        functionCallResult) is float and functionCallResult == 0.0)):
+                        resultInnerDict[funcName] = functionCallResult
                     except Exception, error:
                         logger = logging.getLogger(self.__class__.__name__)
                         logger.exception(error)

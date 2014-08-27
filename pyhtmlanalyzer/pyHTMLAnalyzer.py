@@ -157,25 +157,25 @@ class pyHTMLAnalyzer:
         return resultDict
 
     # to run specific function in specific module, just
-    def getNumberOfAnalyzedHTMLFileFeaturesByFunction(self, filePath, functionName = 'getAllAnalyzeReport'):
-        openedFile = commonConnectionUtils.openFile(filePath)
+    def getNumberOfAnalyzedHTMLFileFeaturesByFunction(self, objectName, functionName = 'getAllAnalyzeReport'):
+        openedFile = commonConnectionUtils.openFile(objectName)
         if openedFile == []:
             print("Cannot analyze file")
             return
 
         xmldata = openedFile[0]
         pageReady = openedFile[1]
-        return self.getNumberOfAnalyzedAbstractObjectFeaturesByFunction(xmldata, pageReady, filePath, functionName)
+        return self.getNumberOfAnalyzedAbstractObjectFeaturesByFunction(xmldata, pageReady, objectName, functionName)
 
-    def getNumberOfAnalyzedPageFeaturesByFunction(self, url, functionName = 'getAllAnalyzeReport'):
-        openedPage = commonConnectionUtils.openPage(url)
+    def getNumberOfAnalyzedPageFeaturesByFunction(self, objectName, functionName = 'getAllAnalyzeReport'):
+        openedPage = commonConnectionUtils.openPage(objectName)
         if openedPage == []:
             print("Cannot analyze page")
             return
 
         xmldata = openedPage[0]
         pageReady = openedPage[1]
-        return self.getNumberOfAnalyzedAbstractObjectFeaturesByFunction(xmldata, pageReady, url, functionName)
+        return self.getNumberOfAnalyzedAbstractObjectFeaturesByFunction(xmldata, pageReady, objectName, functionName)
     #
     ###################################################################################################################
 
@@ -191,8 +191,8 @@ class pyHTMLAnalyzer:
         resultDict = {}
         # start process for each page
         for object in listOfObjects:
-            proxy = processProxy(None, [self, [object], processQueue, functionName], commonFunctions
-            .callFunctionByNameQeued)
+            proxy = processProxy(None, [self, {'objectName' : object}, processQueue, functionName],
+                                 commonFunctions.callFunctionByNameQeued)
             proxyProcessesList.append(proxy)
             proxy.start()
 
@@ -236,60 +236,74 @@ class pyHTMLAnalyzer:
             connector.update(register.getORMClass(moduleName), )
             print()
 
-    def insertObjects(self, analyzeData, pageRowId):
+    def __attachForeignKeys(self, dictOfForeignKeys):
+        # no FKs, nothing to attach
+        if not dictOfForeignKeys:
+            return
+
         connector = databaseConnector()
         register = modulesRegister()
-        insertedIdsDict = {}
-        # insert all modules data ...
+        for tableName, keyIdList in dictOfForeignKeys.items():
+            ORMClass = register.getORMClass(tableName)
+            tableFks = list(ORMClass.__table__.foreign_keys)
+            for FK in tableFks:
+                # get table name TO WHICH references current FK
+                fkTableName = FK.target_fullname.split('.')[0]
+                try:
+                    if dictOfForeignKeys[fkTableName]:
+                        # get column name which contain FK to other table
+                        masterTableColumnName = FK.parent.description
+                        for item in dictOfForeignKeys[fkTableName]:
+                            for keyId in keyIdList:
+                                connector.update(ORMClass, keyId, masterTableColumnName, item)
+                except KeyError, error:
+                    # simply can't find such table name in dict of foreign keys, nothing special
+                    continue
+
+    def __recursivelyInsertData(self, tableName, dataList):
+        connector = databaseConnector()
+        register = modulesRegister()
+        listOfInsertedIds = []
+        for item in dataList:
+            dictOfFKs = {}
+            for name, value in item.items():
+                tableFks = list(register.getORMClass(tableName).__table__.foreign_keys)
+                for FK in tableFks:
+                    # get table name TO WHICH references current FK
+                    fkTableName = FK.target_fullname.split('.')[0]
+                    if fkTableName == name:
+                        dictOfFKs[name] = self.__recursivelyInsertData(name, value)
+
+            Class = register.getORMClass(tableName)
+
+            # delete FK references from new row data
+            for key in dictOfFKs.keys():
+                del item[key]
+
+            # remove 'get' from beginning of future column name and decapitalize first character
+            # as we done it before in databaseConnector, when create database
+            for columnName in item.keys():
+                tempString = columnName.lstrip('get')
+                item[tempString[0].lower() + tempString[1:]] = item.pop(columnName)
+
+            newRow = Class(**item)
+            newRowId = connector.insertObject(newRow)
+            dictOfFKs[tableName] = [newRowId]
+
+            self.__attachForeignKeys(dictOfFKs)
+            listOfInsertedIds.append(newRowId)
+
+        return listOfInsertedIds
+
+
+    def insertObjects(self, analyzeData, pageRowId):
+        dictOfInsertedIds = {}
         for moduleName, moduleValue in analyzeData.items():
-            if not moduleValue:
-                continue
+            dictOfInsertedIds[moduleName] = self.__recursivelyInsertData(moduleName, moduleValue)
 
-            Class = register.getORMClass(moduleName)
-            # NOTE all types of analyzed functions must present in config file,
-            # cause you can get all function names right from result dictionary a.k.a moduleValue
-            newObject = Class(moduleValue)
-            # TODO only FK on id-columns!
-            insertedIdsDict[moduleName] = connector.insertObject(newObject)
+        dictOfInsertedIds['page'] = [pageRowId]
+        self.__attachForeignKeys(dictOfInsertedIds)
 
-        # ... attach table relations
-        tableRelationsDictionary = connector.getTablesRelationDictionary()
-        for tableName, relationList in tableRelationsDictionary:
-            for relation in relationList:
-                parsedRelation = relation.replace(' ', '').split(':')
-                # search for "slave"-table
-                # check if we have inserted id that will serve as FK for some (tableName) table
-                if parsedRelation[1] in insertedIdsDict:
-                    # search for "master"-table
-                    # search for id of table row, which corresponds to "master"-table
-                    try:
-                        masterTableRowId = insertedIdsDict[tableName]
-                    except KeyError, error:
-                        # "master"-table is not one of that currently filled, maybe this is "Page" table?
-                        if tableName == 'page':
-                            masterTableRowId = pageRowId
-                        else:
-                            # this relation do not affect created tables or "Page" table, pass it
-                            continue
-
-                    # update "master"-table
-                    connector.update(register.getORMClass(tableName), masterTableRowId, parsedRelation[0],
-                                     insertedIdsDict[parsedRelation[1]])
-
-                # no "slave"-table in created tables, maybe "slave"-table is "Page" table?
-                elif parsedRelation[1] == 'page':
-                        # search for "master"-table
-                        # search for id of table row, which corresponds to "master"-table
-                        try:
-                            masterTableRowId = insertedIdsDict[tableName]
-                        except KeyError, error:
-                            # TODO page cannot reference itself
-                            # no "master"-table in created tables, page cannot reference itself, so pass this relation
-                            continue
-
-                        # update "master"-table
-                        connector.update(register.getORMClass(tableName), masterTableRowId, parsedRelation[0],
-                                        parsedRelation[1])
 
 
     def analyzeObjects(self, listOfObjects, isPages = True):
@@ -314,7 +328,7 @@ class pyHTMLAnalyzer:
                 Page = register.getORMClass('page')
                 newPage = Page(analyzedObjectName, isValid)
                 pageRowId = connector.insertObject(newPage)
-                self.insertObjects(analyzedObjectValue, pageRowId)
+                self.insertObjects(analyzedObjectValue[1], pageRowId)
 
 
     def analyzePages(self, listOfPages):

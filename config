@@ -116,7 +116,7 @@ getNumberOfTextCharactersInPage : Integer,
 getTotalNumberOfCharactersInPage : Integer,
 getNumberOfWhitespaceCharactersInPage : Integer,
 getPercentageOfUnknownTags : Float,
-getNumberOfElementsWithExternalDomainSource : Integer,
+#getNumberOfElementsWithExternalDomainSource : Integer,
 getExternalDomainToInternalDomainSourceElementsRatio : Float
 
 # Do not consider this functions, cause they produce LARGE amount of data, that cant pass _fast_ through queue
@@ -146,12 +146,12 @@ getTotalNumberOfObjectsWithSuspiciousContent : Integer,
 getTotalNumberOfLongVariableOrFunction : Integer,
 getScriptWholeEntropy : Integer,
 getMaximumEntropyOfWholeScriptStrings : Integer,
-getNumberOfEventAttachments : Integer,
+#getNumberOfEventAttachments : Integer,
 getNumberOfDirectStringAssignments : Integer,
-getNumberOfStringModificationFunctions : Integer,
-getNumberBuiltInDeobfuscationFunctions : Integer,
-getNumberOfDOMModificationFunctions : Integer,
-getNumberOfFingerPrintingFunctions : Integer
+#getNumberOfStringModificationFunctions : Integer,
+#getNumberBuiltInDeobfuscationFunctions : Integer,
+#getNumberOfDOMModificationFunctions : Integer,
+#getNumberOfFingerPrintingFunctions : Integer
 
 [urlAnalyzer]
 # TODO make for these function names database types
