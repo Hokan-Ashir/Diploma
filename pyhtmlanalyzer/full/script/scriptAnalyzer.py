@@ -36,6 +36,9 @@ class scriptAnalyzer(commonAnalysisData):
     # list of hashes from previously analyzed page
     # fills and pass to analyzer from other function
     __listOfHashes = None
+    # list of previous rows corresponding to script pieces of current page
+    # fills and pass to analyzer from other function
+    __listOfIds = None
 
     # this list contain string like "X:Y", where X is real source line in script, and Y is order number in parser list
     # this complication is for cases when site consists of created several very long lines of html-code
@@ -1328,6 +1331,7 @@ class scriptAnalyzer(commonAnalysisData):
                     # here we can can calculate hashes per script code, cause it's "number" defined with row above
                     scriptPieceCodeHashes = getattr(self, self._scriptHashingFunctionName)()
                     if self.__listOfHashes is not None and scriptPieceCodeHashes in self.__listOfHashes:
+                        resultList.append({configNames.id : self.__listOfIds[0]})
                         continue
 
                     functionCallResult = self.analyzeAllFunctions(oneProcess=True)
@@ -1350,6 +1354,7 @@ class scriptAnalyzer(commonAnalysisData):
             # checking hash values <b> before </b> for-loop
             scriptPieceCodeHashes = getattr(self, self._scriptHashingFunctionName)()
             if self.__listOfHashes is not None and scriptPieceCodeHashes in self.__listOfHashes:
+                resultDict[configNames.id] = self.__listOfIds[0]
                 return resultDict
 
             for funcName in self.__listOfAnalyzeFunctions:
@@ -1379,6 +1384,7 @@ class scriptAnalyzer(commonAnalysisData):
                 # here we can can calculate hashes per script code, cause it's "number" defined with row above
                 scriptPieceCodeHashes = getattr(self, self._scriptHashingFunctionName)()
                 if self.__listOfHashes is not None and scriptPieceCodeHashes in self.__listOfHashes:
+                    resultDict.append({configNames.id : self.__listOfIds[0]})
                     return resultDict
 
                 for funcName in self.__listOfAnalyzeFunctions:
@@ -1396,7 +1402,7 @@ class scriptAnalyzer(commonAnalysisData):
                 # if we get here, so function calls above are correct and we can add hashes values to result list
                 # with analyzed data
                 resultInnerDict['hashValues'] = [{'hash256' : scriptPieceCodeHashes[0],
-                                             'hash512' : scriptPieceCodeHashes[1]}]
+                                                  'hash512' : scriptPieceCodeHashes[1]}]
                 resultDict.append(deepcopy(resultInnerDict))
                 for key in resultInnerDict.keys():
                     del resultInnerDict[key]
@@ -1428,16 +1434,17 @@ class scriptAnalyzer(commonAnalysisData):
         register = modulesRegister()
         pageId = connector.select(register.getORMClass('page'), [configNames.id], 'url', self.__uri)
         if pageId:
+            self.__listOfIds = [pageId[0].id]
             previousHashValuesFks = connector.select(register.getORMClass(self.__class__.__name__),
-                                                     ['pageFk'], 'pageFk',pageId)
+                                                     ['pageFk'], 'pageFk', pageId[0].id)
             for fk in previousHashValuesFks:
-                previousHashValues = connector.select(register.getORMClass('hashValues'), None, configNames.id, fk)
+                previousHashValues = connector.select(register.getORMClass('hashValues'), None, configNames.id, fk.id)
                 if previousHashValues is not None \
                     and previousHashValues:
-                    listOfPreviousHashes.append(previousHashValues)
+                    listOfPreviousHashes.append([previousHashValues[0].hash256, previousHashValues[0].hash512])
 
         if listOfPreviousHashes:
-            self.__listOfHashes = listOfPreviousHashes
+            self.__listOfHashes = copy(listOfPreviousHashes)
 
         numberOfProcesses = 1
         try:

@@ -26,14 +26,6 @@ class databaseConnector(object):
     __extraColumns = 'Extra columns'
     __tableRelations = 'Table relations'
 
-    # stores relations between tables in one place, fills ONLY when database creates itself
-    # with corresponding getter this allows analyzer to fill foreign keys after all modules have proceeded
-    # i.e.:
-    # analyzer begins analysis of page, creates row in page-table
-    # then all analyzer-modules make their computations and (possibly) return foreign keys
-    # after that analyzer insert all foreign keys and completes page analysis
-    __tableRelationsDictionary = None
-
     # declared as singleton
     # TODO check multi-threading
     def __new__(cls):
@@ -52,10 +44,6 @@ class databaseConnector(object):
             self.getDatabaseEngine(user, password, hostname, databaseName)
 
         self.__Base = declarative_base()
-
-    #
-    def getTablesRelationDictionary(self):
-        return self.__tableRelationsDictionary
 
     def detachObject(self, classInstance):
         Session = scoped_session(sessionmaker(self.__engine))
@@ -264,20 +252,37 @@ def __repr__ (self):
             return None
 
 
-    def deleteObject(self, classInstance, filterColumn=None, filterValue=None, operatorName='=='):
+    def deleteObject(self, classInstanceObject, filterColumn=None, filterValue=None, operatorName='=='):
         Session = scoped_session(sessionmaker(self.__engine))
         session = Session()
         operatorMethodName = self.__operatorNameToMethodName(operatorName)
         try:
             if filterColumn is None \
                 or filterValue is None:
-                session.delete(classInstance)
+                session.delete(classInstanceObject)
             else:
                 # get classObject for delete-with-where query
-                session.query(classInstance.__class__).filter(
-                    getattr(getattr(classInstance.__class__, filterColumn), operatorMethodName)(filterValue)
+                # in this case classInstance is ClassObject
+                session.query(classInstanceObject).filter(
+                    getattr(getattr(classInstanceObject, filterColumn), operatorMethodName)(filterValue)
                 ).delete(synchronize_session=False)
 
+            session.commit()
+            session.close()
+        except Exception, error:
+            session.rollback()
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning(error)
+
+    def updateByDict(self, classObject, idValue, updateDictOfValues, operatorName='=='):
+        Session = scoped_session(sessionmaker(self.__engine))
+        session = Session()
+        operatorMethodName = self.__operatorNameToMethodName(operatorName)
+        try:
+            session\
+                .query(classObject)\
+                .filter(getattr(getattr(classObject, configNames.id), operatorMethodName)(idValue))\
+                .update(**updateDictOfValues)
             session.commit()
             session.close()
         except Exception, error:

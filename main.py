@@ -24,7 +24,9 @@ if __name__ == "__main__":
 
     begin = timeit.default_timer()
     #dic = analyzer.getNumberOfAnalyzedPageFeaturesByFunction('http://www.tutorialspoint.com/python/string_rstrip.htm')
-    analyzer.analyzePages(['http://www.tutorialspoint.com/python/string_rstrip.htm'])
+    #analyzer.analyzePages(['http://www.tutorialspoint.com/python/string_rstrip.htm'])
+    analyzer.setIsActiveModule('urlAnalyzer', False)
+    analyzer.analyzeFiles(['xmlFiles/test.htm'])
     #dic = analyzer.getNumberOfAnalyzedPageFeaturesByFunction('http://www.yandex.ru')
     end = timeit.default_timer()
     print("\nElapsed time: " + str(end - begin) + " seconds")
@@ -49,8 +51,9 @@ if __name__ == "__main__":
     analyzer.getModuleByName('htmlAnalyzer').setListOfHashes(listOfPageHashes)'''
 
     begin = timeit.default_timer()
-    #dic = analyzer.getNumberOfAnalyzedPageFeaturesByFunction('http://www.tutorialspoint.com/python/string_rstrip.htm')
+    dic = analyzer.getNumberOfAnalyzedHTMLFileFeaturesByFunction('xmlFiles/test.htm')
     #dic = analyzer.getNumberOfAnalyzedPageFeaturesByFunction('http://www.yandex.ru')
+    analyzer.analyzeFiles(['xmlFiles/test.htm'])
     end = timeit.default_timer()
     print("\nElapsed time: " + str(end - begin) + " seconds")
     #print(dic.items())

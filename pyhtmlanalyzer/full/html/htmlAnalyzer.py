@@ -999,13 +999,15 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         # get previous hash values, corresponding to this page
         connector = databaseConnector()
         register = modulesRegister()
-        previousHashValuesFk = connector.select(register.getORMClass('page'), ['htmlAnalysisFk'])
-        if previousHashValuesFk:
+        previousHTMLFk = connector.select(register.getORMClass('page'), ['htmlAnalysisFk'], 'url', self._uri)
+        if previousHTMLFk:
+            previousHashValuesFK = connector.select(register.getORMClass(self.__class__.__name__), ['hashValuesFk'],
+                                                  configNames.id, previousHTMLFk[0].htmlAnalysisFk)
             previousHashValues = connector.select(register.getORMClass('hashValues'), None, configNames.id,
-                                                  previousHashValuesFk)
+                                                  previousHashValuesFK[0].hashValuesFk)
             if previousHashValues is not None \
                 and previousHashValues:
-                self.__listOfHashes = previousHashValues
+                self.__listOfHashes = [previousHashValues[0].hash256, previousHashValues[0].hash512]
 
         numberOfProcesses = 1
         try:
@@ -1027,6 +1029,8 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         # checking hash values <b> before </b> for-loops
         pageHashValues = getattr(self, self._scriptHashingFunctionName)()
         if self.__listOfHashes is not None and pageHashValues == self.__listOfHashes:
+            # set id of this table row to which reference this listOfHashes
+            resultDict[configNames.id] = previousHTMLFk[0].htmlAnalysisFk
             return [[resultDict], htmlAnalyzer.__name__]
 
         if numberOfProcesses > 1:

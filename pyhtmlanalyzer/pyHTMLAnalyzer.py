@@ -216,25 +216,227 @@ class pyHTMLAnalyzer:
     def analyzeObjectStub(self, analyzeData):
         return True
 
+    def __invalidateFKColumns(self, tableName, tableIdList, listOfChildTableNames):
+        connector = databaseConnector()
+        register = modulesRegister()
+        dictOfParentTableIds = {}
+
+        # search for tables that references to tableName
+        for ORMClass in register.getORMClassDictionary().values():
+            tableFks = list(ORMClass.__table__.foreign_keys)
+            for FK in tableFks:
+                # get table name TO WHICH references current FK
+                targetTableName = FK.target_fullname.split('.')[0]
+                if tableName != targetTableName:
+                    continue
+                else:
+                    columnFKName = FK.parent.description
+                    # select parent table Ids, so as invalidate FK column value, which references to tableName
+                    for ids in tableIdList:
+                        result = connector.select(ORMClass, [configNames.id], columnFKName, ids)
+                        # TODO check if result need to be checked
+                        parentTableId = result[0]
+                        # invalidate FK column value
+                        connector.update(ORMClass, getattr(parentTableId, configNames.id), columnFKName, None)
+
+                        if targetTableName not in dictOfParentTableIds:
+                            dictOfParentTableIds[targetTableName] = []
+
+                        dictOfParentTableIds[targetTableName].append(getattr(parentTableId, configNames.id))
+
+        # also search for tables that tableName references to
+        ORMClass = register.getORMClass(tableName)
+        tableFks = list(ORMClass.__table__.foreign_keys)
+        for FK in tableFks:
+            # get table name TO WHICH references current FK
+            targetTableName = FK.target_fullname.split('.')[0]
+
+            # this is parent table to tableName
+            if targetTableName not in listOfChildTableNames:
+                columnFKName = FK.parent.description
+                for ids in tableIdList:
+                    result = connector.select(ORMClass, [columnFKName], configNames.id, ids)
+                    # TODO check if result need to be checked
+                    parentTableId = result[0]
+                    # get columns name TO WHICH references current FK
+                    columnTableName = FK.target_fullname.split('.')[1]
+                    # invalidate FK column value
+                    connector.update(ORMClass, ids, columnFKName, None)
+
+                    if targetTableName not in dictOfParentTableIds:
+                        dictOfParentTableIds[targetTableName] = []
+
+                    dictOfParentTableIds[targetTableName].append(getattr(parentTableId, columnFKName))
+
+        return dictOfParentTableIds
+
+
+    def __recursivelyDeleteObjects(self, tableIdList, ORMClass, listOfChildTableNames, tableData):
+        connector = databaseConnector()
+        register = modulesRegister()
+        tableFks = list(ORMClass.__table__.foreign_keys)
+        for item in tableIdList:
+            for FK in tableFks:
+                # get table name TO WHICH references current FK
+                targetTableName = FK.target_fullname.split('.')[0]
+                # delete only child tables
+                if targetTableName not in listOfChildTableNames:
+                    continue
+
+                columnFKName = FK.parent.description
+                result = connector.select(ORMClass, [columnFKName], configNames.id, item)
+
+                # invalidate child FK column
+                connector.update(ORMClass, item, columnFKName, None)
+
+                # TODO check if result need to be checked
+                childORMClass = register.getORMClass(targetTableName)
+
+                # get child tables of new child
+                # TODO refactor, cause of too many input parameters in this function
+                childTableFks = list(ORMClass.__table__.foreign_keys)
+                childTableNames = []
+                for innerFK in childTableFks:
+                    # get table name TO WHICH references current FK
+                    childTargetTableName = innerFK.target_fullname.split('.')[0]
+                    for innerItem in tableData[tableIdList.index(item)][targetTableName]:
+                        # if FK references to table which is not in tableData, such table is not child
+                        if childTargetTableName not in innerItem:
+                            continue
+                        else:
+                            childTableNames.append(childTargetTableName)
+
+                self.__recursivelyDeleteObjects([getattr(innerItem, columnFKName) for innerItem in result],
+                                                childORMClass, childTableNames,
+                                                tableData[tableIdList.index(item)][targetTableName])
+
+            connector.deleteObject(ORMClass, configNames.id, item)
+
+    # tableData is list of future rows
+    def __recursivelyUpdateObjects(self, tableName, tableData, tableIdList):
+        connector = databaseConnector()
+        register = modulesRegister()
+        ORMClass = register.getORMClass(tableName)
+        tableFks = list(ORMClass.__table__.foreign_keys)
+
+        # need to update single row, so we actually able to get its id and update it
+        if len(tableData) == 1:
+
+            # tableData dict has only @id key, so this object not needed to be updated
+            if configNames.id in tableData[0]:
+                return
+
+            listOfFKTableNames = []
+            for FK in tableFks:
+                # get table name TO WHICH references current FK
+                targetTableName = FK.target_fullname.split('.')[0]
+                if targetTableName not in tableData[0]:
+                    # simply can't find such table name in dict of foreign keys, nothing special
+                    continue
+                else:
+                    columnFKName = FK.parent.description
+                    result = connector.select(register.getORMClass(tableName),
+                                                     [columnFKName], configNames.id,
+                                                     tableIdList[0])
+                    # TODO check if result need to be checked
+                    self.__recursivelyUpdateObjects(targetTableName,
+                                                    tableData[0][targetTableName],
+                                                    [getattr(item, columnFKName) for item in result])
+                    listOfFKTableNames.append(targetTableName)
+
+            # remove all FK data before update parent object
+            for item in listOfFKTableNames:
+                del tableData[0][item]
+
+            # update parent object
+            connector.updateByDict(ORMClass, tableIdList[0], tableData[0])
+
+        # need to update more than one row, so we have no idea which row must be updated with which data
+        # so we delete all rows recursively and recreate them
+        else:
+            # check if any rows in tableData has only @id key, this means that this data not changed and must not be
+            # updated by any NEW information, so we basically delete all rows like:
+            # row['id'] in tableIdList
+            for item in tableData:
+                if len(item) == 1 \
+                    and configNames.id in item \
+                    and item[configNames.id] in tableIdList:
+                    tableIdList.remove(item[configNames.id])
+                    del item
+
+            # get list of all tables that depends on tableName
+            # later, when we will be invalidating parent table Ids, we will need to know which table
+            # is "child" of tableName and which is not
+            listOfChildTableNames = []
+            for FK in tableFks:
+                # get table name TO WHICH references current FK
+                targetTableName = FK.target_fullname.split('.')[0]
+                for item in tableData:
+                    # if FK references to table which is not in tableData, such table is not child
+                    if targetTableName not in item:
+                        continue
+                    else:
+                        listOfChildTableNames.append(targetTableName)
+
+
+            # temporary invalidate all FK columns, which has values from tableIdList (make them all null)
+            # this is needed by 2 reasons:
+            # - if somebody will access this FK columns they will have null values and there will be no error
+            # - we have to get parent tables PK, so we can attach recreated rows back to its parents
+            dictOfParentTableIds = self.__invalidateFKColumns(tableName, tableIdList, listOfChildTableNames)
+
+            # recursively delete other rows
+            self.__recursivelyDeleteObjects(tableIdList, ORMClass, listOfChildTableNames, tableData)
+
+            # recursively insert other rows
+            dictOfInsertedIds = {}
+            dictOfInsertedIds[tableName] = self.__recursivelyInsertData(tableName, tableData)
+
+            # attach foreign keys
+            self.__attachForeignKeys(dict(dictOfInsertedIds.items() + dictOfParentTableIds.items()))
+
     def updateObjects(self, analyzeData, pageRowId):
         connector = databaseConnector()
         register = modulesRegister()
-        tableRelationsDictionary = connector.getTablesRelationDictionary()
+
+        # construct dictionary of previous rows for each module ...
+        # ... that page references to ...
+        dictOfPreviousRowIds = {}
+        ORMClass = register.getORMClass('page')
+        tableFks = list(ORMClass.__table__.foreign_keys)
+        for FK in tableFks:
+            # get table name TO WHICH references current FK
+            targetTableName = FK.target_fullname.split('.')[0]
+            columnFKName = FK.parent.description
+            result = connector.select(ORMClass, [columnFKName], configNames.id, pageRowId)
+            if targetTableName not in dictOfPreviousRowIds:
+                dictOfPreviousRowIds[targetTableName] = []
+
+            for item in result:
+                dictOfPreviousRowIds[targetTableName].append(getattr(item, columnFKName))
+
+        # ... and that references to page
+        for ormClassName, ORMClass in register.getORMClassDictionary().items():
+            tableFks = list(ORMClass.__table__.foreign_keys)
+            for FK in tableFks:
+                # get table name TO WHICH references current FK
+                targetTableName = FK.target_fullname.split('.')[0]
+                # this FK doesn't references to page
+                if targetTableName != 'page':
+                    continue
+                else:
+                    columnFKName = FK.parent.description
+                    result = connector.select(ORMClass, [configNames.id], columnFKName, pageRowId)
+                    if targetTableName not in dictOfPreviousRowIds:
+                        dictOfPreviousRowIds[ormClassName] = []
+
+                    for item in result:
+                        dictOfPreviousRowIds[ormClassName].append(getattr(item, configNames.id))
+
+        dictOfInsertedIds = {}
         for moduleName, moduleValue in analyzeData.items():
-            if not moduleValue:
-                continue
-
-            # search for foreign keys in relations connected to "page" table
-            for relation in tableRelationsDictionary['page']:
-                parsedRelation = relation.replace(' ', '').split(':')
-                if moduleName == parsedRelation[1]:
-                    # found "slave"-table, get its foreign key
-                    # TODO improve on relations
-                    connector.select(register.getORMClass(moduleName), [configNames.id], parsedRelation[0], )
-
-            # TODO get fk on existing tables via tableRelationsDictionary and pageRowId
-            connector.update(register.getORMClass(moduleName), )
-            print()
+            dictOfInsertedIds[moduleName] = self.__recursivelyUpdateObjects(moduleName, moduleValue,
+                                                                            dictOfPreviousRowIds[moduleName])
 
     def __attachForeignKeys(self, dictOfForeignKeys):
         # no FKs, nothing to attach
@@ -249,16 +451,15 @@ class pyHTMLAnalyzer:
             for FK in tableFks:
                 # get table name TO WHICH references current FK
                 fkTableName = FK.target_fullname.split('.')[0]
-                try:
-                    if dictOfForeignKeys[fkTableName]:
-                        # get column name which contain FK to other table
-                        masterTableColumnName = FK.parent.description
-                        for item in dictOfForeignKeys[fkTableName]:
-                            for keyId in keyIdList:
-                                connector.update(ORMClass, keyId, masterTableColumnName, item)
-                except KeyError, error:
+                if fkTableName not in dictOfForeignKeys:
                     # simply can't find such table name in dict of foreign keys, nothing special
                     continue
+                else:
+                    # get column name which contain FK to other table
+                    masterTableColumnName = FK.parent.description
+                    for item in dictOfForeignKeys[fkTableName]:
+                        for keyId in keyIdList:
+                            connector.update(ORMClass, keyId, masterTableColumnName, item)
 
     def __recursivelyInsertData(self, tableName, dataList):
         connector = databaseConnector()
@@ -305,7 +506,6 @@ class pyHTMLAnalyzer:
         self.__attachForeignKeys(dictOfInsertedIds)
 
 
-
     def analyzeObjects(self, listOfObjects, isPages = True):
         connector = databaseConnector()
         register = modulesRegister()
@@ -322,7 +522,7 @@ class pyHTMLAnalyzer:
             if pageRow:
                 # page row already exists
                 connector.update(register.getORMClass('page'), pageRow[0].id, 'isValid', isValid)
-                self.updateObjects(analyzedObjectValue, pageRow[0].id)
+                self.updateObjects(analyzedObjectValue[1], pageRow[0].id)
             else:
                 # page row doesn't exists - create new one and all data within
                 Page = register.getORMClass('page')
