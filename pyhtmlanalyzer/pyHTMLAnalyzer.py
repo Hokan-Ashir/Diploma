@@ -1,6 +1,8 @@
 from collections import defaultdict
+import json
 import logging
 from multiprocessing import Queue
+from datetime import datetime, date
 from pyhtmlanalyzer.commonFunctions import configNames
 from pyhtmlanalyzer.commonFunctions.commonConnectionUtils import commonConnectionUtils
 from pyhtmlanalyzer.commonFunctions.commonFunctions import commonFunctions
@@ -483,8 +485,17 @@ class pyHTMLAnalyzer:
 
             # remove 'get' from beginning of future column name and decapitalize first character
             # as we done it before in databaseConnector, when create database
-            for columnName in item.keys():
+            for columnName, columnValue in item.items():
                 tempString = columnName.lstrip('get')
+                # get from http://stackoverflow.com/questions/455580/json-datetime-between-python-and-javascript
+                dthandler = lambda obj: (obj.isoformat()
+                                         if isinstance(obj, datetime)
+                                            or isinstance(obj, date)
+                                         else None)
+                # serialize via JSON all dict and list values (assumed, that in DB corresponding rows has String type)
+                if type(item[columnName]) is list \
+                    or type(item[columnName]) is dict:
+                        item[columnName] = json.dumps(item[columnName], default=dthandler)
                 item[tempString[0].lower() + tempString[1:]] = item.pop(columnName)
 
             newRow = Class(**item)

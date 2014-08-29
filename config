@@ -94,6 +94,11 @@ url.suspicious.file.names = swfNode.php, pdfNode.php
 url.suspicious.patterns = swfNode.php, pdfNode.php
 
 {Extractors functions}
+# function_name : database_type
+#
+# database types are 'String' (default length is 255 characters), 'Integer', 'Float', 'Boolean' ignore case
+#
+
 # This lists of functions are used to automatically perform analysis with exactly this functions
 # so we do not use "getPageHashValues" in this list, cause hashes are not considered as analysis data
 # but used in storage case
@@ -116,7 +121,8 @@ getNumberOfTextCharactersInPage : Integer,
 getTotalNumberOfCharactersInPage : Integer,
 getNumberOfWhitespaceCharactersInPage : Integer,
 getPercentageOfUnknownTags : Float,
-#getNumberOfElementsWithExternalDomainSource : Integer,
+# this function returns list, so String(255) may be not enough
+getNumberOfElementsWithExternalDomainSource : String,
 getExternalDomainToInternalDomainSourceElementsRatio : Float
 
 # Do not consider this functions, cause they produce LARGE amount of data, that cant pass _fast_ through queue
@@ -146,34 +152,19 @@ getTotalNumberOfObjectsWithSuspiciousContent : Integer,
 getTotalNumberOfLongVariableOrFunction : Integer,
 getScriptWholeEntropy : Integer,
 getMaximumEntropyOfWholeScriptStrings : Integer,
-#getNumberOfEventAttachments : Integer,
+# this function returns dict, so String(255) may be not enough
+getNumberOfEventAttachments : String,
 getNumberOfDirectStringAssignments : Integer,
-#getNumberOfStringModificationFunctions : Integer,
-#getNumberBuiltInDeobfuscationFunctions : Integer,
-#getNumberOfDOMModificationFunctions : Integer,
-#getNumberOfFingerPrintingFunctions : Integer
+# this function returns dict, so String(255) may be not enough
+getNumberOfStringModificationFunctions : String,
+# this function returns dict, so String(255) may be not enough
+getNumberBuiltInDeobfuscationFunctions : String,
+# this function returns dict, so String(255) may be not enough
+getNumberOfDOMModificationFunctions : String,
+# this function returns dict, so String(255) may be not enough
+getNumberOfFingerPrintingFunctions : String
 
 [urlAnalyzer]
-# TODO make for these function names database types
-# getSuspiciousPatternsPresence,
-# getSuspiciousFileNamesPresence,
-# getMXRecordFirstIP,
-# getMXRecordFirstIPTTL,
-# getMXRecordFirstIPASNumber,
-# getARecordFirstIP,
-# getARecordFirstIPTTL,
-# getARecordFirstIPASNumber,
-# getNSRecordFirstIP,
-# getNSRecordFirstIPTTL,
-# getNSRecordFirstIPASNumber,
-# getMXRecordIPsNumber,
-# getARecordIPsNumber,
-# getNSRecordIPsNumber,
-# getResolvedPTR,
-# getDetectedEnginesList,
-# getURLExpirationDates,
-# getURLRegistrationDates,
-# getURLUpdateDate
 
 getDomainNameLength : Integer,
 getURLTLD : String,
@@ -185,30 +176,49 @@ getPortPresenceInURL : Boolean,
 getAbsoluteURLLength : Integer,
 getRelativeURLLength : Integer,
 getRelativePathPresenceInURL : Boolean,
-#getSuspiciousPatternsPresence,
-#getSuspiciousFileNamesPresence,
-#getMXRecordFirstIP,
-#getMXRecordFirstIPTTL,
-#getMXRecordFirstIPASNumber,
-#getARecordFirstIP,
-#getARecordFirstIPTTL,
-#getARecordFirstIPASNumber,
-#getNSRecordFirstIP,
-#getNSRecordFirstIPTTL,
-#getNSRecordFirstIPASNumber,
-#getMXRecordIPsNumber,
-#getARecordIPsNumber,
-#getNSRecordIPsNumber,
-#getResolvedPTR,
+# this function returns dict, so String(255) may be not enough
+getSuspiciousPatternsPresence : String,
+# this function returns dict, so String(255) may be not enough
+getSuspiciousFileNamesPresence : String,
+# this function returns dict, so String(255) may be not enough
+getMXRecordFirstIP : String,
+# this function returns dict, so String(255) may be not enough
+getMXRecordFirstIPTTL : String,
+# this function returns dict, so String(255) may be not enough
+getMXRecordFirstIPASNumber : String,
+# this function returns dict, so String(255) may be not enough
+getARecordFirstIP : String,
+# this function returns dict, so String(255) may be not enough
+getARecordFirstIPTTL : String,
+# this function returns dict, so String(255) may be not enough
+getARecordFirstIPASNumber : String,
+# this function returns dict, so String(255) may be not enough
+getNSRecordFirstIP : String,
+# this function returns dict, so String(255) may be not enough
+getNSRecordFirstIPTTL : String,
+# this function returns dict, so String(255) may be not enough
+getNSRecordFirstIPASNumber : String,
+# this function returns dict, so String(255) may be not enough
+getMXRecordIPsNumber : String,
+# this function returns dict, so String(255) may be not enough
+getARecordIPsNumber : String,
+# this function returns dict, so String(255) may be not enough
+getNSRecordIPsNumber : String,
+# this function returns list, so String(255) may be not enough
+getResolvedPTR : String,
 getAandPTRIPsEquality : Boolean,
 getCountryCode : String,
 getRegion : String,
 getTimeZone : String,
 getIsHostMalicious : Boolean,
-#getDetectedEnginesList,
-#getURLExpirationDates,
-#getURLRegistrationDates,
-#getURLUpdateDate
+# this function returns list, so String(255) may be not enough
+getDetectedEnginesList : String,
+# this function returns list, so String(255) may be not enough
+getURLExpirationDates : String,
+# this function returns list, so String(255) may be not enough
+getURLRegistrationDates : String,
+# this function returns list, so String(255) may be not enough
+getURLUpdateDate : String
 
 {Extra columns}
 [htmlAnalyzer]

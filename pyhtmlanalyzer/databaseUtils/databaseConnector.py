@@ -64,13 +64,14 @@ class databaseConnector(object):
                 relations.append(item.replace(' ', '').split(':'))
 
         for columnName, columnType in columns.items():
-            if columnType == 'Integer':
+            if columnType.lower() == 'Integer'.lower():
                 typeObject = Integer
-            elif columnType == 'Float':
+            elif columnType.lower() == 'Float'.lower():
                 typeObject = Float
-            elif columnType == 'String':
+            elif columnType.lower() == 'String'.lower():
+                # TODO maybe get non-default String type value length from file?
                 typeObject = String(255)
-            elif columnType == 'Boolean':
+            elif columnType.lower() == 'Boolean'.lower():
                 typeObject = Boolean
             else:
                 logger = logging.getLogger()
@@ -348,6 +349,13 @@ def __repr__ (self):
             logger.warning(error)
             return None
 
+    def printAllTablesData(self):
+        register = modulesRegister()
+        for ORMClassName, ORMClass in register.getORMClassDictionary().items():
+            print ORMClassName
+            resultQuery = self.select(ORMClass)
+            for item in resultQuery:
+                print item
 
     def dropDatabase(self, user, password, hostname, databaseName):
         if self.__engine is None:

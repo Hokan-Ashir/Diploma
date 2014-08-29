@@ -1,3 +1,4 @@
+import logging
 from pyhtmlanalyzer.commonFunctions.commonConnectionUtils import commonConnectionUtils
 from pyhtmlanalyzer.full.commonURIAnalysisData import commonURIAnalysisData
 
@@ -14,10 +15,14 @@ class urlVoidFunctions(commonURIAnalysisData):
 
     def retrieveURLData(self):
         if self._uri is None:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning("URI is not set")
             print("\nURI is not set")
             return
 
         if self.getRemainedQueries() == 0:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning("No URLVoid queries remain")
             print("\nNo URLVoid queries remain")
             return
 
@@ -38,10 +43,14 @@ class urlVoidFunctions(commonURIAnalysisData):
 
     def getIsHostMalicious(self):
         if self._uri is None:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning("URI is not set")
             print("\nURI is not set")
             return None
 
         if self.__pageData is None:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning("No URLVoid info about this URI")
             print("\nNo URLVoid info about this URI")
             return None
 
@@ -56,10 +65,14 @@ class urlVoidFunctions(commonURIAnalysisData):
 
     def getDetectedEnginesList(self):
         if self._uri is None:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning("URI is not set")
             print("\nURI is not set")
             return None
 
         if self.__pageData is None:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning("No URLVoid info about this URI")
             print("\nNo URLVoid info about this URI")
             return None
 

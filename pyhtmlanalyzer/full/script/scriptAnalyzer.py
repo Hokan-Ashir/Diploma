@@ -57,6 +57,8 @@ class scriptAnalyzer(commonAnalysisData):
         if configDict is not None:
             self.__configDict = configDict
         else:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.error("Invalid parameters")
             print("\nInvalid parameters")
             return
 
@@ -101,7 +103,9 @@ class scriptAnalyzer(commonAnalysisData):
     def getNumberOfSetTimeoutIntervalCalls(self):
         try:
             listOfFunctions = self.__configDict['script.set.timeout.functions']
-        except:
+        except KeyError, error:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning(error)
             print("\nNone list of set timeout-like functions, can't perform analysis")
             return
 
@@ -137,7 +141,9 @@ class scriptAnalyzer(commonAnalysisData):
     def getKeywordsToWordsRatio(self):
         try:
             commonListOfKeyWords = self.__configDict['script.keywords']
-        except:
+        except KeyError, error:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning(error)
             print("\nNone keywords list - can't perform analysis")
             return
 
@@ -203,7 +209,9 @@ class scriptAnalyzer(commonAnalysisData):
     def getNumberOfBuiltInFunctions(self):
         try:
             listOfBuiltInFunctions = self.__configDict["script.built.in.functions"]
-        except:
+        except KeyError, error:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning(error)
             print("\nNone list of built-in functions - can't perform analysis")
             return
 
@@ -432,9 +440,12 @@ class scriptAnalyzer(commonAnalysisData):
     def getNumberOfSuspiciousStrings(self, stringLength = -1, separatorList = ['\n', ';']):
         try:
             listOfSuspiciousTags = self.__configDict["script.suspicious.tags"]
-        except:
+        except KeyError, error:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning(error)
             print("\nNone list of suspicious tags, can't perform analysis")
             return
+
         listOfStrings = self.getListOfLongStrings(stringLength, separatorList)
         dictOfSuspiciousStrings = {}
         for item in listOfStrings:
@@ -917,13 +928,17 @@ class scriptAnalyzer(commonAnalysisData):
     def getNumberOfEventAttachments(self):
         try:
             listOfEvents = self.__configDict["script.events"]
-        except:
+        except KeyError, error:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning(error)
             print("\nNone list of events, can't perform analysis")
             return
 
         try:
             listOfAttachmentFunctionsEvents = self.__configDict["script.event.functions"]
-        except:
+        except KeyError, error:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning(error)
             print("\nNone list of event attachment functions, can't perform analysis")
             return
 
@@ -1002,7 +1017,9 @@ class scriptAnalyzer(commonAnalysisData):
     def getNumberOfStringModificationFunctions(self):
         try:
             listOfStringModificationFunctions = self.__configDict["script.string.modification.functions"]
-        except:
+        except KeyError, error:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning(error)
             print("\nNone list of string modification functions, can't perform analysis")
             return
 
@@ -1032,7 +1049,9 @@ class scriptAnalyzer(commonAnalysisData):
     def getNumberBuiltInDeobfuscationFunctions(self):
         try:
             listOfDeobfuscationFunctions = self.__configDict["script.deobfuscation.functions"]
-        except:
+        except KeyError, error:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning(error)
             print("\nNone list of deobfuscation functions, can't perform analysis")
             return
 
@@ -1062,7 +1081,9 @@ class scriptAnalyzer(commonAnalysisData):
     def getNumberOfDOMModificationFunctions(self):
         try:
             listOfDOMModifyingMethods = self.__configDict["script.DOM.modifying.methods"]
-        except:
+        except KeyError, error:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning(error)
             print("\nNone list of DOM-modifying functions, can't perform analysis")
             return
 
@@ -1092,7 +1113,9 @@ class scriptAnalyzer(commonAnalysisData):
     def getNumberOfFingerPrintingFunctions(self):
         try:
             listOfFingerprintingFunctions = self.__configDict["script.fingerprinting.functions"]
-        except:
+        except KeyError, error:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning(error)
             print("\nNone list of fingerprinting functions, can't perform analysis")
             return
 

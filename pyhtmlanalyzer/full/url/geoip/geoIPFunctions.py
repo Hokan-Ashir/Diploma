@@ -64,8 +64,10 @@ class geoIPFunctions(commonURIAnalysisData):
 
             connection.query("SELECT country_name, country_code, region_name, city_name, time_zone FROM ip2location_db11 WHERE (ip_from <= %s) AND (ip_to >= %s)" % (ipAddressNumber, ipAddressNumber))
             self.__hostGeoIpInfo = connection.use_result().fetch_row()[0]
-        except _mysql.Error, e:
-            print "Error %d: %s" % (e.args[0], e.args[1])
+        except _mysql.Error, error:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.exception(error)
+            print "Error %d: %s" % (error.args[0], error.args[1])
         finally:
             if connection:
                 connection.close()

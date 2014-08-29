@@ -38,6 +38,8 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         if configDict is not None:
            self.__configDict = configDict
         else:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.error("Invalid parameters")
             print("\nInvalid parameters")
             return
 
@@ -60,7 +62,9 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
     def getNumberOfElementsWithSmallArea(self, widthLimit, heightLimit, squarePixelsLimit):
         try:
             listOfTags = self.__configDict["html.elements.with.small.area"]
-        except:
+        except KeyError, error:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning(error)
             print("\nNone list of elements with small area, can't perform analysis")
             return
 
@@ -102,7 +106,9 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         # suspicious page
         try:
             listOfDuplicatedTags = self.__configDict["html.non.dulpicated.elemets"]
-        except:
+        except KeyError, error:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning(error)
             print("\nNone list of non-duplicated elements, can't perform analysis")
             return
 
@@ -176,9 +182,12 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
 
         try:
             listOfVoidTagNames = self.__configDict["html.void.elements"]
-        except:
+        except KeyError, error:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning(error)
             print("\nNone list of void tags, can't perform analysis")
             return
+
         dictOfVoidElementsWithContent = defaultdict(int)
         for tag in listOfVoidTagNames:
             listOfTags = self._xmldata.xpath('//%s' % tag)
@@ -250,9 +259,12 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
     def getIncludedURLs(self):
         try:
             listOfTags = self.__configDict["html.included.urls.elements"]
-        except:
+        except KeyError, error:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning(error)
             print("\nNone list of tags with included URLs, can't perform analysis")
             return
+
         dictOfIncludedURLsOjects = {}
         for item in listOfTags:
             dictOfIncludedURLsOjects[item] = self._xmldata.xpath('count(//%s[@src])' % item)
@@ -321,31 +333,41 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         # I've deleted <embed> and <script> tags cause they can be under <head> tag
         try:
             listOfUnderHeadTags = self.__configDict["html.under.head.elements"]
-        except:
+        except KeyError, error:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning(error)
             print("\nNone list of under-head-tag elements, can't perform analysis")
             return
 
         try:
             listOfOutOfRootTags = self.__configDict["html.out.of.root.elements"]
-        except:
+        except KeyError, error:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning(error)
             print("\nNone list of out-of-root-tag elements, can't perform analysis")
             return
 
         try:
             listOfBlockLevelTags = self.__configDict["html.block.level.elements"]
-        except:
+        except KeyError, error:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning(error)
             print("\nNone list of block level elements, can't perform analysis")
             return
 
         try:
             listOfNonBlockTags = self.__configDict["html.non.block.elements"]
-        except:
+        except KeyError, error:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning(error)
             print("\nNone list of non block level elements, can't perform analysis")
             return
 
         try:
             listOfBlockContentInlineTags = self.__configDict["html.no.block.content.inline.elements"]
-        except:
+        except KeyError, error:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning(error)
             print("\nNone list of no-block-content inline elements, can't perform analysis")
             return
 
@@ -839,12 +861,16 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
     # but it's difficult to make appropriate request (have to mention all known html tags);
     def getPercentageOfUnknownTags(self):
         if self.__openedAsXML == False:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning("Object not opened as XML, can't count percentage of unknown tags")
             print("\nObject not opened as XML, can't count percentage of unknown tags")
             return None
 
         try:
             listOfAllHTMLTagNames = self.__configDict["html.all.tag.names"]
-        except:
+        except KeyError, error:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning(error)
             print("\nNone list of under-head-tag elements, can't perform analysis")
             return None
 
@@ -1068,11 +1094,11 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
             if functionsNotInProcesses != 0:
                 for i in xrange(0, functionsNotInProcesses):
                     try:
-                        functionCallResult = getattr(self, self.__listOfAnalyzeFunctions[-i])()
+                        functionCallResult = getattr(self, self.__listOfAnalyzeFunctions[-1 - i])()
                         # if in result dict value = 0 - do not insert it
                         #if not ((type(functionCallResult) is int and functionCallResult == 0) or (type(
                         #        functionCallResult) is float and functionCallResult == 0.0)):
-                        resultDict[self.__listOfAnalyzeFunctions[-i]] = functionCallResult
+                        resultDict[self.__listOfAnalyzeFunctions[-1 - i]] = functionCallResult
                     except Exception, error:
                         logger = logging.getLogger(self.__class__.__name__)
                         logger.exception(error)

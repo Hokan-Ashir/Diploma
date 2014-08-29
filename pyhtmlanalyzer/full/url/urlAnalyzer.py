@@ -207,11 +207,11 @@ class urlAnalyzer(commonURLFunctions, dnsFunctions, geoIPFunctions, whoisFunctio
             if functionsNotInProcesses != 0:
                 for i in xrange(0, functionsNotInProcesses):
                     try:
-                        functionCallResult = getattr(self, self.__listOfAnalyzeFunctions[-i])()
+                        functionCallResult = getattr(self, self.__listOfAnalyzeFunctions[-1 - i])()
                         # if in result dict value = 0 - do not insert it
                         #if not ((type(functionCallResult) is int and functionCallResult == 0) or (type(
                         #        functionCallResult) is float and functionCallResult == 0.0)):
-                        resultDict[self.__listOfAnalyzeFunctions[-i]] = functionCallResult
+                        resultDict[self.__listOfAnalyzeFunctions[-1 - i]] = functionCallResult
                     except Exception, error:
                         logger = logging.getLogger(self.__class__.__name__)
                         logger.exception(error)

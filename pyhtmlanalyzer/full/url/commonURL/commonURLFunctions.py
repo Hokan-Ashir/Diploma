@@ -1,4 +1,5 @@
 from collections import defaultdict
+import logging
 import re
 from urlparse import urlparse
 from pyhtmlanalyzer.full.commonURIAnalysisData import commonURIAnalysisData
@@ -174,7 +175,9 @@ fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|     # fe80::7:8%eth0   fe80::7:8%
     def getSuspiciousPatternsPresence(self):
         try:
             listOfSuspiciousPatterns = self.__configDict['url.suspicious.patterns']
-        except:
+        except KeyError, error:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning(error)
             print("\nNone list of url suspicious patterns, can't perform analysis")
             return
 
@@ -201,7 +204,9 @@ fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|     # fe80::7:8%eth0   fe80::7:8%
     def getSuspiciousFileNamesPresence(self):
         try:
             listOfSuspiciousFileNames = self.__configDict['url.suspicious.file.names']
-        except:
+        except KeyError, error:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning(error)
             print("\nNone list of url suspicious file names, can't perform analysis")
             return
 
