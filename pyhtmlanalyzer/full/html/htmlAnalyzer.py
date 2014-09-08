@@ -912,7 +912,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
 
     def getExternalDomainToInternalDomainSourceElementsRatio(self):
         resultList = self.getNumberOfElementsWithExternalDomainSource()
-        if resultList == []:
+        if resultList == [] or resultList[0] == 0:
             return -1
         else:
             return float(resultList[1]) / resultList[0]

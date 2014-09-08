@@ -1149,27 +1149,28 @@ class scriptAnalyzer(commonAnalysisData):
 
         # we turn all text to upper register to speed up analysis in getObjectsWithSuspiciousContent() method
         # in which we can not to use re.I (case insensitive) flag
-        self.__listOfScriptTagsText = [item.xpath('text()')[0].upper() for item in listOfInlineScriptTags]
+        self.__listOfScriptTagsText = []
+        for item in listOfInlineScriptTags:
+            if item.xpath('text()'):
+                self.__listOfScriptTagsText.append(item.xpath('text()')[0])
         self.__listOfScriptTagsTextSourcelines = [str(item.sourceline) + ":" + str(listOfInlineScriptTags.index(item)) for item in listOfInlineScriptTags]
 
         # NOTE: we do not make dict of files of file content, cause it's too redundant; instead we use hashing
         # but here we get only unique files
         listOfFileScriptTags = self._xmldata.xpath('//script[@src]')
         self.__listOfIncludedScriptFiles = []
+        self.__listOfIncludedScriptFilesContent = []
         for tag in listOfFileScriptTags:
             fileName = tag.xpath('@src')[0]
             if fileName not in self.__listOfIncludedScriptFiles:
+                openedFile = commonConnectionUtils.openRelativeScriptObject(self.__uri, fileName)
+                if openedFile == []:
+                    continue
+
+                # we turn all text to upper register to speed up analysis in getObjectsWithSuspiciousContent() method
+                # in which we can not to use re.I (case insensitive) flag
+                self.__listOfIncludedScriptFilesContent.append(openedFile[1].upper())
                 self.__listOfIncludedScriptFiles.append(fileName)
-
-        self.__listOfIncludedScriptFilesContent = []
-        for filePath in self.__listOfIncludedScriptFiles:
-            openedFile = commonConnectionUtils.openRelativeScriptObject(self.__uri, filePath)
-            if openedFile == []:
-                continue
-
-            # we turn all text to upper register to speed up analysis in getObjectsWithSuspiciousContent() method
-            # in which we can not to use re.I (case insensitive) flag
-            self.__listOfIncludedScriptFilesContent.append(openedFile[1].upper())
 
         # NOTE: only JS-comments
         # regexp for C/C++-like comments, also suitable for js-comments

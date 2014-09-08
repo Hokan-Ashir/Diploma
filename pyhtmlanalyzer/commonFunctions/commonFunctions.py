@@ -263,3 +263,59 @@ class commonFunctions:
                                   classMemberDictionary.keys(),
                                   classMemberDictionary.values(),
                                   methodsList, methodNameList)
+
+    @staticmethod
+    def getObjectNamesFromFile(fileName):
+        try:
+            objectList = []
+            with open(fileName, 'r') as inputFile:
+                for line in inputFile:
+                    if not line.startswith('#'):
+                        objectList.append(line.rstrip('\n'))
+            return objectList
+        except IOError, error:
+            logger = logging.getLogger("commonFunctions")
+            logger.error(error)
+            return None
+
+    @staticmethod
+    def recursiveFlattenList(listData):
+        resultList = []
+        for value in listData:
+            if isinstance(value, (dict)):
+                result = commonFunctions.recursiveFlattenDict(value)
+                if result:
+                    resultList = resultList + result
+            elif isinstance(value, (list)):
+                result = commonFunctions.recursiveFlattenList(value)
+                if result:
+                    resultList = resultList + result
+            elif isinstance(value, (str)):
+                continue
+                #resultList.append(value)
+            else:
+                # numbers only
+                resultList.append(value)
+
+        return resultList
+
+    @staticmethod
+    def recursiveFlattenDict(dictData):
+        resultList = []
+        for name, value in dictData.items():
+            if isinstance(value, (dict)):
+                result = commonFunctions.recursiveFlattenDict(value)
+                if result:
+                    resultList = resultList + result
+            elif isinstance(value, (list)):
+                result = commonFunctions.recursiveFlattenList(value)
+                if result:
+                    resultList = resultList + result
+            elif isinstance(value, (str)):
+                continue
+                #resultList.append(value)
+            else:
+                # numbers only
+                resultList.append(value)
+
+        return resultList

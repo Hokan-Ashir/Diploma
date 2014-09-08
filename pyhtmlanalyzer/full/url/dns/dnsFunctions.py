@@ -80,6 +80,11 @@ class dnsFunctions(commonURIAnalysisData):
     # MX record first IP
     # in case of MX 'firstIP' means 'high priority' or last with same high priority
     def getMXRecordFirstIP(self, getTTL=False):
+        if not self.__listOfMXRecords:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning('Page has no MX records')
+            return None
+
         try:
             maximumPreference = 0
             for i in xrange(0, len(self.__listOfMXRecords)):
@@ -128,6 +133,11 @@ class dnsFunctions(commonURIAnalysisData):
     # A record first IP
     # in case of A 'firstIP' means 'first in sorted list'
     def getARecordFirstIP(self, getTTL=False):
+        if not self.__listOfARecords:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning('Page has no A records')
+            return None
+
         try:
             #listOfARecords = dns.resolver.query(self.uri.split("://")[1].split("/")[0], 'A')
             listOfARecords = [ipAddress.address for ipAddress in self.__listOfARecords]
@@ -175,6 +185,11 @@ class dnsFunctions(commonURIAnalysisData):
     # NS record first IP
     # in case of NS 'firstIP' means 'first in sorted list'
     def getNSRecordFirstIP(self, getTTL=False):
+        if not self.__listOfNSRecords:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning('Page has no NS records')
+            return None
+
         try:
             #listOfNSRecords = dns.resolver.query(self.uri.split("://")[1].split("/")[0], 'NS')
             listOfNSRecords = [".".join(record.target).rstrip(".") for record in self.__listOfNSRecords]
@@ -266,6 +281,11 @@ class dnsFunctions(commonURIAnalysisData):
     # resolved PTR record
     # http://stackoverflow.com/questions/19867548/python-reverse-dns-lookup-in-a-shared-hosting
     def getResolvedPTR(self, onlyFirstIP=True):
+        if not self.__listOfARecords:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning('Page has no A records')
+            return None
+
         #ipAddresses = dns.resolver.query(self.uri.split("://")[1].split("/")[0], 'A')
         listOfResolvedPTR = []
         for ipAddress in self.__listOfARecords:#ipAddresses:
@@ -302,6 +322,11 @@ class dnsFunctions(commonURIAnalysisData):
     # NOTE: in case of using 'onlyFirstIP' flag method typically return False
     # case dns.resolver get firstIP different each time (in case of multi-hosting)
     def getAandPTRIPsEquality(self, onlyFirstIP=True):
+        if not self.__listOfARecords:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning('Page has no A records')
+            return None
+
         listOfResolvedPTR = self.getResolvedPTR(onlyFirstIP)
         if listOfResolvedPTR is None or listOfResolvedPTR == []:
             logger = logging.getLogger(self.__class__.__name__)
@@ -327,9 +352,17 @@ class dnsFunctions(commonURIAnalysisData):
                   + " then A record list")
 
         # in case of unordered query, we sort both lists, but before get resolved IP address list from PTR records
-        ptrAddressList = [dns.resolver.query(".".join(resolvedPTR.target).rstrip("."), "A")[0].address for resolvedPTR
-                          in
-                          listOfResolvedPTR]
+        ptrAddressList = []
+        for resolvedPTR in listOfResolvedPTR:
+            try:
+                queryResult = dns.resolver.query(".".join(resolvedPTR.target).rstrip("."), "A")[0].address
+            except dns.NXDOMAIN, error:
+                logger = logging.getLogger(self.__class__.__name__)
+                logger.error(error)
+                continue
+
+            ptrAddressList.append(queryResult)
+
         ptrAddressList.sort(key=lambda x: [int(y) for y in x.split('.')])
         ipAddresses = [ipAddress.address for ipAddress in ipAddresses]
         ipAddresses.sort(key=lambda x: [int(y) for y in x.split('.')])

@@ -1,3 +1,5 @@
+import StringIO
+import gzip
 import logging
 import lxml
 import lxml.html
@@ -13,6 +15,8 @@ class commonConnectionUtils:
             file = open(filePath)
             pageReady = file.read().decode('utf-8')
         except:
+            logger = logging.getLogger("commonConnectionUtils")
+            logger.error("Cannot open file")
             print("Cannot open file")
             return []
         return [lxml.html.document_fromstring(pageReady), pageReady]
@@ -31,9 +35,28 @@ class commonConnectionUtils:
                 print("Cannot open page - response code: " + str(page.code))
                 return []
 
-            pageReady = page.read().decode('utf-8')
-        except urllib2.HTTPError, e:
-            print("Cannot open page - reason: " + str(e))
+            if page.info().get('Content-Encoding') == 'gzip':
+                buf = StringIO.StringIO(page.read())
+                gzip_f = gzip.GzipFile(fileobj=buf)
+                if page.headers.getparam('charset') is not None:
+                    pageReady = gzip_f.read().decode(page.headers.getparam('charset'))
+                else:
+                    pageReady = gzip_f.read()
+            else:
+                if page.headers.getparam('charset') is not None:
+                    pageReady = page.read().decode(page.headers.getparam('charset'))
+                else:
+                    pageReady = page.read()
+
+        except urllib2.HTTPError, error:
+            logger = logging.getLogger("commonConnectionUtils")
+            logger.exception(error)
+            print("Cannot open page - reason: " + str(error))
+            return []
+
+        if pageReady == "":
+            logger = logging.getLogger("commonConnectionUtils")
+            logger.warning("Empty file - " + str(url))
             return []
 
         try:

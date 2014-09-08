@@ -210,7 +210,7 @@ getAandPTRIPsEquality : Boolean,
 getCountryCode : String,
 getRegion : String,
 getTimeZone : String,
-getIsHostMalicious : Boolean,
+#getIsHostMalicious : Boolean,
 # this function returns list, so String(255) may be not enough
 getDetectedEnginesList : String,
 # this function returns list, so String(255) may be not enough
