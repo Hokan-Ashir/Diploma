@@ -6,7 +6,7 @@ from pyhtmlanalyzer.commonFunctions import configNames
 from pyhtmlanalyzer.pyHTMLAnalyzer import pyHTMLAnalyzer
 
 if __name__ == "__main__":
-    logging.basicConfig(filename='log.log', level=logging.DEBUG, filemode='w', format='\n%(levelname)s:%(name)s:%('
+    logging.basicConfig(filename='output.log', level=logging.DEBUG, filemode='w', format='\n%(levelname)s:%(name)s:%('
                                                                                           'message)s')
     analyzer = pyHTMLAnalyzer(configNames.configFileName)
 
@@ -21,8 +21,9 @@ if __name__ == "__main__":
     #print(dic.items())
 
     begin = timeit.default_timer()
-    #dic = analyzer.getNumberOfAnalyzedPageFeaturesByFunction('http://www.tutorialspoint.com/python/string_rstrip.htm')
-    analyzer.analyzePages(['http://www.tutorialspoint.com/python/string_rstrip.htm'])
+    # http://www.tutorialspoint.com/python/string_rstrip.htm
+    #dic = analyzer.getNumberOfAnalyzedPageFeaturesByFunction('http://habrahabr.ru/post/235949/')
+    #analyzer.analyzePages(['http://www.baidu.com'])
     #analyzer.setIsActiveModule('urlAnalyzer', False)
     #analyzer.analyzeFiles(['xmlFiles/test.htm'])
     #dic = analyzer.getNumberOfAnalyzedPageFeaturesByFunction('http://www.yandex.ru')

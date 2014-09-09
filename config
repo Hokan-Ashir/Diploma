@@ -168,7 +168,7 @@ getNumberOfFingerPrintingFunctions : String
 
 getDomainNameLength : Integer,
 getURLTLD : String,
-getURLFileNameLength : String,
+getURLFileNameLength : Integer,
 getIPv4PresenceInURL : Boolean,
 getIPv6PresenceInURL : Boolean,
 getSubdomainPresecnceInURL : Boolean,
@@ -212,7 +212,7 @@ getRegion : String,
 getTimeZone : String,
 #getIsHostMalicious : Boolean,
 # this function returns list, so String(255) may be not enough
-getDetectedEnginesList : String,
+#getDetectedEnginesList : String,
 # this function returns list, so String(255) may be not enough
 getURLExpirationDates : String,
 # this function returns list, so String(255) may be not enough

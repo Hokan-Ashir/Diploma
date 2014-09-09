@@ -12,10 +12,12 @@ from pyhtmlanalyzer.databaseUtils.databaseConnector import databaseConnector
 from pyhtmlanalyzer.full.html.htmlAnalyzer import htmlAnalyzer
 from pyhtmlanalyzer.full.script.scriptAnalyzer import scriptAnalyzer
 from pyhtmlanalyzer.full.url.urlAnalyzer import urlAnalyzer
+from pyhtmlanalyzer.neuronetUtils.neuroNet import neuroNet
 
 __author__ = 'hokan'
 
 class pyHTMLAnalyzer:
+    __networksDict = {}
     __modulesRegister = None
     __activeModulesDictionary = defaultdict(bool)
 
@@ -23,12 +25,34 @@ class pyHTMLAnalyzer:
     __databaseSectionName = 'Analyze functions database'
 
     def __init__(self, configFileName):
+        self.__initialize(configFileName)
+
+    def __initialize(self, configFileName):
         self.__modulesRegister = modulesRegister()
         configList = self.getConfigList(configFileName)
         self.createDatabaseFromFile(configFileName)
         self.setModule(htmlAnalyzer(configList[0]))
         self.setModule(scriptAnalyzer(configList[1]))
         self.setModule(urlAnalyzer(configList[2]))
+        logger = logging.getLogger(self.__class__.__name__)
+        logger.info("Getting invalid data from pages to train networks...")
+        invalidDataDict = self.getNetworkTrainDataFromPages(commonFunctions.getObjectNamesFromFile('invalidPages'),
+                                                          False)
+        logger.info("Getting valid data from pages to train networks...")
+        validDataDict = self.getNetworkTrainDataFromPages(commonFunctions.getObjectNamesFromFile('validPages'), True)
+
+        logger.info("Creating and training networks ...")
+        # create train networks
+        for moduleName, moduleValueList in validDataDict.items():
+            # create network for current module, if it doesn't exists
+            if moduleName not in self.__networksDict:
+                self.__networksDict[moduleName] = neuroNet(len(moduleValueList[0]))
+
+            # create common (valid and invalid) input values list of lists
+            inputDataList = moduleValueList + invalidDataDict[moduleName]
+            outputDataList = ([[True]] * len(moduleValueList)) + ([[False]] * len(invalidDataDict[moduleName]))
+            logger.info("Network name: " + moduleName)
+            print self.__trainNetworkWithData(moduleName, inputDataList, outputDataList, 200)
 
     def createDatabaseFromFile(self, configFileName):
         databaseInfo = commonFunctions.getSectionContent(configFileName, r'[^\n\s=,]+',
@@ -149,7 +173,12 @@ class pyHTMLAnalyzer:
 
         # gather all data
         for i in xrange(0, len(proxyProcessesList)):
-            resultList = processQueue.get()[1]
+            queueResult = processQueue.get()
+            resultList = queueResult[1]
+            print "In getNumberOfAnalyzedAbstractObjectFeaturesByFunction"
+            print uri
+            print functionName
+            print resultList
             # if function returns nothing (like print function, for example)
             if resultList is None or not resultList:
                 resultDict = resultList
@@ -216,15 +245,15 @@ class pyHTMLAnalyzer:
 
     # TODO replace with neuro-net
     def analyzeObjectStub(self, analyzeData):
+
         return True
 
     def __invalidateFKColumns(self, tableName, tableIdList, listOfChildTableNames):
         connector = databaseConnector()
-        register = modulesRegister()
         dictOfParentTableIds = {}
 
         # search for tables that references to tableName
-        for ORMClass in register.getORMClassDictionary().values():
+        for ORMClass in self.__modulesRegister.getORMClassDictionary().values():
             tableFks = list(ORMClass.__table__.foreign_keys)
             for FK in tableFks:
                 # get table name TO WHICH references current FK
@@ -247,7 +276,7 @@ class pyHTMLAnalyzer:
                         dictOfParentTableIds[targetTableName].append(getattr(parentTableId, configNames.id))
 
         # also search for tables that tableName references to
-        ORMClass = register.getORMClass(tableName)
+        ORMClass = self.__modulesRegister.getORMClass(tableName)
         tableFks = list(ORMClass.__table__.foreign_keys)
         for FK in tableFks:
             # get table name TO WHICH references current FK
@@ -275,7 +304,6 @@ class pyHTMLAnalyzer:
 
     def __recursivelyDeleteObjects(self, tableIdList, ORMClass, listOfChildTableNames, tableData):
         connector = databaseConnector()
-        register = modulesRegister()
         tableFks = list(ORMClass.__table__.foreign_keys)
         for item in tableIdList:
             for FK in tableFks:
@@ -292,7 +320,7 @@ class pyHTMLAnalyzer:
                 connector.update(ORMClass, item, columnFKName, None)
 
                 # TODO check if result need to be checked
-                childORMClass = register.getORMClass(targetTableName)
+                childORMClass = self.__modulesRegister.getORMClass(targetTableName)
 
                 # get child tables of new child
                 # TODO refactor, cause of too many input parameters in this function
@@ -317,8 +345,7 @@ class pyHTMLAnalyzer:
     # tableData is list of future rows
     def __recursivelyUpdateObjects(self, tableName, tableData, tableIdList):
         connector = databaseConnector()
-        register = modulesRegister()
-        ORMClass = register.getORMClass(tableName)
+        ORMClass = self.__modulesRegister.getORMClass(tableName)
         tableFks = list(ORMClass.__table__.foreign_keys)
 
         # need to update single row, so we actually able to get its id and update it
@@ -337,7 +364,7 @@ class pyHTMLAnalyzer:
                     continue
                 else:
                     columnFKName = FK.parent.description
-                    result = connector.select(register.getORMClass(tableName),
+                    result = connector.select(self.__modulesRegister.getORMClass(tableName),
                                                      [columnFKName], configNames.id,
                                                      tableIdList[0])
                     # TODO check if result need to be checked
@@ -399,12 +426,11 @@ class pyHTMLAnalyzer:
 
     def updateObjects(self, analyzeData, pageRowId):
         connector = databaseConnector()
-        register = modulesRegister()
 
         # construct dictionary of previous rows for each module ...
         # ... that page references to ...
         dictOfPreviousRowIds = {}
-        ORMClass = register.getORMClass('page')
+        ORMClass = self.__modulesRegister.getORMClass('page')
         tableFks = list(ORMClass.__table__.foreign_keys)
         for FK in tableFks:
             # get table name TO WHICH references current FK
@@ -418,7 +444,7 @@ class pyHTMLAnalyzer:
                 dictOfPreviousRowIds[targetTableName].append(getattr(item, columnFKName))
 
         # ... and that references to page
-        for ormClassName, ORMClass in register.getORMClassDictionary().items():
+        for ormClassName, ORMClass in self.__modulesRegister.getORMClassDictionary().items():
             tableFks = list(ORMClass.__table__.foreign_keys)
             for FK in tableFks:
                 # get table name TO WHICH references current FK
@@ -446,9 +472,8 @@ class pyHTMLAnalyzer:
             return
 
         connector = databaseConnector()
-        register = modulesRegister()
         for tableName, keyIdList in dictOfForeignKeys.items():
-            ORMClass = register.getORMClass(tableName)
+            ORMClass = self.__modulesRegister.getORMClass(tableName)
             tableFks = list(ORMClass.__table__.foreign_keys)
             for FK in tableFks:
                 # get table name TO WHICH references current FK
@@ -465,19 +490,18 @@ class pyHTMLAnalyzer:
 
     def __recursivelyInsertData(self, tableName, dataList):
         connector = databaseConnector()
-        register = modulesRegister()
         listOfInsertedIds = []
         for item in dataList:
             dictOfFKs = {}
             for name, value in item.items():
-                tableFks = list(register.getORMClass(tableName).__table__.foreign_keys)
+                tableFks = list(self.__modulesRegister.getORMClass(tableName).__table__.foreign_keys)
                 for FK in tableFks:
                     # get table name TO WHICH references current FK
                     fkTableName = FK.target_fullname.split('.')[0]
                     if fkTableName == name:
                         dictOfFKs[name] = self.__recursivelyInsertData(name, value)
 
-            Class = register.getORMClass(tableName)
+            Class = self.__modulesRegister.getORMClass(tableName)
 
             # delete FK references from new row data
             for key in dictOfFKs.keys():
@@ -516,36 +540,93 @@ class pyHTMLAnalyzer:
         dictOfInsertedIds['page'] = [pageRowId]
         self.__attachForeignKeys(dictOfInsertedIds)
 
-
-    def analyzeObjects(self, listOfObjects, isPages = True):
+    def __insertDataInDatabase(self, analyzedObjectName, analyzedObjectValue, isValid):
         connector = databaseConnector()
-        register = modulesRegister()
+        # update or insert data
+        pageRow = connector.select(self.__modulesRegister.getORMClass('page'), [configNames.id], 'url',
+                                       analyzedObjectName)
+        if pageRow:
+            # page row already exists
+            connector.update(self.__modulesRegister.getORMClass('page'), pageRow[0].id, 'isValid', isValid)
+            self.updateObjects(analyzedObjectValue, pageRow[0].id)
+        else:
+            # page row doesn't exists - create new one and all data within
+            Page = self.__modulesRegister.getORMClass('page')
+            newPage = Page(analyzedObjectName, isValid)
+            pageRowId = connector.insertObject(newPage)
+            self.insertObjects(analyzedObjectValue, pageRowId)
 
+    def __trainNetworkWithData(self, networkName, listOfInputParameters, listOfOutputParameters, numberOfEpochs = None):
+        return self.__networksDict[networkName].trainNetworkWithData(listOfInputParameters, listOfOutputParameters, numberOfEpochs)
+
+    def __getNetworkTrainDataFromObjects(self, listOfObjects, allObjectsAreValid = True, isPages = True):
+        # get analyze data itself
+        resultDict = self.getTotalNumberOfAnalyzedObjectsFeatures(listOfObjects, isPages)
+        dictOfInputParameters = {}
+        for analyzedObjectName, analyzedObjectValue in resultDict.items():
+            # TODO flatten all dicts and lists (which is not FKs to some tables), sort them
+            # remove all FKs columns (dict keys) from analyzedObjectValue
+            modulesDict = analyzedObjectValue[1]
+            for moduleName, moduleValueList in modulesDict.items():
+                listOfListsOfInputParameters = []
+                 # delete FKs elements
+                # ... that current module references to ...
+                ORMClass = self.__modulesRegister.getORMClass(moduleName)
+                tableFks = list(ORMClass.__table__.foreign_keys)
+                for dictOfModuleValues in moduleValueList:
+                    deletedData = {}
+                    for FK in tableFks:
+                        # get table name TO WHICH references current FK
+                        targetTableName = FK.target_fullname.split('.')[0]
+                        if targetTableName in dictOfModuleValues:
+                            deletedData[targetTableName] = dictOfModuleValues[targetTableName]
+                            del dictOfModuleValues[targetTableName]
+
+                    # ... and that references to current module
+                    for ormClassName, ORMClass in self.__modulesRegister.getORMClassDictionary().items():
+                        tableFks = list(ORMClass.__table__.foreign_keys)
+                        for FK in tableFks:
+                            # get table name TO WHICH references current FK
+                            targetTableName = FK.target_fullname.split('.')[0]
+                            if targetTableName in dictOfModuleValues:
+                                deletedData[targetTableName] = dictOfModuleValues[targetTableName]
+                                del dictOfModuleValues[targetTableName]
+
+                    listOfListsOfInputParameters.append(commonFunctions.recursiveFlattenDict(dictOfModuleValues))
+
+                    # restore deleted data, cause this is needed for database
+                    for name, value in deletedData.items():
+                        dictOfModuleValues[name] = value
+
+                if moduleName not in dictOfInputParameters:
+                    dictOfInputParameters[moduleName] = listOfListsOfInputParameters
+                else:
+                    dictOfInputParameters[moduleName] = dictOfInputParameters[moduleName] + listOfListsOfInputParameters
+
+            self.__insertDataInDatabase(analyzedObjectName, analyzedObjectValue[1], allObjectsAreValid)
+
+        return dictOfInputParameters
+
+
+    def getNetworkTrainDataFromPages(self, listOfPages, allObjectsAreValid):
+        return self.__getNetworkTrainDataFromObjects(listOfPages, allObjectsAreValid)
+
+    def getNetworkTrainDataFromFiles(self, listOfFiles, allObjectsAreValid):
+        return self.__getNetworkTrainDataFromObjects(listOfFiles, allObjectsAreValid, False)
+
+    def __analyzeObjects(self, listOfObjects, isPages = True):
         # get analyze data itself
         resultDict = self.getTotalNumberOfAnalyzedObjectsFeatures(listOfObjects, isPages)
         for analyzedObjectName, analyzedObjectValue in resultDict.items():
 
             # get isValid-solution
-            isValid = self.analyzeObjectStub(analyzedObjectValue)
-
-            # update or insert data
-            pageRow = connector.select(register.getORMClass('page'), [configNames.id], 'url', analyzedObjectName)
-            if pageRow:
-                # page row already exists
-                connector.update(register.getORMClass('page'), pageRow[0].id, 'isValid', isValid)
-                self.updateObjects(analyzedObjectValue[1], pageRow[0].id)
-            else:
-                # page row doesn't exists - create new one and all data within
-                Page = register.getORMClass('page')
-                newPage = Page(analyzedObjectName, isValid)
-                pageRowId = connector.insertObject(newPage)
-                self.insertObjects(analyzedObjectValue[1], pageRowId)
-
+            isValid = self.analyzeObjectStub(analyzedObjectValue[1])
+            self.__insertDataInDatabase(analyzedObjectName, analyzedObjectValue[1], isValid)
 
     def analyzePages(self, listOfPages):
-        self.analyzeObjects(listOfPages)
+        self.__analyzeObjects(listOfPages)
 
     def analyzeFiles(self, listOfFiles):
-        self.analyzeObjects(listOfFiles, False)
+        self.__analyzeObjects(listOfFiles, False)
     #
     ###################################################################################################################

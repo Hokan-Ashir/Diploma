@@ -55,7 +55,7 @@ class dnsFunctions(commonURIAnalysisData):
     # print record firstIP of TTL common functions
     def printRecordFirstIP(self, recordType, callbackFunction):
         fistIP = callbackFunction()
-        if fistIP is not None:
+        if fistIP !=  "":
             print("\nFirst IP of %s record is: %s" % (recordType, fistIP))
 
     #
@@ -63,7 +63,7 @@ class dnsFunctions(commonURIAnalysisData):
     def printRecordFirstIPTTL(self, recordType, callbackFunction):
         fistIP = callbackFunction(True)
 
-        if fistIP is not None:
+        if fistIP != "":
             print("\nFirst IP's TTL of %s record is: %s" % (recordType, fistIP))
             #
 
@@ -83,7 +83,7 @@ class dnsFunctions(commonURIAnalysisData):
         if not self.__listOfMXRecords:
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning('Page has no MX records')
-            return None
+            return ""
 
         try:
             maximumPreference = 0
@@ -99,7 +99,7 @@ class dnsFunctions(commonURIAnalysisData):
             logger = logging.getLogger(self.__class__.__name__)
             logger.error("No MX dns record exists for this dns")
             print("\nNo MX dns record exists for this dns")
-            return None
+            return ""
 
     def printMXRecordFirstIP(self):
         self.printRecordFirstIP('MX', self.getMXRecordFirstIP)
@@ -120,10 +120,10 @@ class dnsFunctions(commonURIAnalysisData):
     def getMXRecordFirstIPASNumber(self):
         firstIP = self.getMXRecordFirstIP()
 
-        if firstIP is not None:
+        if firstIP != "":
             return self.getASNumber(firstIP)
 
-        return firstIP
+        return -1
 
     def printMXRecordFirstIPASNumber(self):
         self.printRecordFirstIPASNumber('MX', self.getMXRecordFirstIPASNumber)
@@ -136,7 +136,7 @@ class dnsFunctions(commonURIAnalysisData):
         if not self.__listOfARecords:
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning('Page has no A records')
-            return None
+            return ""
 
         try:
             #listOfARecords = dns.resolver.query(self.uri.split("://")[1].split("/")[0], 'A')
@@ -151,7 +151,7 @@ class dnsFunctions(commonURIAnalysisData):
             logger = logging.getLogger(self.__class__.__name__)
             logger.error("No A dns record exists for this dns")
             print("\nNo A dns record exists for this dns")
-            return None
+            return ""
 
 
     def printARecordFirstIP(self):
@@ -172,10 +172,10 @@ class dnsFunctions(commonURIAnalysisData):
     # A record first IP AS Number
     def getARecordFirstIPASNumber(self):
         firstIP = self.getARecordFirstIP()
-        if firstIP is not None:
+        if firstIP != "":
             return self.getASNumber(firstIP)
 
-        return firstIP
+        return -1
 
     def printARecordFirstIPASNumber(self):
         self.printRecordFirstIPASNumber('A', self.getARecordFirstIPASNumber)
@@ -188,7 +188,7 @@ class dnsFunctions(commonURIAnalysisData):
         if not self.__listOfNSRecords:
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning('Page has no NS records')
-            return None
+            return ""
 
         try:
             #listOfNSRecords = dns.resolver.query(self.uri.split("://")[1].split("/")[0], 'NS')
@@ -203,7 +203,7 @@ class dnsFunctions(commonURIAnalysisData):
             logger = logging.getLogger(self.__class__.__name__)
             logger.error("No NS dns record exists for this dns")
             print("\nNo NS dns record exists for this dns")
-            return None
+            return ""
 
     def printNSRecordFirstIP(self):
         self.printRecordFirstIP('NS', self.getNSRecordFirstIP)
@@ -222,10 +222,10 @@ class dnsFunctions(commonURIAnalysisData):
     # NS record first IP AS Number
     def getNSRecordFirstIPASNumber(self):
         firstIP = self.getNSRecordFirstIP()
-        if firstIP is not None:
+        if firstIP != "":
             return self.getASNumber(firstIP)
 
-        return firstIP
+        return -1
 
     def printNSRecordFirstIPASNumber(self):
         self.printRecordFirstIPASNumber('NS', self.getNSRecordFirstIPASNumber)
@@ -241,12 +241,12 @@ class dnsFunctions(commonURIAnalysisData):
             logger = logging.getLogger(self.__class__.__name__)
             logger.error("No %s dns record exists for this dns" % recordType)
             print("\nNo %s dns record exists for this dns" % recordType)
-            return None
+            return -1
 
 
     def printRecordIPsNumber(self, recordType='MX'):
         IPsNumber = self.getRecordIPsNumber(recordType)
-        if IPsNumber is not None:
+        if IPsNumber != "":
             print("\n%s record has: %s IPs" % (recordType, IPsNumber))
             #
 
@@ -284,21 +284,28 @@ class dnsFunctions(commonURIAnalysisData):
         if not self.__listOfARecords:
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning('Page has no A records')
-            return None
+            return []
 
         #ipAddresses = dns.resolver.query(self.uri.split("://")[1].split("/")[0], 'A')
         listOfResolvedPTR = []
         for ipAddress in self.__listOfARecords:#ipAddresses:
-            reverseIP = reversename.from_address("%s" % ipAddress.address)
+            try:
+                reverseIP = reversename.from_address("%s" % ipAddress.address)
+            except Exception, error:
+                logger = logging.getLogger(self.__class__.__name__)
+                logger.warning(error)
+                continue
+
             try:
                 resolvedPTR = dns.resolver.query(reverseIP, 'PTR')[0]
                 listOfResolvedPTR.append(resolvedPTR)
             except (dns.resolver.NXDOMAIN, dns.resolver.NoAnswer), error:
                 logger = logging.getLogger(self.__class__.__name__)
                 logger.warning('Page has no MX domain\n\t %s' % error)
-                pass
+                continue
             if onlyFirstIP:
                 break
+
         return listOfResolvedPTR
 
 
@@ -325,7 +332,7 @@ class dnsFunctions(commonURIAnalysisData):
         if not self.__listOfARecords:
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning('Page has no A records')
-            return None
+            return False
 
         listOfResolvedPTR = self.getResolvedPTR(onlyFirstIP)
         if listOfResolvedPTR is None or listOfResolvedPTR == []:
@@ -356,12 +363,15 @@ class dnsFunctions(commonURIAnalysisData):
         for resolvedPTR in listOfResolvedPTR:
             try:
                 queryResult = dns.resolver.query(".".join(resolvedPTR.target).rstrip("."), "A")[0].address
-            except dns.NXDOMAIN, error:
+            except dns.resolver.NXDOMAIN, error:
                 logger = logging.getLogger(self.__class__.__name__)
                 logger.error(error)
                 continue
 
             ptrAddressList.append(queryResult)
+
+        if not ptrAddressList:
+            return False
 
         ptrAddressList.sort(key=lambda x: [int(y) for y in x.split('.')])
         ipAddresses = [ipAddress.address for ipAddress in ipAddresses]

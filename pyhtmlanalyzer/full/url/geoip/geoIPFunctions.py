@@ -87,7 +87,7 @@ class geoIPFunctions(commonURIAnalysisData):
     #
     # country code
     def getCountryCode(self):
-        return self.__hostGeoIpInfo[1]
+        return "" if self.__hostGeoIpInfo is None else self.__hostGeoIpInfo[1]
 
     def printCountryCode(self):
         print("\nCountry code: %s" % self.getCountryCode())
@@ -99,7 +99,7 @@ class geoIPFunctions(commonURIAnalysisData):
     #
     # region
     def getRegion(self):
-        return self.__hostGeoIpInfo[2]
+        return "" if self.__hostGeoIpInfo is None else self.__hostGeoIpInfo[2]
 
     def printRegion(self):
         print("\nRegion: %s" % self.getRegion())
@@ -111,7 +111,7 @@ class geoIPFunctions(commonURIAnalysisData):
     #
     # time zone
     def getTimeZone(self):
-        return self.__hostGeoIpInfo[4]
+        return "" if self.__hostGeoIpInfo is None else self.__hostGeoIpInfo[4]
 
     def printTimeZone(self):
         print("\nTime zone: %s" % self.getTimeZone())

@@ -14,7 +14,12 @@ class whoisFunctions(commonURIAnalysisData):
 
     # pre analysis method
     def retrieveWHOIShostInfo(self):
-         self.whoisData = whois.whois(self._uri)
+        try:
+            self.whoisData = whois.whois(self._uri)
+        except Exception, error:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.error(error)
+            pass
 
     # expiration date
     def getURLExpirationDates(self):

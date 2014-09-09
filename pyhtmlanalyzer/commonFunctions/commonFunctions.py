@@ -1,4 +1,5 @@
 from copy import copy, deepcopy
+from datetime import date, datetime
 import logging
 import re
 
@@ -205,6 +206,9 @@ class commonFunctions:
             result = getattr(classInstance, methodName)(**arguments)
         except Exception, error:
             logger = logging.getLogger('callFunctionByNameQeued')
+            logger.error(classInstance)
+            logger.error(methodName)
+            logger.error(arguments)
             logger.exception(error)
             pass
 
@@ -290,12 +294,12 @@ class commonFunctions:
                 result = commonFunctions.recursiveFlattenList(value)
                 if result:
                     resultList = resultList + result
-            elif isinstance(value, (str)):
+            elif isinstance(value, (str, unicode, datetime, date)):
                 continue
                 #resultList.append(value)
             else:
-                # numbers only
-                resultList.append(value)
+                # numbers only or None values, that automatically turns to False
+                resultList.append(value if value is not None else False)
 
         return resultList
 
@@ -311,11 +315,11 @@ class commonFunctions:
                 result = commonFunctions.recursiveFlattenList(value)
                 if result:
                     resultList = resultList + result
-            elif isinstance(value, (str)):
+            elif isinstance(value, (str, unicode, datetime, date)):
                 continue
                 #resultList.append(value)
             else:
-                # numbers only
-                resultList.append(value)
+                # numbers only or None values, that automatically turns to False
+                resultList.append(value if value is not None else False)
 
         return resultList

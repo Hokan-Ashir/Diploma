@@ -33,7 +33,7 @@ class commonURLFunctions(commonURIAnalysisData):
     # the TLD of this URL
     def getURLTLD(self):
         TLD = self._uri.split('://')[1].split('/')[0].split('.')[-1]
-        return None if TLD.isdigit() is True else TLD
+        return "" if TLD.isdigit() is True else TLD
 
     def printURLTDL(self):
         TLD = self.getURLTLD()
