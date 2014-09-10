@@ -283,7 +283,7 @@ def __repr__ (self):
             session\
                 .query(classObject)\
                 .filter(getattr(getattr(classObject, configNames.id), operatorMethodName)(idValue))\
-                .update(**updateDictOfValues)
+                .update(updateDictOfValues)
             session.commit()
             session.close()
         except Exception, error:

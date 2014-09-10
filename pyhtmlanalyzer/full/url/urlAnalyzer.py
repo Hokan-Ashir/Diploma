@@ -189,8 +189,8 @@ class urlAnalyzer(commonURLFunctions, dnsFunctions, geoIPFunctions, whoisFunctio
                     proxy.start()
 
                 # wait for process joining
-                for j in xrange(0, len(proxyProcessesList)):
-                    proxyProcessesList[j].join()
+                #for j in xrange(0, len(proxyProcessesList)):
+                #    proxyProcessesList[j].join()
 
                 # gather all data
                 for j in xrange(0, len(proxyProcessesList)):

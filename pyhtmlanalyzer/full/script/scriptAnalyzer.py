@@ -910,6 +910,7 @@ class scriptAnalyzer(commonAnalysisData):
             # deleting comments
             text = re.sub(self.__commentsRegExp, '', text)
 
+        # TODO fails with UnicodeDecodeError: 'ascii' codec can't decode byte 0xe7 in position 13983: ordinal not in range(128)
         return [hashlib.sha256(text.encode('utf-8')).hexdigest(), hashlib.sha512(text.encode('utf-8')).hexdigest()]
 
     def printScriptContentHashing(self):
@@ -1333,8 +1334,8 @@ class scriptAnalyzer(commonAnalysisData):
                     proxy.start()
 
                 # wait for process joining
-                for j in xrange(0, len(proxyProcessesList)):
-                    proxyProcessesList[j].join()
+                #for j in xrange(0, len(proxyProcessesList)):
+                #    proxyProcessesList[j].join()
 
                 # gather all data
                 for j in xrange(0, len(proxyProcessesList)):
@@ -1378,7 +1379,8 @@ class scriptAnalyzer(commonAnalysisData):
             # checking hash values <b> before </b> for-loop
             scriptPieceCodeHashes = getattr(self, self._scriptHashingFunctionName)()
             if self.__listOfHashes is not None and scriptPieceCodeHashes in self.__listOfHashes:
-                resultDict[configNames.id] = self.__listOfIds[0]
+                # assuming listOfIds (previous analyzed script pieces in DB) and listOfHashes have same indices
+                resultDict[configNames.id] = self.__listOfIds[self.__listOfHashes.index(scriptPieceCodeHashes)]
                 return resultDict
 
             for funcName in self.__listOfAnalyzeFunctions:
@@ -1408,8 +1410,9 @@ class scriptAnalyzer(commonAnalysisData):
                 # here we can can calculate hashes per script code, cause it's "number" defined with row above
                 scriptPieceCodeHashes = getattr(self, self._scriptHashingFunctionName)()
                 if self.__listOfHashes is not None and scriptPieceCodeHashes in self.__listOfHashes:
-                    resultDict.append({configNames.id : self.__listOfIds[0]})
-                    return resultDict
+                    # assuming listOfIds (previous analyzed script pieces in DB) and listOfHashes have same indices
+                    resultDict.append({configNames.id : self.__listOfIds[self.__listOfHashes.index(scriptPieceCodeHashes)]})
+                    continue
 
                 for funcName in self.__listOfAnalyzeFunctions:
                     try:
@@ -1456,12 +1459,13 @@ class scriptAnalyzer(commonAnalysisData):
         listOfPreviousHashes = []
         connector = databaseConnector()
         register = modulesRegister()
+        self.__listOfIds = []
         pageId = connector.select(register.getORMClass('page'), [configNames.id], 'url', self.__uri)
         if pageId:
-            self.__listOfIds = [pageId[0].id]
             previousHashValuesFks = connector.select(register.getORMClass(self.__class__.__name__),
                                                      ['pageFk'], 'pageFk', pageId[0].id)
             for fk in previousHashValuesFks:
+                self.__listOfIds.append(fk.id)
                 previousHashValues = connector.select(register.getORMClass('hashValues'), None, configNames.id, fk.id)
                 if previousHashValues is not None \
                     and previousHashValues:

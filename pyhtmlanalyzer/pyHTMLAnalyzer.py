@@ -18,6 +18,14 @@ __author__ = 'hokan'
 
 class pyHTMLAnalyzer:
     __networksDict = {}
+    # this dictionary is respond for result solution (valid/invalid), by passing each module weight in result function
+    # In another words it store values that represents HOW MUCH each module (i.e. scriptModule) AND each value
+    # (i.e. script piece of current page) affects on result
+    # i.e:
+    # isValid = isValid * (weightsDict[moduleName] * networkDict[moduleName].analyzeData(...))
+    #
+    # stores list of 2 values, first - weight of current module, second - weight of each value of current module
+    __networksResultSolutionWeightsDict = {}
     __modulesRegister = None
     __activeModulesDictionary = defaultdict(bool)
 
@@ -31,9 +39,21 @@ class pyHTMLAnalyzer:
         self.__modulesRegister = modulesRegister()
         configList = self.getConfigList(configFileName)
         self.createDatabaseFromFile(configFileName)
+
         self.setModule(htmlAnalyzer(configList[0]))
         self.setModule(scriptAnalyzer(configList[1]))
         self.setModule(urlAnalyzer(configList[2]))
+        #if True:
+        #    return
+
+        # networks part
+        # set weights for register modules
+        # TODO make own function or module for this stuff, cause it's one of the main controlling mechanisms
+        for moduleName in self.__modulesRegister.getClassInstanceDictionary().keys():
+            self.__networksResultSolutionWeightsDict[moduleName] = [1, 1]
+
+        # TODO write code for saving/uploading file that describes network
+        # gather train data
         logger = logging.getLogger(self.__class__.__name__)
         logger.info("Getting invalid data from pages to train networks...")
         invalidDataDict = self.getNetworkTrainDataFromPages(commonFunctions.getObjectNamesFromFile('invalidPages'),
@@ -49,6 +69,8 @@ class pyHTMLAnalyzer:
                 self.__networksDict[moduleName] = neuroNet(len(moduleValueList[0]))
 
             # create common (valid and invalid) input values list of lists
+            print("Network name: " + moduleName)
+            print(len(moduleValueList[0]))
             inputDataList = moduleValueList + invalidDataDict[moduleName]
             outputDataList = ([[True]] * len(moduleValueList)) + ([[False]] * len(invalidDataDict[moduleName]))
             logger.info("Network name: " + moduleName)
@@ -168,8 +190,8 @@ class pyHTMLAnalyzer:
                 process.start()
 
         # wait for process joining
-        for process in proxyProcessesList:
-            process.join()
+        #for process in proxyProcessesList:
+        #    process.join()
 
         # gather all data
         for i in xrange(0, len(proxyProcessesList)):
@@ -228,8 +250,8 @@ class pyHTMLAnalyzer:
             proxy.start()
 
         # wait for process joining
-        for process in proxyProcessesList:
-            process.join()
+        #for process in proxyProcessesList:
+        #    process.join()
 
         # gather all data
         for i in xrange(0, len(proxyProcessesList)):
@@ -243,10 +265,77 @@ class pyHTMLAnalyzer:
     def getTotalNumberOfAnalyzedFilesFeatures(self, listOfFiles):
         return self.getTotalNumberOfAnalyzedObjectsFeatures(listOfFiles, False)
 
-    # TODO replace with neuro-net
-    def analyzeObjectStub(self, analyzeData):
+    def analyzeObjectViaNetworks(self, analyzeDataDict):
+        dictOfInputParameters = {}
 
-        return True
+        # gather data for analysis
+        for moduleName, moduleValueList in analyzeDataDict.items():
+                listOfListsOfInputParameters = []
+                 # delete FKs elements
+                # ... that current module references to ...
+                ORMClass = self.__modulesRegister.getORMClass(moduleName)
+                tableFks = list(ORMClass.__table__.foreign_keys)
+                for dictOfModuleValues in moduleValueList:
+                    deletedData = {}
+                    for FK in tableFks:
+                        # get table name TO WHICH references current FK
+                        targetTableName = FK.target_fullname.split('.')[0]
+                        if targetTableName in dictOfModuleValues:
+                            deletedData[targetTableName] = dictOfModuleValues[targetTableName]
+                            del dictOfModuleValues[targetTableName]
+
+                    # ... and that references to current module
+                    for ormClassName, ORMClass in self.__modulesRegister.getORMClassDictionary().items():
+                        tableFks = list(ORMClass.__table__.foreign_keys)
+                        for FK in tableFks:
+                            # get table name TO WHICH references current FK
+                            targetTableName = FK.target_fullname.split('.')[0]
+                            if targetTableName in dictOfModuleValues:
+                                deletedData[targetTableName] = dictOfModuleValues[targetTableName]
+                                del dictOfModuleValues[targetTableName]
+
+                    listOfListsOfInputParameters.append(commonFunctions.recursiveFlattenDict(dictOfModuleValues))
+
+                    # restore deleted data, cause this is needed for database
+                    for name, value in deletedData.items():
+                        dictOfModuleValues[name] = value
+
+                if moduleName not in dictOfInputParameters:
+                    dictOfInputParameters[moduleName] = listOfListsOfInputParameters
+                else:
+                    dictOfInputParameters[moduleName] = dictOfInputParameters[moduleName] + listOfListsOfInputParameters
+
+        logger = logging.getLogger(self.__class__.__name__)
+        # pass data to neuro-nets, get isValid solution
+
+        # this flag represent cases, when all data from page DOESN'T changed, so "isValid" value must NOT changed
+        # either; such cases can be find when NO inputValue has expected length, that mean each inputValue contains
+        # row previous id
+        pageChanged = False
+        # TODO check abs() calls
+        solution = 0
+        for networkName in self.__networksDict.keys():
+            print("Gathering result solution from network '%s'" % networkName)
+            logger.info("Gathering result solution from network '%s'" % networkName)
+            moduleResultValue = 1
+            for item in dictOfInputParameters[networkName]:
+                if self.__networksDict[networkName].getNumberOfInputParameters() == len(item):
+                    pageChanged = True
+                    moduleResultValue = moduleResultValue \
+                                        * abs(self.__networksDict[networkName].analyzeData(item)) \
+                                        * self.__networksResultSolutionWeightsDict[networkName][1]
+
+            solution = solution + moduleResultValue * self.__networksResultSolutionWeightsDict[networkName][0]
+
+        # round solution
+        # TODO also make this parameter, border value (0.5), configurable
+        solution = True if abs(solution) >= 0.5 else False
+        print("Result solution is: " + str(solution))
+        print("Page changed: " + str(pageChanged))
+        logger.info("Result solution is: " + str(solution))
+        logger.info("Page changed: " + str(pageChanged))
+
+        return None if not pageChanged else solution
 
     def __invalidateFKColumns(self, tableName, tableIdList, listOfChildTableNames):
         connector = databaseConnector()
@@ -377,6 +466,21 @@ class pyHTMLAnalyzer:
             for item in listOfFKTableNames:
                 del tableData[0][item]
 
+            # remove 'get' from beginning of future column name and decapitalize first character
+            # as we done it before in databaseConnector, when create database
+            for columnName, columnValue in tableData[0].items():
+                tempString = columnName.lstrip('get')
+                # get from http://stackoverflow.com/questions/455580/json-datetime-between-python-and-javascript
+                dthandler = lambda obj: (obj.isoformat()
+                                         if isinstance(obj, datetime)
+                                            or isinstance(obj, date)
+                                         else None)
+                # serialize via JSON all dict and list values (assumed, that in DB corresponding rows has String type)
+                if type(tableData[0][columnName]) is list \
+                    or type(tableData[0][columnName]) is dict:
+                        tableData[0][columnName] = json.dumps(tableData[0][columnName], default=dthandler)
+                tableData[0][tempString[0].lower() + tempString[1:]] = tableData[0].pop(columnName)
+
             # update parent object
             connector.updateByDict(ORMClass, tableIdList[0], tableData[0])
 
@@ -386,12 +490,21 @@ class pyHTMLAnalyzer:
             # check if any rows in tableData has only @id key, this means that this data not changed and must not be
             # updated by any NEW information, so we basically delete all rows like:
             # row['id'] in tableIdList
+            itemsToDelete = []
             for item in tableData:
                 if len(item) == 1 \
                     and configNames.id in item \
                     and item[configNames.id] in tableIdList:
                     tableIdList.remove(item[configNames.id])
-                    del item
+                    itemsToDelete.append(item)
+
+            # remove items that is not need to delete
+            for item in itemsToDelete:
+                tableData.remove(item)
+
+            # table data doesn't changed at all - nothing to update
+            if not tableIdList:
+                return
 
             # get list of all tables that depends on tableName
             # later, when we will be invalidating parent table Ids, we will need to know which table
@@ -547,8 +660,10 @@ class pyHTMLAnalyzer:
                                        analyzedObjectName)
         if pageRow:
             # page row already exists
-            connector.update(self.__modulesRegister.getORMClass('page'), pageRow[0].id, 'isValid', isValid)
-            self.updateObjects(analyzedObjectValue, pageRow[0].id)
+            # if isValid is None - page do not changed at all, nothing to update
+            if isValid is not None:
+                connector.update(self.__modulesRegister.getORMClass('page'), pageRow[0].id, 'isValid', isValid)
+                self.updateObjects(analyzedObjectValue, pageRow[0].id)
         else:
             # page row doesn't exists - create new one and all data within
             Page = self.__modulesRegister.getORMClass('page')
@@ -564,7 +679,7 @@ class pyHTMLAnalyzer:
         resultDict = self.getTotalNumberOfAnalyzedObjectsFeatures(listOfObjects, isPages)
         dictOfInputParameters = {}
         for analyzedObjectName, analyzedObjectValue in resultDict.items():
-            # TODO flatten all dicts and lists (which is not FKs to some tables), sort them
+            # flatten all dicts and lists (which is not FKs to some tables)
             # remove all FKs columns (dict keys) from analyzedObjectValue
             modulesDict = analyzedObjectValue[1]
             for moduleName, moduleValueList in modulesDict.items():
@@ -615,12 +730,18 @@ class pyHTMLAnalyzer:
         return self.__getNetworkTrainDataFromObjects(listOfFiles, allObjectsAreValid, False)
 
     def __analyzeObjects(self, listOfObjects, isPages = True):
+        # TODO optimize analyze call - before doing analysis, get URLVoid data about this host,
+        # and if number of detected engines less than 50% - DO NOT analyze page at all (it is valid),
+        # if number of detected engines >50% - DO NOT analyze page either (it is NOT valid)
+        # else - analyze page
+
         # get analyze data itself
         resultDict = self.getTotalNumberOfAnalyzedObjectsFeatures(listOfObjects, isPages)
+        print resultDict
         for analyzedObjectName, analyzedObjectValue in resultDict.items():
 
             # get isValid-solution
-            isValid = self.analyzeObjectStub(analyzedObjectValue[1])
+            isValid = self.analyzeObjectViaNetworks(analyzedObjectValue[1])
             self.__insertDataInDatabase(analyzedObjectName, analyzedObjectValue[1], isValid)
 
     def analyzePages(self, listOfPages):

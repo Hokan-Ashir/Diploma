@@ -23,6 +23,7 @@ if __name__ == "__main__":
     begin = timeit.default_timer()
     # http://www.tutorialspoint.com/python/string_rstrip.htm
     #dic = analyzer.getNumberOfAnalyzedPageFeaturesByFunction('http://habrahabr.ru/post/235949/')
+    analyzer.analyzePages(['http://dark-world.ru/albums/Darkspace-Dark-Space-III-I.php'])
     #analyzer.analyzePages(['http://www.baidu.com'])
     #analyzer.setIsActiveModule('urlAnalyzer', False)
     #analyzer.analyzeFiles(['xmlFiles/test.htm'])

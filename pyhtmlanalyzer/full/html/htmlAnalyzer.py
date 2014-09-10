@@ -1025,6 +1025,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         # get previous hash values, corresponding to this page
         connector = databaseConnector()
         register = modulesRegister()
+        self.__listOfHashes = None
         previousHTMLFk = connector.select(register.getORMClass('page'), ['htmlAnalysisFk'], 'url', self._uri)
         if previousHTMLFk:
             previousHashValuesFK = connector.select(register.getORMClass(self.__class__.__name__), ['hashValuesFk'],
@@ -1076,8 +1077,8 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
                     proxy.start()
 
                 # wait for process joining
-                for j in xrange(0, len(proxyProcessesList)):
-                    proxyProcessesList[j].join()
+                #for j in xrange(0, len(proxyProcessesList)):
+                #    proxyProcessesList[j].join()
 
                 # gather all data
                 for j in xrange(0, len(proxyProcessesList)):

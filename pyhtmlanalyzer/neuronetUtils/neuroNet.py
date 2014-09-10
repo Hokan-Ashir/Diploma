@@ -27,6 +27,15 @@ class neuroNet(object):
         self.__numberOfOutputParameters = numberOfOutputParameters
         self.__numberOfInnerLayers = numberOfInnerLayers
 
+    def getNumberOfInputParameters(self):
+        return self.__numberOfInputParameters
+
+    def getNumberOfOutputParameters(self):
+        return self.__numberOfOutputParameters
+
+    def getNumberOfInnerLayers(self):
+        return self.__numberOfInnerLayers
+
     # dataList is list that consists of lists.
     # Each even element is input parameter and corresponding odd parameter is output parameter
     def trainNetworkWithDataList(self, dataList, numberOfEpochs = None):
