@@ -380,7 +380,7 @@ def __repr__ (self):
 
     def getDatabaseEngine(self, user, password, hostname, databaseName, createIfNotExists=False):
         connectionString = 'mysql://' + user + ':' + password + '@' + hostname
-        self.__engine = create_engine(connectionString, encoding='latin1', echo=True)
+        self.__engine = create_engine(connectionString, encoding='latin1')
         self.useDatabase(user, password, hostname, databaseName)
 
         if createIfNotExists:

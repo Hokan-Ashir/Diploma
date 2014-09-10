@@ -1,13 +1,14 @@
 #!/usr/bin/env/ python
 # -*- coding: utf-8 -*-
 import logging
+import logging.config
 import timeit
 from pyhtmlanalyzer.commonFunctions import configNames
 from pyhtmlanalyzer.pyHTMLAnalyzer import pyHTMLAnalyzer
 
 if __name__ == "__main__":
-    logging.basicConfig(filename='output.log', level=logging.DEBUG, filemode='w', format='\n%(levelname)s:%(name)s:%('
-                                                                                          'message)s')
+    logging.config.fileConfig('logging.ini')
+    logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
     analyzer = pyHTMLAnalyzer(configNames.configFileName)
 
     #analyzer.printAnalyzedPageFeatures("http://www.tutorialspoint.com/python/string_split.htm")
