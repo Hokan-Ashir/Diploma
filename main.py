@@ -9,6 +9,8 @@ from pyhtmlanalyzer.pyHTMLAnalyzer import pyHTMLAnalyzer
 if __name__ == "__main__":
     logging.config.fileConfig('logging.ini')
     logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
+    logger = logging.getLogger("main")
+    totalBegin = timeit.default_timer()
     analyzer = pyHTMLAnalyzer(configNames.configFileName)
 
     #analyzer.printAnalyzedPageFeatures("http://www.tutorialspoint.com/python/string_split.htm")
@@ -18,8 +20,8 @@ if __name__ == "__main__":
     #begin = timeit.default_timer()
     #dic = analyzer.getTotalNumberOfAnalyzedPagesFeatures(listOfPages)
     #end = timeit.default_timer()
-    #print("\nElapsed time: " + str(end - begin) + " seconds")
-    #print(dic.items())
+    #logger.info("\nElapsed time: " + str(end - begin) + " seconds")
+    #logger.info(dic.items())
 
     begin = timeit.default_timer()
     # http://www.tutorialspoint.com/python/string_rstrip.htm
@@ -30,7 +32,7 @@ if __name__ == "__main__":
     #analyzer.analyzeFiles(['xmlFiles/test.htm'])
     #dic = analyzer.getNumberOfAnalyzedPageFeaturesByFunction('http://www.yandex.ru')
     end = timeit.default_timer()
-    print("\nElapsed time: " + str(end - begin) + " seconds")
+    logger.info("\nElapsed time: " + str(end - begin) + " seconds")
 
     # print all data via print and __repr__ class methods
     #connector = databaseConnector()
@@ -41,12 +43,14 @@ if __name__ == "__main__":
     #dic = analyzer.getNumberOfAnalyzedPageFeaturesByFunction('http://www.yandex.ru')
     analyzer.analyzeFiles(['xmlFiles/test.htm'])
     end = timeit.default_timer()
-    print("\nElapsed time: " + str(end - begin) + " seconds")'''
-    #print(dic.items())
+    logger.info("\nElapsed time: " + str(end - begin) + " seconds")'''
+    #logger.info(dic.items())
     #html = htmlAnalyzer.printPagesPercentageMismatch(commonConnectionUtils.openFile('xmlFiles/VLC.htm')[0],
     #                                                commonConnectionUtils.openFile('xmlFiles/VLC1.htm')[0])
     #plottingFunctions.plotArrayOfValues('test', [10, 20, 40], [100, 400, 300], 'xLabel', 'yLabel')
-    #print("sadf" + str(len(dic)))
+    #logger.info("sadf" + str(len(dic)))
+    totalEnd = timeit.default_timer()
+    logger.info("\nTotal elapsed time: " + str(totalEnd - totalBegin) + " seconds")
 
     # TODO Global
     # - sql-integration (DB-4-lab, postgres preferable)

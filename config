@@ -166,6 +166,7 @@ getNumberOfFingerPrintingFunctions : String
 
 [urlAnalyzer]
 
+# Common functions section
 getDomainNameLength : Integer,
 getURLTLD : String,
 getURLFileNameLength : Integer,
@@ -180,39 +181,47 @@ getRelativePathPresenceInURL : Boolean,
 getSuspiciousPatternsPresence : String,
 # this function returns dict, so String(255) may be not enough
 getSuspiciousFileNamesPresence : String,
+
+# DNS functions section
 # this function returns dict, so String(255) may be not enough
-getMXRecordFirstIP : String,
+#getMXRecordFirstIP : String,
 # this function returns dict, so String(255) may be not enough
-getMXRecordFirstIPTTL : String,
+#getMXRecordFirstIPTTL : String,
 # this function returns dict, so String(255) may be not enough
-getMXRecordFirstIPASNumber : String,
+#getMXRecordFirstIPASNumber : String,
 # this function returns dict, so String(255) may be not enough
-getARecordFirstIP : String,
+#getARecordFirstIP : String,
 # this function returns dict, so String(255) may be not enough
-getARecordFirstIPTTL : String,
+#getARecordFirstIPTTL : String,
 # this function returns dict, so String(255) may be not enough
-getARecordFirstIPASNumber : String,
+#getARecordFirstIPASNumber : String,
 # this function returns dict, so String(255) may be not enough
-getNSRecordFirstIP : String,
+#getNSRecordFirstIP : String,
 # this function returns dict, so String(255) may be not enough
-getNSRecordFirstIPTTL : String,
+#getNSRecordFirstIPTTL : String,
 # this function returns dict, so String(255) may be not enough
-getNSRecordFirstIPASNumber : String,
+#getNSRecordFirstIPASNumber : String,
 # this function returns dict, so String(255) may be not enough
-getMXRecordIPsNumber : String,
+#getMXRecordIPsNumber : String,
 # this function returns dict, so String(255) may be not enough
-getARecordIPsNumber : String,
+#getARecordIPsNumber : String,
 # this function returns dict, so String(255) may be not enough
-getNSRecordIPsNumber : String,
+#getNSRecordIPsNumber : String,
 # this function returns list, so String(255) may be not enough
-getResolvedPTR : String,
-getAandPTRIPsEquality : Boolean,
+#getResolvedPTR : String,
+#getAandPTRIPsEquality : Boolean,
+
+# GEOIP functions section
 getCountryCode : String,
 getRegion : String,
 getTimeZone : String,
+
+# URLVoid functions section
 #getIsHostMalicious : Boolean,
 # this function returns list, so String(255) may be not enough
 #getDetectedEnginesList : String,
+
+# WHOIS functions section
 # this function returns list, so String(255) may be not enough
 getURLExpirationDates : String,
 # this function returns list, so String(255) may be not enough

@@ -13,7 +13,8 @@ class commonURLFunctions(commonURIAnalysisData):
     # constructor
     def __init__(self, configDict, uri):
         if configDict is None:
-            print("\nInvalid parameters")
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.error("\nInvalid parameters")
             return
 
         commonURIAnalysisData.__init__(self, uri)
@@ -27,7 +28,8 @@ class commonURLFunctions(commonURIAnalysisData):
             return len(urlparse(self._uri).netloc.split(':')[0])
 
     def printDomainNameLength(self):
-        print("\nDomain name is " + str(self.getDomainNameLength()) + " characters length")
+        logger = logging.getLogger(self.__class__.__name__)
+        logger.info("\nDomain name is " + str(self.getDomainNameLength()) + " characters length")
     #
 
     # the TLD of this URL
@@ -36,12 +38,13 @@ class commonURLFunctions(commonURIAnalysisData):
         return "" if TLD.isdigit() is True else TLD
 
     def printURLTDL(self):
+        logger = logging.getLogger(self.__class__.__name__)
         TLD = self.getURLTLD()
         if TLD is None:
-            print("\nNo TLD, or IP-address")
+            logger.warning("\nNo TLD, or IP-address")
             return
 
-        print("\nTLD: " + str(TLD))
+        logger.info("\nTLD: " + str(TLD))
     #
 
     # the length of the file name appearing in the URL
@@ -55,7 +58,8 @@ class commonURLFunctions(commonURIAnalysisData):
         return len(uri.split('/')[-1])
 
     def printURLFileNameLength(self):
-        print("\nURL file name length is " + str(self.getURLFileNameLength()) + " characters")
+        logger = logging.getLogger(self.__class__.__name__)
+        logger.info("\nURL file name length is " + str(self.getURLFileNameLength()) + " characters")
     #
 
     # some regexps for IP4 & IP6
@@ -71,7 +75,8 @@ class commonURLFunctions(commonURIAnalysisData):
 
 
     def printIPv4PresenceInURL(self):
-        print("\nIPv4 " + ("exists" if self.getIPv4PresenceInURL() else "do not exists") + " in url")
+        logger = logging.getLogger(self.__class__.__name__)
+        logger.info("\nIPv4 " + ("exists" if self.getIPv4PresenceInURL() else "do not exists") + " in url")
     #
 
     # presence Ipv6 in URL
@@ -127,7 +132,8 @@ fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|     # fe80::7:8%eth0   fe80::7:8%
 
 
     def printIPv6PresenceInURL(self):
-        print("\nIPv6 " + ("exists" if self.getIPv6PresenceInURL() else "do not exists") + " in url")
+        logger = logging.getLogger(self.__class__.__name__)
+        logger.info("\nIPv6 " + ("exists" if self.getIPv6PresenceInURL() else "do not exists") + " in url")
         #
 
     # the absence of sub-domain
@@ -135,7 +141,8 @@ fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|     # fe80::7:8%eth0   fe80::7:8%
         return True if self._uri.split('://')[1].split('/')[0].split('.')[0] == 'www' else False
 
     def printSubdomainPresenceInURL(self):
-        print("\nSubdomain " + ("exists" if self.getSubdomainPresecnceInURL() else "do not exists") + " in url")
+        logger = logging.getLogger(self.__class__.__name__)
+        logger.info("\nSubdomain " + ("exists" if self.getSubdomainPresecnceInURL() else "do not exists") + " in url")
     #
 
     # port presence in url
@@ -143,7 +150,8 @@ fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|     # fe80::7:8%eth0   fe80::7:8%
         return True if urlparse(self._uri).port is not None else False
 
     def printPortPresenceInURL(self):
-        print("\nPort " + ("exists" if self.getPortPresenceInURL() else "do not exists") + " in url")
+        logger = logging.getLogger(self.__class__.__name__)
+        logger.info("\nPort " + ("exists" if self.getPortPresenceInURL() else "do not exists") + " in url")
     #
 
     # absolute and relative length of this URL
@@ -158,8 +166,9 @@ fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|     # fe80::7:8%eth0   fe80::7:8%
 
     def printAbsoluteAndRelativeURLLength(self):
         resultList = self.getAbsoluteAndRelativeURLLength()
-        print("\nAbsolute URL path length: %s characters" % resultList[0])
-        print("Relative URL path length: %s characters" % resultList[1])
+        logger = logging.getLogger(self.__class__.__name__)
+        logger.info("\nAbsolute URL path length: %s characters" % resultList[0])
+        logger.info("Relative URL path length: %s characters" % resultList[1])
     #
 
     # whether the original URL is relative
@@ -168,7 +177,8 @@ fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|     # fe80::7:8%eth0   fe80::7:8%
 
 
     def printRelativePathPresenceInURL(self):
-        print("\nURL path is " + ("relative" if self.getRelativePathPresenceInURL() else "absolute"))
+        logger = logging.getLogger(self.__class__.__name__)
+        logger.info("\nURL path is " + ("relative" if self.getRelativePathPresenceInURL() else "absolute"))
     #
 
     # the presence of suspicious patterns
@@ -178,7 +188,7 @@ fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|     # fe80::7:8%eth0   fe80::7:8%
         except KeyError, error:
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning(error)
-            print("\nNone list of url suspicious patterns, can't perform analysis")
+            logger.warning("\nNone list of url suspicious patterns, can't perform analysis")
             return
 
         dictOfSuspiciousPatterns = defaultdict(bool)
@@ -189,16 +199,17 @@ fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|     # fe80::7:8%eth0   fe80::7:8%
         return dictOfSuspiciousPatterns
 
     def printSuspiciousPatternsPresence(self):
+        logger = logging.getLogger(self.__class__.__name__)
         dictOfSuspiciousPatterns = self.getSuspiciousPatternsPresence()
         if dictOfSuspiciousPatterns == None or sum(dictOfSuspiciousPatterns.values()) == 0:
-            print("\nNone url suspicious patterns")
+            logger.warning("\nNone url suspicious patterns")
             return
 
-        print("\nTotal number of detected url suspicious patterns: " + str(sum(dictOfSuspiciousPatterns.values())))
-        print("Number of suspicious patterns:")
+        logger.info("\nTotal number of detected url suspicious patterns: " + str(sum(dictOfSuspiciousPatterns.values())))
+        logger.info("Number of suspicious patterns:")
         for key, value in dictOfSuspiciousPatterns.items():
             if value:
-                print(str(key))
+                logger.info(str(key))
 
     # the presence of a suspicious file name
     def getSuspiciousFileNamesPresence(self):
@@ -207,7 +218,7 @@ fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|     # fe80::7:8%eth0   fe80::7:8%
         except KeyError, error:
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning(error)
-            print("\nNone list of url suspicious file names, can't perform analysis")
+            logger.warning("\nNone list of url suspicious file names, can't perform analysis")
             return
 
         dictOfSuspiciousFileNames = defaultdict(bool)
@@ -218,13 +229,14 @@ fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|     # fe80::7:8%eth0   fe80::7:8%
         return dictOfSuspiciousFileNames
 
     def printSuspiciousFileNamesPresence(self):
+        logger = logging.getLogger(self.__class__.__name__)
         dictOfSuspiciousFileNames = self.getSuspiciousFileNamesPresence()
         if dictOfSuspiciousFileNames == None or sum(dictOfSuspiciousFileNames.values()) == 0:
-            print("\nNone url suspicious file names")
+            logger.warning("\nNone url suspicious file names")
             return
 
-        print("\nTotal number of detected url suspicious file names: " + str(sum(dictOfSuspiciousFileNames.values())))
-        print("Number of suspicious file names:")
+        logger.info("\nTotal number of detected url suspicious file names: " + str(sum(dictOfSuspiciousFileNames.values())))
+        logger.info("Number of suspicious file names:")
         for key, value in dictOfSuspiciousFileNames.items():
             if value:
-                print(str(key))
+                logger.info(str(key))

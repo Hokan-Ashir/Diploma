@@ -59,7 +59,6 @@ class scriptAnalyzer(commonAnalysisData):
         else:
             logger = logging.getLogger(self.__class__.__name__)
             logger.error("Invalid parameters")
-            print("\nInvalid parameters")
             return
 
         result = commonFunctions.getModuleContent(configNames.configFileName, r'[^\n\s=,]+\s*:\s*[^\n\s=,]+',
@@ -90,12 +89,13 @@ class scriptAnalyzer(commonAnalysisData):
     #    return sum(self.getNumberOfEvalFunctionCalls())
 
     def printNumberOfEvalFunctionCalls(self):
+        logger = logging.getLogger(self.__class__.__name__)
         numberOfEvalFunctionCalls = self.getNumberOfEvalFunctionCalls()
         if numberOfEvalFunctionCalls == 0:
-            print("\nNone eval() functions calls")
+            logger.warning("\nNone eval() functions calls")
             return
 
-        print("\nTotal number of eval() calls: " + str(numberOfEvalFunctionCalls))
+        logger.info("\nTotal number of eval() calls: " + str(numberOfEvalFunctionCalls))
     #
     ###################################################################################################################
 
@@ -106,7 +106,7 @@ class scriptAnalyzer(commonAnalysisData):
         except KeyError, error:
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning(error)
-            print("\nNone list of set timeout-like functions, can't perform analysis")
+            logger.warning("\nNone list of set timeout-like functions, can't perform analysis")
             return
 
         def callbackFunction(text, arguments):
@@ -121,15 +121,16 @@ class scriptAnalyzer(commonAnalysisData):
         return sum(self.getNumberOfSetTimeoutIntervalCalls())
 
     def printNumberOfSetTimeoutIntervalCalls(self):
+        logger = logging.getLogger(self.__class__.__name__)
         listOfSetTimeoutIntervalCalls = self.getNumberOfSetTimeoutIntervalCalls()
         if sum(listOfSetTimeoutIntervalCalls) == 0:
-            print("\nNone setTimeout() or setInterval() function calls")
+            logger.warning("\nNone setTimeout() or setInterval() function calls")
             return
 
-        print("\nTotal number of setTimeout(), setInterval() calls: "
+        logger.info("\nTotal number of setTimeout(), setInterval() calls: "
               + str(sum(listOfSetTimeoutIntervalCalls)))
-        print("Number of setTimeout() calls: " + str(listOfSetTimeoutIntervalCalls[0]))
-        print("Number of setInterval() calls: " + str(listOfSetTimeoutIntervalCalls[1]))
+        logger.info("Number of setTimeout() calls: " + str(listOfSetTimeoutIntervalCalls[0]))
+        logger.info("Number of setInterval() calls: " + str(listOfSetTimeoutIntervalCalls[1]))
     #
     ###################################################################################################################
 
@@ -144,7 +145,7 @@ class scriptAnalyzer(commonAnalysisData):
         except KeyError, error:
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning(error)
-            print("\nNone keywords list - can't perform analysis")
+            logger.warning("\nNone keywords list - can't perform analysis")
             return
 
         def callbackFunction(text, arguments):
@@ -168,7 +169,8 @@ class scriptAnalyzer(commonAnalysisData):
         return float(arguments[0] - arguments[1]) / arguments[0]
 
     def printKeywordsToWordsRatio(self):
-        print("\nKeywords-to-words ratio is: " + str(self.getKeywordsToWordsRatio()))
+        logger = logging.getLogger(self.__class__.__name__)
+        logger.info("\nKeywords-to-words ratio is: " + str(self.getKeywordsToWordsRatio()))
     #
     ###################################################################################################################
 
@@ -189,15 +191,16 @@ class scriptAnalyzer(commonAnalysisData):
         return len(self.getListOfLongStrings(stringLength, separatorList))
 
     def printNumberOfLongStrings(self, stringLength = 40, separatorList = ['\n', ';']):
+        logger = logging.getLogger(self.__class__.__name__)
         listOfLongStrings = self.getListOfLongStrings(stringLength, separatorList)
         if len(listOfLongStrings) == 0:
-            print("\nNone long strings")
+            logger.warning("\nNone long strings")
             return
 
-        print("\nTotal number of long strings: " + str(len(listOfLongStrings)))
-        print("List of long strings:")
+        logger.info("\nTotal number of long strings: " + str(len(listOfLongStrings)))
+        logger.info("List of long strings:")
         for string in listOfLongStrings:
-            print("length: " + str(len(string)) + "\n\t" + str(string))
+            logger.info("length: " + str(len(string)) + "\n\t" + str(string))
     #
     ###################################################################################################################
 
@@ -212,7 +215,7 @@ class scriptAnalyzer(commonAnalysisData):
         except KeyError, error:
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning(error)
-            print("\nNone list of built-in functions - can't perform analysis")
+            logger.warning("\nNone list of built-in functions - can't perform analysis")
             return
 
 
@@ -228,16 +231,17 @@ class scriptAnalyzer(commonAnalysisData):
         return sum(self.getNumberOfBuiltInFunctions().values())
 
     def printNumberOfBuiltInFunctions(self):
+        logger = logging.getLogger(self.__class__.__name__)
         dictNumberOfBuiltInFunctions = self.getNumberOfBuiltInFunctions()
         if dictNumberOfBuiltInFunctions == None or sum(dictNumberOfBuiltInFunctions.values()) == 0:
-            print("\nNone built-in functions")
+            logger.warning("\nNone built-in functions")
             return
 
-        print("\nTotal number of built-in functions: " + str(sum(dictNumberOfBuiltInFunctions.values())))
-        print("Number of built-in functions:")
+        logger.info("\nTotal number of built-in functions: " + str(sum(dictNumberOfBuiltInFunctions.values())))
+        logger.info("Number of built-in functions:")
         for key, value in dictNumberOfBuiltInFunctions.items():
             if value > 0:
-                print(str(key) + " : " + str(value))
+                logger.info(str(key) + " : " + str(value))
     #
     ###################################################################################################################
 
@@ -262,7 +266,8 @@ class scriptAnalyzer(commonAnalysisData):
         return float(arguments[1]) / arguments[0]
 
     def printScriptWhitespacePercentage(self):
-        print("\nScript whitespace percentage: " + str(self.getScriptWhitespacePercentage() * 100) + "%")
+        logger = logging.getLogger(self.__class__.__name__)
+        logger.info("\nScript whitespace percentage: " + str(self.getScriptWhitespacePercentage() * 100) + "%")
     #
     ###################################################################################################################
 
@@ -283,12 +288,13 @@ class scriptAnalyzer(commonAnalysisData):
         return float(totalScriptLineLength) / numberOfScriptLines
 
     def printAverageScriptLineLength(self):
+        logger = logging.getLogger(self.__class__.__name__)
         averageScriptLineLength = self.getAverageScriptLength()
         if averageScriptLineLength == 0:
-            print("\nNone script elements - average script length equals 0")
+            logger.warning("\nNone script elements - average script length equals 0")
             return
 
-        print("\nAverage script length: " + str(averageScriptLineLength))
+        logger.info("\nAverage script length: " + str(averageScriptLineLength))
     #
     ###################################################################################################################
 
@@ -316,12 +322,13 @@ class scriptAnalyzer(commonAnalysisData):
         return arguments[1] / arguments[0]
 
     def printAverageLengthOfStringsUsedInScript(self, separatorList = ['\n', ';']):
+        logger = logging.getLogger(self.__class__.__name__)
         averageLineLengthUsedInScript = self.getAverageLengthOfStringsUsedInScript(separatorList)
         if averageLineLengthUsedInScript == 0:
-            print("\nNone script elements - average line length used in script equals 0")
+            logger.warning("\nNone script elements - average line length used in script equals 0")
             return
 
-        print("\nAverage script line length: " + str(averageLineLengthUsedInScript))
+        logger.info("\nAverage script line length: " + str(averageLineLengthUsedInScript))
     #
     ###################################################################################################################
 
@@ -335,7 +342,8 @@ class scriptAnalyzer(commonAnalysisData):
         return self.analyzeFunction(callbackFunction, numberOfCharactersInPage, False, False)
 
     def printNumberCharactersInScriptContent(self):
-        print("\nNumber of characters in script: " + str(self.getNumberCharactersInScriptContent()))
+        logger = logging.getLogger(self.__class__.__name__)
+        logger.info("\nNumber of characters in script: " + str(self.getNumberCharactersInScriptContent()))
     #
     ###################################################################################################################
 
@@ -370,8 +378,9 @@ class scriptAnalyzer(commonAnalysisData):
         return (float(numberOfShellcodedStrings) / numberOfQuotedStrings) * 100
 
     def printShellcodeExistenceProbability(self, stringLength = 40, separatorList = ['\n', ';']):
+        logger = logging.getLogger(self.__class__.__name__)
         percentageOfShellcodedQuotedStrings = self.getShellcodeExistenceProbability(stringLength, separatorList)
-        print("\nPercentage of shellcoded quoted strings: " + str(percentageOfShellcodedQuotedStrings) + "%")
+        logger.info("\nPercentage of shellcoded quoted strings: " + str(percentageOfShellcodedQuotedStrings) + "%")
     #
     ###################################################################################################################
 
@@ -406,8 +415,9 @@ class scriptAnalyzer(commonAnalysisData):
         return (float(numberOfShellcodedStrings) / numberOfQuotedStrings) * 100
 
     def printShellcodeExistenceProbabilityAdvanced(self, stringLength = 40, separatorList = ['\n', ';']):
+        logger = logging.getLogger(self.__class__.__name__)
         percentageOfShellcodedQuotedStrings = self.getShellcodeExistenceProbabilityAdvanced(stringLength, separatorList)
-        print("\nPercentage of shellcoded quoted strings: " + str(percentageOfShellcodedQuotedStrings) + "%")
+        logger.info("\nPercentage of shellcoded quoted strings: " + str(percentageOfShellcodedQuotedStrings) + "%")
     #
     ###################################################################################################################
 
@@ -424,15 +434,16 @@ class scriptAnalyzer(commonAnalysisData):
         return len(self.getNumberOfIFrameStrings(stringLength, separatorList))
 
     def printNumberOfIFrameStrings(self, stringLength = -1, separatorList = ['\n', ';']):
+        logger = logging.getLogger(self.__class__.__name__)
         listOfStringsWithIFrame = self.getNumberOfIFrameStrings(stringLength, separatorList)
         if len(listOfStringsWithIFrame) == 0:
-            print("\nNone strings with \'iframe\' tag")
+            logger.warning("\nNone strings with \'iframe\' tag")
             return
 
-        print("\nTotal number of strings with \'iframe\': " + str(len(listOfStringsWithIFrame)))
-        print("Number of strings with \'iframe\':")
+        logger.info("\nTotal number of strings with \'iframe\': " + str(len(listOfStringsWithIFrame)))
+        logger.info("Number of strings with \'iframe\':")
         for item in listOfStringsWithIFrame:
-            print("length: " + str(len(item)) + "\n\t" + str(item))
+            logger.info("length: " + str(len(item)) + "\n\t" + str(item))
     #
     ###################################################################################################################
 
@@ -443,7 +454,7 @@ class scriptAnalyzer(commonAnalysisData):
         except KeyError, error:
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning(error)
-            print("\nNone list of suspicious tags, can't perform analysis")
+            logger.warning("\nNone list of suspicious tags, can't perform analysis")
             return
 
         listOfStrings = self.getListOfLongStrings(stringLength, separatorList)
@@ -459,15 +470,16 @@ class scriptAnalyzer(commonAnalysisData):
         return len(self.getNumberOfSuspiciousStrings(stringLength, separatorList))
 
     def printNumberOfSuspiciousStrings(self, stringLength = -1, separatorList = ['\n', ';']):
+        logger = logging.getLogger(self.__class__.__name__)
         dictOfSuspiciousStrings = self.getNumberOfSuspiciousStrings(stringLength, separatorList)
         if dictOfSuspiciousStrings == None or sum(dictOfSuspiciousStrings.values()) == 0:
-            print("\nNone strings with suspicious tags")
+            logger.warning("\nNone strings with suspicious tags")
             return
 
-        print("\nTotal number of strings with suspicious tags: " + str(sum(dictOfSuspiciousStrings.values())))
-        print("Number of strings with suspicious tags:")
+        logger.info("\nTotal number of strings with suspicious tags: " + str(sum(dictOfSuspiciousStrings.values())))
+        logger.info("Number of strings with suspicious tags:")
         for key, value in dictOfSuspiciousStrings.items():
-            print("length: " + str(len(value)) + "\n<" + str(key) + ">:\n\t" + str(value))
+            logger.info("length: " + str(len(value)) + "\n<" + str(key) + ">:\n\t" + str(value))
     #
     ###################################################################################################################
 
@@ -485,7 +497,8 @@ class scriptAnalyzer(commonAnalysisData):
         return self.analyzeFunction(callbackFunction, maximumLengthOfScripts, True, False)
 
     def printMaximumLengthOfScriptStrings(self, separatorList = ['\n', ';']):
-        print("\nMaximum length of script strings: " + str(self.getMaximumLengthOfScriptStrings(separatorList)))
+        logger = logging.getLogger(self.__class__.__name__)
+        logger.info("\nMaximum length of script strings: " + str(self.getMaximumLengthOfScriptStrings(separatorList)))
     #
     ###################################################################################################################
 
@@ -516,17 +529,18 @@ class scriptAnalyzer(commonAnalysisData):
         return sum(self.getObjectsWithSuspiciousContent().values())
 
     def printNumberOfObjectsWithSuspiciousContent(self):
+        logger = logging.getLogger(self.__class__.__name__)
         dictOfSuspiciousObjects = self.getObjectsWithSuspiciousContent()
         if sum(dictOfSuspiciousObjects.values()) == 0:
-            print("\nNone suspicious objects")
+            logger.warning("\nNone suspicious objects")
             return
 
-        print("\nTotal number of suspicious objects: " + str(sum(dictOfSuspiciousObjects.values())))
+        logger.info("\nTotal number of suspicious objects: " + str(sum(dictOfSuspiciousObjects.values())))
         #sys.stdout.write("Number of suspicious objects:")
-        print("Number of suspicious objects:")
+        logger.info("Number of suspicious objects:")
         for key, value in dictOfSuspiciousObjects.items():
             if value > 0:
-                print(str(key) + ": " + str(value))
+                logger.info(str(key) + ": " + str(value))
     #
     ###################################################################################################################
 
@@ -557,18 +571,19 @@ class scriptAnalyzer(commonAnalysisData):
         return sum(self.getNumberOfLongVariableOrFunction(variableNameLength, functionNameLength))
 
     def printNumberOfLongVariableOrFunction(self, variableNameLength = 20, functionNameLength = 20):
+        logger = logging.getLogger(self.__class__.__name__)
         listOfLongVariableOfFunction = self.getNumberOfLongVariableOrFunction(variableNameLength, functionNameLength)
         if sum(listOfLongVariableOfFunction) == 0:
             if listOfLongVariableOfFunction[0] == 0:
-                print("\nNone variable names longer than %d chars" % variableNameLength)
+                logger.warning("\nNone variable names longer than %d chars" % variableNameLength)
             if listOfLongVariableOfFunction[1] == 0:
-                print("\nNone function names longer than %d chars" % functionNameLength)
+                logger.warning("\nNone function names longer than %d chars" % functionNameLength)
             return
 
-        print("\nTotal number of variable names longer than %d chars and function names longer than %d chars: "
+        logger.info("\nTotal number of variable names longer than %d chars and function names longer than %d chars: "
               % (variableNameLength, functionNameLength) + str(sum(listOfLongVariableOfFunction)))
-        print("Number of variable names longer than %d chars: " % variableNameLength + str(listOfLongVariableOfFunction[0]))
-        print("Number of function names longer than %d chars: " % functionNameLength + str(listOfLongVariableOfFunction[1]))
+        logger.info("Number of variable names longer than %d chars: " % variableNameLength + str(listOfLongVariableOfFunction[0]))
+        logger.info("Number of function names longer than %d chars: " % functionNameLength + str(listOfLongVariableOfFunction[1]))
     #
     ###################################################################################################################
 
@@ -621,7 +636,8 @@ class scriptAnalyzer(commonAnalysisData):
         return arguments[0]
 
     def printScriptWholeEntropy(self):
-        print("\nWhole script entropy: " + str(self.getScriptWholeEntropy()))
+        logger = logging.getLogger(self.__class__.__name__)
+        logger.info("\nWhole script entropy: " + str(self.getScriptWholeEntropy()))
     #
     ###################################################################################################################
 
@@ -670,14 +686,15 @@ class scriptAnalyzer(commonAnalysisData):
 
 
     def printScriptNodesEntropy(self):
+        logger = logging.getLogger(self.__class__.__name__)
         dictOfEntropy = self.getScriptNodesEntropy()
         if sum(dictOfEntropy.values()) == 0:
-            print("\nNone script nodes - can't calculate entropy of nodes")
+            logger.warning("\nNone script nodes - can't calculate entropy of nodes")
             return
 
-        print("\nEntropy of nodes:")
+        logger.info("\nEntropy of nodes:")
         for key, value in dictOfEntropy.items():
-            print("source line: " + str(key) + "\nentropy: " + str(value))
+            logger.info("source line: " + str(key) + "\nentropy: " + str(value))
     #
     ###################################################################################################################
 
@@ -722,14 +739,15 @@ class scriptAnalyzer(commonAnalysisData):
             return arguments[0]
 
     def printMaximumEntropyOfWholeScriptStrings(self, separatorList = ['\n', ';']):
+        logger = logging.getLogger(self.__class__.__name__)
         listOfMaximumStringEntropy = self.getMaximumEntropyOfWholeScriptStrings(separatorList,
                                                                                 withStringWithMaxEntropy=True)
         if listOfMaximumStringEntropy[0] == 0.0:
-            print("\nNone script nodes - can't calculate string maximum entropy (whole script)")
+            logger.warning("\nNone script nodes - can't calculate string maximum entropy (whole script)")
             return
 
-        print("\nMaximum string entropy (whole script): " + str(listOfMaximumStringEntropy[0]))
-        print("of string: " + str(listOfMaximumStringEntropy[1]))
+        logger.info("\nMaximum string entropy (whole script): " + str(listOfMaximumStringEntropy[0]))
+        logger.info("of string: " + str(listOfMaximumStringEntropy[1]))
     #
     ###################################################################################################################
 
@@ -781,16 +799,17 @@ class scriptAnalyzer(commonAnalysisData):
         return dictOfTagsEntropy
 
     def printMaximumEntropyOfScriptStrings(self, separatorList = ['\n', ';']):
+        logger = logging.getLogger(self.__class__.__name__)
         dictOfTagsEntropy = self.getMaximumEntropyOfScriptStrings(separatorList)
         if len(dictOfTagsEntropy) == 0:
-            print("\nNone script nodes - can't calculate string maximum entropy (by nodes)")
+            logger.warning("\nNone script nodes - can't calculate string maximum entropy (by nodes)")
             return
 
-        print("\nMaximum string entropy (by nodes)")
+        logger.info("\nMaximum string entropy (by nodes)")
         for key, value in dictOfTagsEntropy.items():
-            print("source line: " + str(key))
-            print("maximum string entropy of this node: " + str(value[0]))
-            print("of string: " + str(value[1].encode('utf-8')))
+            logger.info("source line: " + str(key))
+            logger.info("maximum string entropy of this node: " + str(value[0]))
+            logger.info("of string: " + str(value[1].encode('utf-8')))
     #
     ###################################################################################################################
 
@@ -818,14 +837,15 @@ class scriptAnalyzer(commonAnalysisData):
         return arguments[0]
 
     def printEntropyOfStringsDeclaredInScriptByWholeScript(self):
+        logger = logging.getLogger(self.__class__.__name__)
         dictOfStringsEntropy = self.getEntropyOfStringsDeclaredInScriptByWholeScript()
         if len(dictOfStringsEntropy) == 0:
-            print("\nNone script nodes - can't calculate entropy of strings declared in script (by whole script)")
+            logger.warning("\nNone script nodes - can't calculate entropy of strings declared in script (by whole script)")
             return
 
-        print("\nEntropy of strings declared in script (by whole script)")
+        logger.info("\nEntropy of strings declared in script (by whole script)")
         for key, value in dictOfStringsEntropy.items():
-            print("string: " + str(key.encode('utf-8')) + "\nentropy: " + str(value))
+            logger.info("string: " + str(key.encode('utf-8')) + "\nentropy: " + str(value))
     #
     ###################################################################################################################
 
@@ -858,14 +878,15 @@ class scriptAnalyzer(commonAnalysisData):
         return self.analyzeFunction(callbackFunction, dictOfStringsEntropy, True, False)
 
     def printEntropyOfStringsDeclaredInScriptByNodes(self):
+        logger = logging.getLogger(self.__class__.__name__)
         dictOfStringsEntropy = self.getEntropyOfStringsDeclaredInScriptByNodes()
         if len(dictOfStringsEntropy) == 0:
-            print("\nNone script nodes - can't calculate entropy of strings declared in script (by nodes)")
+            logger.warning("\nNone script nodes - can't calculate entropy of strings declared in script (by nodes)")
             return
 
-        print("\nEntropy of strings declared in script (by nodes)")
+        logger.info("\nEntropy of strings declared in script (by nodes)")
         for key, value in dictOfStringsEntropy.items():
-            print("string: " + str(key.encode('utf-8')) + "\nentropy: " + str(value))
+            logger.info("string: " + str(key.encode('utf-8')) + "\nentropy: " + str(value))
     #
     ###################################################################################################################
 
@@ -914,14 +935,15 @@ class scriptAnalyzer(commonAnalysisData):
         return [hashlib.sha256(text.encode('utf-8')).hexdigest(), hashlib.sha512(text.encode('utf-8')).hexdigest()]
 
     def printScriptContentHashing(self):
+        logger = logging.getLogger(self.__class__.__name__)
         dictOfScriptTagsHashed = self.getScriptContentHashingAll()
         if len(dictOfScriptTagsHashed) == 0:
-            print("\nNone script content to hash")
+            logger.warning("\nNone script content to hash")
             return
 
-        print("\nScript content hashing")
+        logger.info("\nScript content hashing")
         for key, value in dictOfScriptTagsHashed.items():
-            print("line: " + str(key) + "\n\tsha256: " + str(value[0]) + "\n\tsha512: " + str(value[1]))
+            logger.info("line: " + str(key) + "\n\tsha256: " + str(value[0]) + "\n\tsha512: " + str(value[1]))
     #
     ###################################################################################################################
 
@@ -932,7 +954,7 @@ class scriptAnalyzer(commonAnalysisData):
         except KeyError, error:
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning(error)
-            print("\nNone list of events, can't perform analysis")
+            logger.warning("\nNone list of events, can't perform analysis")
             return
 
         try:
@@ -940,7 +962,7 @@ class scriptAnalyzer(commonAnalysisData):
         except KeyError, error:
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning(error)
-            print("\nNone list of event attachment functions, can't perform analysis")
+            logger.warning("\nNone list of event attachment functions, can't perform analysis")
             return
 
         def callbackFunction(text, arguments):
@@ -971,9 +993,10 @@ class scriptAnalyzer(commonAnalysisData):
         return self.analyzeFunction(callbackFunction, dictOfEventAttachments, True, True)
 
     def printNumberOfEventAttachments(self):
+        logger = logging.getLogger(self.__class__.__name__)
         dictOfEventAttachments = self.getNumberOfEventAttachments()
         if dictOfEventAttachments == None:
-            print("\nNone event attachments")
+            logger.warning("\nNone event attachments")
             return
 
         # split conditions due to slow speed of sum equation
@@ -982,15 +1005,15 @@ class scriptAnalyzer(commonAnalysisData):
             numberOfEventAttachments += sum(dict(item).values())
 
         if numberOfEventAttachments == 0:
-            print("\nNone event attachments")
+            logger.warning("\nNone event attachments")
             return
 
-        print("\nTotal number of event attachments: " + str(numberOfEventAttachments))
-        print("Number of event attachments:")
+        logger.info("\nTotal number of event attachments: " + str(numberOfEventAttachments))
+        logger.info("Number of event attachments:")
         for key, value in dictOfEventAttachments.items():
-            print(str(key) + ": ")
+            logger.info(str(key) + ": ")
             for key2, value2 in value.items():
-                print("\t " + str(key2) + ": " + str(value2))
+                logger.info("\t " + str(key2) + ": " + str(value2))
     #
     ###################################################################################################################
 
@@ -1005,12 +1028,13 @@ class scriptAnalyzer(commonAnalysisData):
         return self.analyzeFunction(callbackFunction, numberOfDirectStringAssignments, True, False)
 
     def printNumberOfDirectStringAssignments(self):
+        logger = logging.getLogger(self.__class__.__name__)
         numberOfDirectStringAssignments = self.getNumberOfDirectStringAssignments()
         if numberOfDirectStringAssignments == 0:
-            print("\n None string assignments")
+            logger.warning("\n None string assignments")
             return
 
-        print("\nTotal number of string assignments: " + str(numberOfDirectStringAssignments))
+        logger.info("\nTotal number of string assignments: " + str(numberOfDirectStringAssignments))
     #
     ###################################################################################################################
 
@@ -1021,7 +1045,7 @@ class scriptAnalyzer(commonAnalysisData):
         except KeyError, error:
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning(error)
-            print("\nNone list of string modification functions, can't perform analysis")
+            logger.warning("\nNone list of string modification functions, can't perform analysis")
             return
 
         def callbackFunction(text, arguments):
@@ -1034,15 +1058,16 @@ class scriptAnalyzer(commonAnalysisData):
         return self.analyzeFunction(callbackFunction, dictOfStringModificationFunctions, True, True)
 
     def printNumberOfStringModificationFunctions(self):
+        logger = logging.getLogger(self.__class__.__name__)
         dictOfStringModificationFunctions = self.getNumberOfStringModificationFunctions()
         if dictOfStringModificationFunctions == None or sum(dictOfStringModificationFunctions.values()) == 0:
-            print("\nNone string modification functions")
+            logger.warning("\nNone string modification functions")
             return
 
-        print("\nTotal number of string modification functions: " + str(sum(dictOfStringModificationFunctions.values())))
+        logger.info("\nTotal number of string modification functions: " + str(sum(dictOfStringModificationFunctions.values())))
         for key, value in dictOfStringModificationFunctions.items():
             if value > 0:
-                print(str(key) + ": " + str(value))
+                logger.info(str(key) + ": " + str(value))
     #
     ###################################################################################################################
 
@@ -1053,7 +1078,7 @@ class scriptAnalyzer(commonAnalysisData):
         except KeyError, error:
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning(error)
-            print("\nNone list of deobfuscation functions, can't perform analysis")
+            logger.warning("\nNone list of deobfuscation functions, can't perform analysis")
             return
 
         def callbackFunction(text, arguments):
@@ -1066,15 +1091,16 @@ class scriptAnalyzer(commonAnalysisData):
         return self.analyzeFunction(callbackFunction, dictOfBuiltInDeobfuscationFunctions, True, True)
 
     def printNumberBuiltInDeobfuscationFunctions(self):
+        logger = logging.getLogger(self.__class__.__name__)
         dictOfBuiltInDeobfuscationFunctions = self.getNumberBuiltInDeobfuscationFunctions()
         if dictOfBuiltInDeobfuscationFunctions == None or sum(dictOfBuiltInDeobfuscationFunctions.values()) == 0:
-            print("\nNone deobfuscation functions")
+            logger.warning("\nNone deobfuscation functions")
             return
 
-        print("\nTotal number of deobfuscation functions: " + str(sum(dictOfBuiltInDeobfuscationFunctions.values())))
+        logger.info("\nTotal number of deobfuscation functions: " + str(sum(dictOfBuiltInDeobfuscationFunctions.values())))
         for key, value in dictOfBuiltInDeobfuscationFunctions.items():
             if value > 0:
-                print(str(key) + ": " + str(value))
+                logger.info(str(key) + ": " + str(value))
     #
     ###################################################################################################################
 
@@ -1085,7 +1111,7 @@ class scriptAnalyzer(commonAnalysisData):
         except KeyError, error:
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning(error)
-            print("\nNone list of DOM-modifying functions, can't perform analysis")
+            logger.warning("\nNone list of DOM-modifying functions, can't perform analysis")
             return
 
         def callbackFunction(text, arguments):
@@ -1098,15 +1124,16 @@ class scriptAnalyzer(commonAnalysisData):
         return self.analyzeFunction(callbackFunction, dictOfDOMModyfingFunctions, True, True)
 
     def printNumberOfDOMModificationFunctions(self):
+        logger = logging.getLogger(self.__class__.__name__)
         dictOfDOMModyfingFunctions = self.getNumberOfDOMModificationFunctions()
         if dictOfDOMModyfingFunctions == None or sum(dictOfDOMModyfingFunctions.values()) == 0:
-            print("\nNone DOM-modifying functions")
+            logger.warning("\nNone DOM-modifying functions")
             return
 
-        print("\nTotal number of DOM-modifying functions: " + str(sum(dictOfDOMModyfingFunctions.values())))
+        logger.info("\nTotal number of DOM-modifying functions: " + str(sum(dictOfDOMModyfingFunctions.values())))
         for key, value in dictOfDOMModyfingFunctions.items():
             if value > 0:
-                print(str(key) + ": " + str(value))
+                logger.info(str(key) + ": " + str(value))
     #
     ###################################################################################################################
 
@@ -1117,7 +1144,7 @@ class scriptAnalyzer(commonAnalysisData):
         except KeyError, error:
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning(error)
-            print("\nNone list of fingerprinting functions, can't perform analysis")
+            logger.warning("\nNone list of fingerprinting functions, can't perform analysis")
             return
 
         def callbackFunction(text, arguments):
@@ -1129,15 +1156,16 @@ class scriptAnalyzer(commonAnalysisData):
         return self.analyzeFunction(callbackFunction, dictOfFingerprintingFunctions, True, True)
 
     def printNumberOfFingerPrintingFunctions(self):
+        logger = logging.getLogger(self.__class__.__name__)
         dictOfFingerprintingFunctions = self.getNumberOfFingerPrintingFunctions()
         if dictOfFingerprintingFunctions == None or sum(dictOfFingerprintingFunctions.values()) == 0:
-            print("\nNone fingerprinting functions")
+            logger.warning("\nNone fingerprinting functions")
             return
 
-        print("\nTotal number of fingerprinting functions: " + str(sum(dictOfFingerprintingFunctions.values())))
+        logger.info("\nTotal number of fingerprinting functions: " + str(sum(dictOfFingerprintingFunctions.values())))
         for key, value in dictOfFingerprintingFunctions.items():
             if value > 0:
-                print(str(key) + ": " + str(value))
+                logger.info(str(key) + ": " + str(value))
     #
     ###################################################################################################################
 
@@ -1266,14 +1294,15 @@ class scriptAnalyzer(commonAnalysisData):
     # print result of all functions via reflection with default values
     # NOTE: no order in function calls
     def printAll(self, xmldata, pageReady, uri):
+        logger = logging.getLogger(self.__class__.__name__)
         if xmldata is None or pageReady is None:
-                print("Insufficient number of parameters")
+                logger.error("Insufficient number of parameters")
                 return
         self.initialization(xmldata, pageReady, uri)
         # TODO remove in production
         #if (True):
         #    return
-        print("\n\njs Analyser ----------------------")
+        logger.info("\n\njs Analyser ----------------------")
         begin = timeit.default_timer()
         for funcName, funcValue in scriptAnalyzer.__dict__.items():
             if str(funcName).startswith("print") and callable(funcValue):
@@ -1284,14 +1313,15 @@ class scriptAnalyzer(commonAnalysisData):
                     logger.exception(error)
                     pass
         end = timeit.default_timer()
-        print("\nElapsed time: " + str(end - begin) + " seconds")
-        print("--------------------------------------")
+        logger.info("\nElapsed time: " + str(end - begin) + " seconds")
+        logger.info("--------------------------------------")
     #
     ###################################################################################################################
 
     def getTotalAll(self, xmldata, pageReady, uri):
+        logger = logging.getLogger(self.__class__.__name__)
         if xmldata is None or pageReady is None:
-                print("Insufficient number of parameters")
+                logger.error("Insufficient number of parameters")
                 return
         self.initialization(xmldata, pageReady, uri)
         resultDict = {}
@@ -1443,14 +1473,14 @@ class scriptAnalyzer(commonAnalysisData):
         except KeyError, error:
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning(error)
-            print("Insufficient number of parameters")
+            logger.warning("Insufficient number of parameters")
             return
 
         if kwargs['xmldata'] is None or kwargs['pageReady'] is None:
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning('Error in input parameters:\n xmldata:\t%s\n pageReady:\t%s' % (kwargs['xmldata'],
                                                                                            kwargs['pageReady']))
-            print("Insufficient number of parameters")
+            logger.warning("Insufficient number of parameters")
             return
 
         self.initialization(kwargs['xmldata'], kwargs['pageReady'], kwargs['uri'])

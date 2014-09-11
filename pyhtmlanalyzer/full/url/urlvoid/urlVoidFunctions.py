@@ -17,13 +17,11 @@ class urlVoidFunctions(commonURIAnalysisData):
         if self._uri is None:
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning("URI is not set")
-            print("\nURI is not set")
             return
 
         if self.getRemainedQueries() == 0:
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning("No URLVoid queries remain")
-            print("\nNo URLVoid queries remain")
             return
 
         result = commonConnectionUtils.openPage('http://api.urlvoid.com/api1000/'
@@ -45,13 +43,11 @@ class urlVoidFunctions(commonURIAnalysisData):
         if self._uri is None:
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning("URI is not set")
-            print("\nURI is not set")
             return None
 
         if self.__pageData is None:
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning("No URLVoid info about this URI")
-            print("\nNo URLVoid info about this URI")
             return None
 
         return True if self.__pageData.xpath('//count/text()')[0] != 0 else False
@@ -61,19 +57,18 @@ class urlVoidFunctions(commonURIAnalysisData):
         if isHostMalicious is None:
             return
 
-        print("Host is " + ('not' if isHostMalicious is False else '') + 'malicious')
+        logger = logging.getLogger(self.__class__.__name__)
+        logger.info("Host is " + ('not' if isHostMalicious is False else '') + 'malicious')
 
     def getDetectedEnginesList(self):
         if self._uri is None:
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning("URI is not set")
-            print("\nURI is not set")
             return None
 
         if self.__pageData is None:
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning("No URLVoid info about this URI")
-            print("\nNo URLVoid info about this URI")
             return None
 
         return self.__pageData.xpath('//engine/text()')
@@ -83,6 +78,7 @@ class urlVoidFunctions(commonURIAnalysisData):
         if detectedEnginesList is None:
             return
 
-        print("\nList of engines assuming host malicious:")
+        logger = logging.getLogger(self.__class__.__name__)
+        logger.info("\nList of engines assuming host malicious:")
         for engine in detectedEnginesList:
-            print("\t" + engine)
+            logger.info("\t" + engine)

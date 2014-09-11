@@ -69,12 +69,10 @@ class pyHTMLAnalyzer:
                 self.__networksDict[moduleName] = neuroNet(len(moduleValueList[0]))
 
             # create common (valid and invalid) input values list of lists
-            print("Network name: " + moduleName)
-            print(len(moduleValueList[0]))
             inputDataList = moduleValueList + invalidDataDict[moduleName]
             outputDataList = ([[True]] * len(moduleValueList)) + ([[False]] * len(invalidDataDict[moduleName]))
             logger.info("Network name: " + moduleName)
-            print self.__trainNetworkWithData(moduleName, inputDataList, outputDataList, 200)
+            logger.info(self.__trainNetworkWithData(moduleName, inputDataList, outputDataList, 200))
 
     def createDatabaseFromFile(self, configFileName):
         databaseInfo = commonFunctions.getSectionContent(configFileName, r'[^\n\s=,]+',
@@ -174,7 +172,8 @@ class pyHTMLAnalyzer:
     # NOTE: all functions run it separate processes
     def getNumberOfAnalyzedAbstractObjectFeaturesByFunction(self, xmldata, pageReady, uri, functionName):
         if xmldata is None or pageReady is None:
-            print("Insufficient number of parameters")
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.error("Insufficient number of parameters:\n - xmlData (%s)\n - pageReady (%s)" % (xmldata, pageReady))
             return
         resultDict = {}
         processQueue = Queue()
@@ -197,10 +196,6 @@ class pyHTMLAnalyzer:
         for i in xrange(0, len(proxyProcessesList)):
             queueResult = processQueue.get()
             resultList = queueResult[1]
-            print "In getNumberOfAnalyzedAbstractObjectFeaturesByFunction"
-            print uri
-            print functionName
-            print resultList
             # if function returns nothing (like print function, for example)
             if resultList is None or not resultList:
                 resultDict = resultList
@@ -213,7 +208,8 @@ class pyHTMLAnalyzer:
     def getNumberOfAnalyzedHTMLFileFeaturesByFunction(self, objectName, functionName = 'getAllAnalyzeReport'):
         openedFile = commonConnectionUtils.openFile(objectName)
         if openedFile == []:
-            print("Cannot analyze file")
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.error("Cannot analyze file: impossible to open file (%s)" % objectName)
             return
 
         xmldata = openedFile[0]
@@ -223,7 +219,8 @@ class pyHTMLAnalyzer:
     def getNumberOfAnalyzedPageFeaturesByFunction(self, objectName, functionName = 'getAllAnalyzeReport'):
         openedPage = commonConnectionUtils.openPage(objectName)
         if openedPage == []:
-            print("Cannot analyze page")
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.error("Cannot analyze page: impossible to open page (%s)" % objectName)
             return
 
         xmldata = openedPage[0]
@@ -234,7 +231,8 @@ class pyHTMLAnalyzer:
 
     def getTotalNumberOfAnalyzedObjectsFeatures(self, listOfObjects, isPages = True):
         if len(listOfObjects) == 0:
-            print("No objects passed to analyze")
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning("No objects passed to analyze. Aborting analysis")
             return None
 
         functionName = 'getNumberOfAnalyzedPageFeaturesByFunction' \
@@ -315,7 +313,6 @@ class pyHTMLAnalyzer:
         # TODO check abs() calls
         solution = 0
         for networkName in self.__networksDict.keys():
-            print("Gathering result solution from network '%s'" % networkName)
             logger.info("Gathering result solution from network '%s'" % networkName)
             moduleResultValue = 1
             for item in dictOfInputParameters[networkName]:
@@ -330,8 +327,6 @@ class pyHTMLAnalyzer:
         # round solution
         # TODO also make this parameter, border value (0.5), configurable
         solution = True if abs(solution) >= 0.5 else False
-        print("Result solution is: " + str(solution))
-        print("Page changed: " + str(pageChanged))
         logger.info("Result solution is: " + str(solution))
         logger.info("Page changed: " + str(pageChanged))
 
@@ -418,6 +413,8 @@ class pyHTMLAnalyzer:
                 for innerFK in childTableFks:
                     # get table name TO WHICH references current FK
                     childTargetTableName = innerFK.target_fullname.split('.')[0]
+                    # FIXME fails with IndexError: list index out of range
+                    # if same url exists in both valid and invalid pages lists
                     for innerItem in tableData[tableIdList.index(item)][targetTableName]:
                         # if FK references to table which is not in tableData, such table is not child
                         if childTargetTableName not in innerItem:
@@ -737,7 +734,6 @@ class pyHTMLAnalyzer:
 
         # get analyze data itself
         resultDict = self.getTotalNumberOfAnalyzedObjectsFeatures(listOfObjects, isPages)
-        print resultDict
         for analyzedObjectName, analyzedObjectValue in resultDict.items():
 
             # get isValid-solution

@@ -16,8 +16,7 @@ class commonConnectionUtils:
             pageReady = file.read().decode('utf-8')
         except:
             logger = logging.getLogger("commonConnectionUtils")
-            logger.error("Cannot open file")
-            print("Cannot open file")
+            logger.error("Cannot open file (%s)" % filePath)
             return []
         return [lxml.html.document_fromstring(pageReady), pageReady]
 
@@ -32,7 +31,8 @@ class commonConnectionUtils:
             request.add_header('User-Agent', user_agent)
             page = urllib2.urlopen(request)
             if (page.code != 200):
-                print("Cannot open page - response code: " + str(page.code))
+                logger = logging.getLogger("commonConnectionUtils")
+                logger.error("Cannot open page (%s) - response code: %s" % (url, str(page.code)))
                 return []
 
             if page.info().get('Content-Encoding') == 'gzip':
@@ -50,8 +50,8 @@ class commonConnectionUtils:
 
         except urllib2.HTTPError, error:
             logger = logging.getLogger("commonConnectionUtils")
+            logger.error(url)
             logger.exception(error)
-            print("Cannot open page - reason: " + str(error))
             return []
 
         if pageReady == "":

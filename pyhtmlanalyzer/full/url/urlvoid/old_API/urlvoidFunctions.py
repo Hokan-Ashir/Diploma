@@ -1,3 +1,4 @@
+import logging
 from pyhtmlanalyzer.full.url.urlvoid.old_API.urlVoid import submit
 
 __author__ = 'hokan'
@@ -5,33 +6,36 @@ __author__ = 'hokan'
 # urlvoid functions
 def getURLVoidScanResults(listOfScanDomains):
     if listOfScanDomains == None or listOfScanDomains == []:
-        print("\nNo domain list, can't perform analysis")
+        logger = logging.getLogger("getURLVoidScanResults")
+        logger.error("\nNo domain list, can't perform analysis")
         return None
 
     return submit(listOfScanDomains)
 
 # get all available results
 def printURLVoidScanResults(listOfScanDomains, onlyMalicious=False):
+    logger = logging.getLogger("printURLVoidScanResults")
     results = getURLVoidScanResults(listOfScanDomains)
     if results.result_dict == None or results.result_dict == {}:
-        print("\nNo url void results")
+        logger.error("\nNo url void results")
         return
 
     for domain, domainInfo in results.result_dict.items():
         if not onlyMalicious or domainInfo['detections']:
-            print(domain + ": ")
-            print("\tLast scan: " + str(domainInfo['last_scan']))
-            print("\tDetections: " + str(domainInfo['detections']))
+            logger.info(domain + ": ")
+            logger.info("\tLast scan: " + str(domainInfo['last_scan']))
+            logger.info("\tDetections: " + str(domainInfo['detections']))
             if domainInfo['detections']:
                 for detectedEngine in domainInfo['lists_detected']:
-                    print("\t\t" + str(detectedEngine))
+                    logger.info("\t\t" + str(detectedEngine))
 
 # also you can get str-list of only malicious domains
 # also you can use results.get_detected_domains() method to retrieve only detected domain list
 def getURLVoidMaliciousDomains(listOfScanDomains):
+    logger = logging.getLogger("getURLVoidMaliciousDomains")
     results = getURLVoidScanResults(listOfScanDomains)
     if results.result_dict is None or results.result_dict == {}:
-        print("\nNo url void results")
+        logger.error("\nNo url void results")
         return None
 
     listOfMaliciousDomains = []
@@ -43,11 +47,12 @@ def getURLVoidMaliciousDomains(listOfScanDomains):
 
 
 def printURLVoidMaliciousDomains(listOfScanDomains):
+    logger = logging.getLogger("printURLVoidMaliciousDomains")
     listOfMaliciousDomains = getURLVoidMaliciousDomains(listOfScanDomains)
     if listOfMaliciousDomains is None or listOfMaliciousDomains == []:
-        print("\nNone malicious domains")
+        logger.error("\nNone malicious domains")
         return
 
-    print("\nList of malicious domains:")
+    logger.info("\nList of malicious domains:")
     for domain in listOfMaliciousDomains:
-        print("\t" + str(domain))
+        logger.info("\t" + str(domain))

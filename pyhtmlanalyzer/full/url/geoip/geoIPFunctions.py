@@ -90,7 +90,8 @@ class geoIPFunctions(commonURIAnalysisData):
         return "" if self.__hostGeoIpInfo is None else self.__hostGeoIpInfo[1]
 
     def printCountryCode(self):
-        print("\nCountry code: %s" % self.getCountryCode())
+        logger = logging.getLogger(self.__class__.__name__)
+        logger.info("\nCountry code: %s" % self.getCountryCode())
     #
 
     # alternative way via www.geobytes.com (see higher) with
@@ -102,7 +103,8 @@ class geoIPFunctions(commonURIAnalysisData):
         return "" if self.__hostGeoIpInfo is None else self.__hostGeoIpInfo[2]
 
     def printRegion(self):
-        print("\nRegion: %s" % self.getRegion())
+        logger = logging.getLogger(self.__class__.__name__)
+        logger.info("\nRegion: %s" % self.getRegion())
     #
 
     # alternative way via www.geobytes.com (see higher) with
@@ -114,5 +116,6 @@ class geoIPFunctions(commonURIAnalysisData):
         return "" if self.__hostGeoIpInfo is None else self.__hostGeoIpInfo[4]
 
     def printTimeZone(self):
-        print("\nTime zone: %s" % self.getTimeZone())
+        logger = logging.getLogger(self.__class__.__name__)
+        logger.info("\nTime zone: %s" % self.getTimeZone())
     #

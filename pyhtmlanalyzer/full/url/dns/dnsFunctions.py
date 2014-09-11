@@ -56,7 +56,8 @@ class dnsFunctions(commonURIAnalysisData):
     def printRecordFirstIP(self, recordType, callbackFunction):
         fistIP = callbackFunction()
         if fistIP !=  "":
-            print("\nFirst IP of %s record is: %s" % (recordType, fistIP))
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.info("\nFirst IP of %s record is: %s" % (recordType, fistIP))
 
     #
 
@@ -64,17 +65,19 @@ class dnsFunctions(commonURIAnalysisData):
         fistIP = callbackFunction(True)
 
         if fistIP != "":
-            print("\nFirst IP's TTL of %s record is: %s" % (recordType, fistIP))
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.info("\nFirst IP's TTL of %s record is: %s" % (recordType, fistIP))
             #
 
     # print AS Number common function
     def printRecordFirstIPASNumber(self, recordType, callbackFunction):
+        logger = logging.getLogger(self.__class__.__name__)
         ASNumber = callbackFunction()
 
         if ASNumber is not None:
-            print("\nFirst IP's AS Number of %s record is: %s" % (recordType, ASNumber))
+            logger.info("\nFirst IP's AS Number of %s record is: %s" % (recordType, ASNumber))
         else:
-            print("\nCant retrieve Autonomous System number")
+            logger.info("\nCant retrieve Autonomous System number")
             #
 
     # MX record first IP
@@ -98,7 +101,6 @@ class dnsFunctions(commonURIAnalysisData):
         except(dns.resolver.NXDOMAIN, dns.resolver.NoAnswer):
             logger = logging.getLogger(self.__class__.__name__)
             logger.error("No MX dns record exists for this dns")
-            print("\nNo MX dns record exists for this dns")
             return ""
 
     def printMXRecordFirstIP(self):
@@ -150,7 +152,6 @@ class dnsFunctions(commonURIAnalysisData):
         except(dns.resolver.NXDOMAIN, dns.resolver.NoAnswer):
             logger = logging.getLogger(self.__class__.__name__)
             logger.error("No A dns record exists for this dns")
-            print("\nNo A dns record exists for this dns")
             return ""
 
 
@@ -202,7 +203,6 @@ class dnsFunctions(commonURIAnalysisData):
         except(dns.resolver.NXDOMAIN, dns.resolver.NoAnswer):
             logger = logging.getLogger(self.__class__.__name__)
             logger.error("No NS dns record exists for this dns")
-            print("\nNo NS dns record exists for this dns")
             return ""
 
     def printNSRecordFirstIP(self):
@@ -240,14 +240,14 @@ class dnsFunctions(commonURIAnalysisData):
         except(dns.resolver.NXDOMAIN, dns.resolver.NoAnswer):
             logger = logging.getLogger(self.__class__.__name__)
             logger.error("No %s dns record exists for this dns" % recordType)
-            print("\nNo %s dns record exists for this dns" % recordType)
             return -1
 
 
     def printRecordIPsNumber(self, recordType='MX'):
         IPsNumber = self.getRecordIPsNumber(recordType)
         if IPsNumber != "":
-            print("\n%s record has: %s IPs" % (recordType, IPsNumber))
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.info("\n%s record has: %s IPs" % (recordType, IPsNumber))
             #
 
     # MX record IPs number
@@ -310,15 +310,16 @@ class dnsFunctions(commonURIAnalysisData):
 
 
     def printResolvedPTR(self, onlyFirstIP=True):
+        logger = logging.getLogger(self.__class__.__name__)
         listOfResolvedPTR = self.getResolvedPTR(onlyFirstIP)
         if listOfResolvedPTR is None:
-            print("\nNo PTR dns record exists for this dns")
+            logger.error("\nNo PTR dns record exists for this dns")
             return
 
         for resolvedPTR in listOfResolvedPTR:
-            print("\nTarget name: %s" % ".".join(resolvedPTR.target).rstrip("."))
-            print("RdClass: %s" % str(resolvedPTR.rdclass))
-            print("RdType: %s" % str(resolvedPTR.rdtype))
+            logger.info("\nTarget name: %s" % ".".join(resolvedPTR.target).rstrip("."))
+            logger.info("RdClass: %s" % str(resolvedPTR.rdclass))
+            logger.info("RdType: %s" % str(resolvedPTR.rdtype))
 
     #
 
@@ -338,7 +339,6 @@ class dnsFunctions(commonURIAnalysisData):
         if listOfResolvedPTR is None or listOfResolvedPTR == []:
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning("No PTR dns record exists for this dns")
-            print("\nNo PTR dns record exists for this dns")
             return False
 
         ipAddresses = copy(self.__listOfARecords)#dns.resolver.query(self.uri.split("://")[1].split("/")[0], 'A')
@@ -351,10 +351,6 @@ class dnsFunctions(commonURIAnalysisData):
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning("Length of PTR and A record's list unequal")
             logger.warning("PTR record list length is "
-                  + ("more" if ptrListRecordLength > aListRecordLength else "less")
-                  + " then A record list")
-            print("\nLength of PTR and A record's list unequal")
-            print("PTR record list length is "
                   + ("more" if ptrListRecordLength > aListRecordLength else "less")
                   + " then A record list")
 
@@ -385,7 +381,8 @@ class dnsFunctions(commonURIAnalysisData):
         return True
 
     def printAandPTRIPsEquality(self, onlyFirstIP=True):
-        print("A and PTR records for "
+        logger = logging.getLogger(self.__class__.__name__)
+        logger.info("A and PTR records for "
               + ("first IP" if onlyFirstIP else "all IPs")
               + " are "
               + ("equal" if self.getAandPTRIPsEquality(onlyFirstIP) else "unequal"))
@@ -427,7 +424,6 @@ class dnsFunctions(commonURIAnalysisData):
         except Exception, error:
             logger = logging.getLogger(self.__class__.__name__)
             logger.exception(error)
-            print(error)
             return None
 
         return asn

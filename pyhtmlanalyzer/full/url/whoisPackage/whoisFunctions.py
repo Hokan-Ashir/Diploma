@@ -24,43 +24,46 @@ class whoisFunctions(commonURIAnalysisData):
     # expiration date
     def getURLExpirationDates(self):
         try:
-            return None if self.whoisData is None else self.whoisData.expiration_date
+            return [] if self.whoisData is None else self.whoisData.expiration_date
         except KeyError, error:
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning('Page has no expiration dates\n\t %s' % error)
-            pass
+            return []
 
     def printURLExpirationDates(self):
-        print("\nExpiration dates:")
+        logger = logging.getLogger(self.__class__.__name__)
+        logger.info("\nExpiration dates:")
         for date in self.getURLExpirationDates():
-            print(date)
+            logger.info(date)
     #
 
     # registration date
     def getURLRegistrationDates(self):
         try:
-            return None if self.whoisData is None else self.whoisData.creation_date
+            return [] if self.whoisData is None else self.whoisData.creation_date
         except KeyError, error:
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning('Page has no registration dates\n\t %s' % error)
-            pass
+            return []
 
     def printURLRegistrationDates(self):
-        print("\nRegistration dates:")
+        logger = logging.getLogger(self.__class__.__name__)
+        logger.info("\nRegistration dates:")
         for date in self.getURLRegistrationDates():
-            print(date)
+            logger.info(date)
     #
 
     # update date
     def getURLUpdateDate(self):
         try:
-            return None if self.whoisData is None else self.whoisData.updated_date
+            return [] if self.whoisData is None else self.whoisData.updated_date
         except KeyError, error:
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning('Page has no update dates\n\t %s' % error)
-            pass
+            return []
 
 
     def printURLUpdatedDate(self):
-        print("\nUpdate date: %s" % self.getURLUpdateDate())
+        logger = logging.getLogger(self.__class__.__name__)
+        logger.info("\nUpdate date: %s" % self.getURLUpdateDate())
     #

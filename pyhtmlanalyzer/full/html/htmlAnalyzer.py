@@ -40,7 +40,6 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         else:
             logger = logging.getLogger(self.__class__.__name__)
             logger.error("Invalid parameters")
-            print("\nInvalid parameters")
             return
 
         result = commonFunctions.getModuleContent(configNames.configFileName, r'[^\n\s=,]+\s*:\s*[^\n\s=,]+',
@@ -65,7 +64,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         except KeyError, error:
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning(error)
-            print("\nNone list of elements with small area, can't perform analysis")
+            logger.warning("\nNone list of elements with small area, can't perform analysis")
             return
 
         dictOfElementsWithSmallArea = {}
@@ -85,18 +84,20 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
 
     def printNumberOfElementsWithSmallArea(self, widthLimit = 2.0, heightLimit = 2.0, squarePixelsLimit = 30.0):
         numberOfElementsWithSmallAreaDict = self.getNumberOfElementsWithSmallArea(widthLimit, heightLimit, squarePixelsLimit)
+        logger = logging.getLogger(self.__class__.__name__)
         if numberOfElementsWithSmallAreaDict == None or sum(numberOfElementsWithSmallAreaDict.values()) == 0:
-            print("\nNone elements with small area (width less than %f, height less than %f, square less than %f"
+            logger.warning("\nNone elements with small area (width less than %f, height less than %f, square less than %f"
                   % (widthLimit, heightLimit, squarePixelsLimit))
             return
 
-        print("\nTotal number of elements with small area (width less than %f, height less than %f, square less than %f: "
+        logger.info("\nTotal number of elements with small area (width less than %f, height less than %f, square less "
+                "than %f: "
               % (widthLimit, heightLimit, squarePixelsLimit) + str(sum(numberOfElementsWithSmallAreaDict.values())))
-        print("Number of elements with small area (width less than %f, height less than %f, square less than %f:"
+        logger.info("Number of elements with small area (width less than %f, height less than %f, square less than %f:"
               % (widthLimit, heightLimit, squarePixelsLimit))
         for key, value in numberOfElementsWithSmallAreaDict.items():
             if value > 0:
-                print("<" + str(key) + ">: " + str(value))
+                logger.info("<" + str(key) + ">: " + str(value))
     #
     ###################################################################################################################
 
@@ -109,7 +110,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         except KeyError, error:
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning(error)
-            print("\nNone list of non-duplicated elements, can't perform analysis")
+            logger.warning("\nNone list of non-duplicated elements, can't perform analysis")
             return
 
         dictOfDuplicatedElementsCount = {}
@@ -126,16 +127,17 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         return True if self.getTotalNumberOfDuplicatedElements() > 4 else False
 
     def printNumberOfDuplicatedElements(self):
+        logger = logging.getLogger(self.__class__.__name__)
         duplicatedElementsDict = self.getNumberOfDuplicatedElements()
         if duplicatedElementsDict == None or sum(duplicatedElementsDict.values()) == 0:
-            print("\nNone duplicated elements")
+            logger.warning("\nNone duplicated elements")
             return
 
-        print("\nTotal number of core html elements: " + str(sum(duplicatedElementsDict.values())))
-        print("Number of core html elements:")
+        logger.info("\nTotal number of core html elements: " + str(sum(duplicatedElementsDict.values())))
+        logger.info("Number of core html elements:")
         for key, value in duplicatedElementsDict.items():
             if value > 0:
-                print("<" + str(key) + ">: " + str(value))
+                logger.info("<" + str(key) + ">: " + str(value))
     #
     ###################################################################################################################
 
@@ -161,14 +163,15 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         return sum(listOfNumberOfElements)
 
     def printNumberOfElementsWithSuspiciousContent(self, characterLength = 128, whitespacePercentage = 5.0):
+        logger = logging.getLogger(self.__class__.__name__)
         suspiciousElements = self.getNumberOfElementsWithSuspiciousContent(characterLength, whitespacePercentage)
         if sum(suspiciousElements) == 0:
-            print("\nNone elements with suspicious content")
+            logger.warning("\nNone elements with suspicious content")
             return
 
-        print("\nNumber of suspicious elements:")
-        print("with length more than %d: " % characterLength + str(suspiciousElements[0]))
-        print("with less than %f percent of whitespaces: " % whitespacePercentage + str(suspiciousElements[1]))
+        logger.info("\nNumber of suspicious elements:")
+        logger.info("with length more than %d: " % characterLength + str(suspiciousElements[0]))
+        logger.info("with less than %f percent of whitespaces: " % whitespacePercentage + str(suspiciousElements[1]))
     #
     ###################################################################################################################
 
@@ -176,8 +179,9 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
     # but we can get content of void-tags parsing file in XML format and get @.tail@ node field instead of @text@
     # number of void-elements with content
     def getNumberOfVoidElementsWithContent(self):
+        logger = logging.getLogger(self.__class__.__name__)
         if self.__openedAsXML == False:
-            print("\nObject not opened as XML, impossible to count of void elements with content")
+            logger.error("\nObject not opened as XML, impossible to count of void elements with content")
             return
 
         try:
@@ -185,7 +189,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         except KeyError, error:
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning(error)
-            print("\nNone list of void tags, can't perform analysis")
+            logger.warning("\nNone list of void tags, can't perform analysis")
             return
 
         dictOfVoidElementsWithContent = defaultdict(int)
@@ -202,16 +206,17 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         return sum(self.getNumberOfVoidElementsWithContent().values())
 
     def printNumberOfVoidElementsWithContent(self):
+        logger = logging.getLogger(self.__class__.__name__)
         dictOfVoidElementsWithContent = self.getNumberOfVoidElementsWithContent()
         if dictOfVoidElementsWithContent == None or sum(dictOfVoidElementsWithContent.values()) == 0:
-            print("\nNone void elements with content")
+            logger.warning("\nNone void elements with content")
             return
 
-        print("\nTotal number of void elements with content: " + str(sum(dictOfVoidElementsWithContent.values())))
-        print("Number of void elements with content:")
+        logger.info("\nTotal number of void elements with content: " + str(sum(dictOfVoidElementsWithContent.values())))
+        logger.info("Number of void elements with content:")
         for key, value in dictOfVoidElementsWithContent.items():
             if value > 0:
-                print("<" + str(key) + ">: " + str(value))
+                logger.info("<" + str(key) + ">: " + str(value))
     #
     ###################################################################################################################
 
@@ -241,17 +246,18 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         return sum(self.getObjectsWithSuspiciousContent().values())
 
     def printNumberOfObjectsWithSuspiciousContent(self):
+        logger = logging.getLogger(self.__class__.__name__)
         dictOfSuspiciousObjects = self.getObjectsWithSuspiciousContent()
         if sum(dictOfSuspiciousObjects.values()) == 0:
-            print("\nNone suspicious objects")
+            logger.warning("\nNone suspicious objects")
             return
 
-        print("\nTotal number of suspicious objects: " + str(sum(dictOfSuspiciousObjects.values())))
+        logger.info("\nTotal number of suspicious objects: " + str(sum(dictOfSuspiciousObjects.values())))
         #sys.stdout.write("Number of suspicious objects:")
-        print("Number of suspicious objects:")
+        logger.info("Number of suspicious objects:")
         for key, value in dictOfSuspiciousObjects.items():
             if value > 0:
-                print(str(key) + ": " + str(value))
+                logger.info(str(key) + ": " + str(value))
     #
     ###################################################################################################################
 
@@ -262,7 +268,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         except KeyError, error:
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning(error)
-            print("\nNone list of tags with included URLs, can't perform analysis")
+            logger.warning("\nNone list of tags with included URLs, can't perform analysis")
             return
 
         dictOfIncludedURLsOjects = {}
@@ -275,16 +281,17 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         return sum(self.getIncludedURLs().values())
 
     def printNumberOfIncludedURLs(self):
+        logger = logging.getLogger(self.__class__.__name__)
         dictElementsWithIncludedURLs = self.getIncludedURLs()
         if dictElementsWithIncludedURLs == None or sum(dictElementsWithIncludedURLs.values()) == 0:
-            print("\nNone elements with included URLs")
+            logger.warning("\nNone elements with included URLs")
             return
 
-        print("\nTotal number of elements with included URLs: " + str(sum(dictElementsWithIncludedURLs.values())))
-        print("Number of elements with included URLs:")
+        logger.info("\nTotal number of elements with included URLs: " + str(sum(dictElementsWithIncludedURLs.values())))
+        logger.info("Number of elements with included URLs:")
         for key, value in dictElementsWithIncludedURLs.items():
             if value > 0:
-                print("<" + str(key) + ">: " + str(value))
+                logger.info("<" + str(key) + ">: " + str(value))
     #
     ###################################################################################################################
 
@@ -312,17 +319,18 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         return sum(self.getNumberOfKnownMaliciousPatternObjects().values())
 
     def printNumberOfKnownMaliciousPatternObjects(self):
+        logger = logging.getLogger(self.__class__.__name__)
         dictElementsWithMaliciousPatterns = self.getNumberOfKnownMaliciousPatternObjects()
         if sum(dictElementsWithMaliciousPatterns.values()) == 0:
-            print("\nNone elements with malicious patterns")
+            logger.warning("\nNone elements with malicious patterns")
             return
 
-        print("\nTotal number of elements with malicious patterns:"
+        logger.info("\nTotal number of elements with malicious patterns:"
               + str(sum(dictElementsWithMaliciousPatterns.values())))
-        print("Number of elements with malicious patterns:")
+        logger.info("Number of elements with malicious patterns:")
         for key, value in dictElementsWithMaliciousPatterns.items():
             if value > 0:
-                print("pattern: " + str(key) + " - " + str(value))
+                logger.info("pattern: " + str(key) + " - " + str(value))
     #
     ###################################################################################################################
 
@@ -336,7 +344,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         except KeyError, error:
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning(error)
-            print("\nNone list of under-head-tag elements, can't perform analysis")
+            logger.warning("\nNone list of under-head-tag elements, can't perform analysis")
             return
 
         try:
@@ -344,7 +352,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         except KeyError, error:
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning(error)
-            print("\nNone list of out-of-root-tag elements, can't perform analysis")
+            logger.warning("\nNone list of out-of-root-tag elements, can't perform analysis")
             return
 
         try:
@@ -352,7 +360,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         except KeyError, error:
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning(error)
-            print("\nNone list of block level elements, can't perform analysis")
+            logger.warning("\nNone list of block level elements, can't perform analysis")
             return
 
         try:
@@ -360,7 +368,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         except KeyError, error:
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning(error)
-            print("\nNone list of non block level elements, can't perform analysis")
+            logger.warning("\nNone list of non block level elements, can't perform analysis")
             return
 
         try:
@@ -368,7 +376,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         except KeyError, error:
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning(error)
-            print("\nNone list of no-block-content inline elements, can't perform analysis")
+            logger.warning("\nNone list of no-block-content inline elements, can't perform analysis")
             return
 
         # result dictionary initialization
@@ -462,16 +470,17 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         return sum(self.getNumberOutOfPlaceTags().values())
 
     def printNumberOutOfPlaceTags(self):
+        logger = logging.getLogger(self.__class__.__name__)
         dictOutOfPlaceTags = self.getNumberOutOfPlaceTags()
         if dictOutOfPlaceTags == None or sum(dictOutOfPlaceTags.values()) == 0:
-            print("\nNone out of place elements")
+            logger.warning("\nNone out of place elements")
             return
 
-        print("\nTotal number of elements out of place: " + str(sum(dictOutOfPlaceTags.values())))
-        print("Number of elements out of place:")
+        logger.info("\nTotal number of elements out of place: " + str(sum(dictOutOfPlaceTags.values())))
+        logger.info("Number of elements out of place:")
         for key, value in dictOutOfPlaceTags.items():
             if value > 0:
-                print("<" + str(key) + ">: " + str(value))
+                logger.info("<" + str(key) + ">: " + str(value))
     #
     ###################################################################################################################
 
@@ -497,9 +506,10 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
     # will be different, even if subtrees are equal
     @staticmethod
     def getPagesPercentageMismatch(xmldataFirstPage, xmldataSecondPage):
+        logger = logging.getLogger("getPagesPercentageMismatch")
         probablyNotMatch = (xmldataFirstPage.xpath('count(//*)') != xmldataSecondPage.xpath('count(//*)'))
         if probablyNotMatch:
-            print("\nThis pages probably not match")
+            logger.info("\nThis pages probably not match")
         numberOfMismatchedTags = htmlAnalyzer.getNumberOfMismatchedTagNames(xmldataFirstPage.xpath('/*')[0],
                                                                             xmldataSecondPage.xpath('/*')[0])
         return numberOfMismatchedTags / xmldataFirstPage.xpath('count(//*)')
@@ -577,11 +587,12 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
     # but this will help search out-of-place tags; not in place according DTD
     @staticmethod
     def printPagesPercentageMismatch(xmldataFirstPage, xmldataSecondPage):
+        logger = logging.getLogger("printPagesPercentageMismatch")
         if xmldataFirstPage is None or xmldataSecondPage is None:
-                print("Insufficient number of parameters")
+                logger.warning("Insufficient number of parameters")
                 return
         pagesPercentageMismatch = htmlAnalyzer.getPagesPercentageMismatch(xmldataFirstPage, xmldataSecondPage)
-        print("\nPages percentage mismatch is: " + str(pagesPercentageMismatch * 100) + "%")
+        logger.info("\nPages percentage mismatch is: " + str(pagesPercentageMismatch * 100) + "%")
     #
     ###################################################################################################################
 
@@ -590,12 +601,13 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         return self._xmldata.xpath('count(//*[%s = \'true\'])' % commonXPATHUtils.toLowerCase('@hidden', False))
 
     def printTotalNumberOfHiddenTags(self):
+        logger = logging.getLogger(self.__class__.__name__)
         numberOfHiddenTags = self.getTotalNumberOfHiddenTags()
         if numberOfHiddenTags == 0:
-            print("\nNone hidden tags")
+            logger.warning("\nNone hidden tags")
             return
 
-        print("\nTotal number of hidden tags: " + str(numberOfHiddenTags))
+        logger.info("\nTotal number of hidden tags: " + str(numberOfHiddenTags))
     #
     ###################################################################################################################
 
@@ -609,14 +621,15 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         return sum(self.getNumberOfScriptElements())
 
     def printNumberOfScriptElements(self):
+        logger = logging.getLogger(self.__class__.__name__)
         listOfScriptElements = self.getNumberOfScriptElements()
         if sum(listOfScriptElements) == 0:
-            print("\nNone script elements")
+            logger.warning("\nNone script elements")
             return
 
-        print("\nTotal number of script elements: " + str(sum(listOfScriptElements)))
-        print("Number of inline script elements: " + str(listOfScriptElements[0]))
-        print("Number of included script elements: " + str(listOfScriptElements[1]))
+        logger.info("\nTotal number of script elements: " + str(sum(listOfScriptElements)))
+        logger.info("Number of inline script elements: " + str(listOfScriptElements[0]))
+        logger.info("Number of included script elements: " + str(listOfScriptElements[1]))
     #
     ###################################################################################################################
 
@@ -745,17 +758,18 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         return sum(self.getNumberOfScriptElementsWithWrongFileExtension().values())
 
     def printNumberOfScriptElementsWithWrongFileExtension(self):
+        logger = logging.getLogger(self.__class__.__name__)
         dictOfScriptElementsWithWrongFileExtensions = self.getNumberOfScriptElementsWithWrongFileExtension()
         if sum(dictOfScriptElementsWithWrongFileExtensions.values()) == 0:
-            print("\nNone script elements with wrong file extensions")
+            logger.warning("\nNone script elements with wrong file extensions")
             return
 
-        print("\nTotal number of script elements with wrong file extensions: "
+        logger.info("\nTotal number of script elements with wrong file extensions: "
               + str(sum(dictOfScriptElementsWithWrongFileExtensions.values())))
-        print("Number of script elements with wrong file extensions:")
+        logger.info("Number of script elements with wrong file extensions:")
         for key, value in dictOfScriptElementsWithWrongFileExtensions.items():
             if value > 0:
-                print("script attribute type = " + str(key) + " - " + str(value))
+                logger.info("script attribute type = " + str(key) + " - " + str(value))
     #
     ###################################################################################################################
 
@@ -821,10 +835,11 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
 
     # print number of characters in the page
     def printNumberOfCharactersInPage(self):
-        print("\nTotal number of text characters in page: " + str(self.getNumberOfTextCharactersInPage()))
-        print("Total number of characters in page: " + str(self.getTotalNumberOfCharactersInPage()))
-        print("Total number of whitespace characters in page: " + str(self.getNumberOfWhitespaceCharactersInPage()))
-        print("Total length of page: " + str(len(self._pageReady)))
+        logger = logging.getLogger(self.__class__.__name__)
+        logger.info("\nTotal number of text characters in page: " + str(self.getNumberOfTextCharactersInPage()))
+        logger.info("Total number of characters in page: " + str(self.getTotalNumberOfCharactersInPage()))
+        logger.info("Total number of whitespace characters in page: " + str(self.getNumberOfWhitespaceCharactersInPage()))
+        logger.info("Total length of page: " + str(len(self._pageReady)))
 
     # - the percentage of unknown tags (impossible, case xpath can't see unknown tags)
     # NOTE but we can count number of characters of unknown tags (getFileLength() - getAllChars())
@@ -852,7 +867,8 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
     # result, then choose lesser one
     #
     def printNumberOfUnknownCharacters(self):
-        print("Unknown tags, comments and unrecognized features length: " + str(len(self._pageReady) - self.getTotalNumberOfCharactersInPage()))
+        logger = logging.getLogger(self.__class__.__name__)
+        logger.info("Unknown tags, comments and unrecognized features length: " + str(len(self._pageReady) - self.getTotalNumberOfCharactersInPage()))
     #
     ###################################################################################################################
 
@@ -863,7 +879,6 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         if self.__openedAsXML == False:
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning("Object not opened as XML, can't count percentage of unknown tags")
-            print("\nObject not opened as XML, can't count percentage of unknown tags")
             return None
 
         try:
@@ -871,7 +886,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         except KeyError, error:
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning(error)
-            print("\nNone list of under-head-tag elements, can't perform analysis")
+            logger.warning("\nNone list of under-head-tag elements, can't perform analysis")
             return None
 
         expressionForAllNonHTMLNodes = ''
@@ -881,12 +896,13 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         return float(self._xmldata.xpath('count(//*)') - self._xmldata.xpath('count(//*[%s])' % expressionForAllNonHTMLNodes)) / self._xmldata.xpath('count(//*)')
 
     def printPercentageOfUnknownTags(self):
+        logger = logging.getLogger(self.__class__.__name__)
         percentageOfUnknownTags = self.getPercentageOfUnknownTags()
         if percentageOfUnknownTags == None:
-            print("\nImpossible to perform analysis (count percentage of unknown tags)")
+            logger.warning("\nImpossible to perform analysis (count percentage of unknown tags)")
             return
 
-        print("\nPercentage of unknown tags: " + str(percentageOfUnknownTags) + "%")
+        logger.info("\nPercentage of unknown tags: " + str(percentageOfUnknownTags) + "%")
     #
     ###################################################################################################################
 
@@ -918,19 +934,21 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
             return float(resultList[1]) / resultList[0]
 
     def printNumberOfElementsWithExternalDomainSource(self):
+        logger = logging.getLogger(self.__class__.__name__)
         resultList = self.getNumberOfElementsWithExternalDomainSource()
         if resultList != []:
-            print("\nNumber of elements with external domain source: "
+            logger.info("\nNumber of elements with external domain source: "
                   + str(resultList[1]))
         else:
-            print("\nFile analyzing - no URI information")
+            logger.info("\nFile analyzing - no URI information")
 
     def printExternalDomainToInternalDomainSourceElementsRatio(self):
+        logger = logging.getLogger(self.__class__.__name__)
         ratio = self.getExternalDomainToInternalDomainSourceElementsRatio()
         if ratio == -1:
-            print("\nFile analyzing - no URI information")
+            logger.info("\nFile analyzing - no URI information")
         else:
-            print("\nExternal domain to internal domain source elements ratio: " + str(ratio))
+            logger.info("\nExternal domain to internal domain source elements ratio: " + str(ratio))
     #
     ###################################################################################################################
 
@@ -942,9 +960,10 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         return [pageHashSHA256, pageHashSHA512]
 
     def printPageHashValues(self):
+        logger = logging.getLogger(self.__class__.__name__)
         pageHashValues = self.getPageHashValues()
-        print("\nPage hash (SHA-256): " + str(pageHashValues[0]))
-        print("Page hash (SHA-512): " + str(pageHashValues[1]))
+        logger.info("\nPage hash (SHA-256): " + str(pageHashValues[0]))
+        logger.info("Page hash (SHA-512): " + str(pageHashValues[1]))
     #
     ###################################################################################################################
 
@@ -952,8 +971,9 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
     # print result of all functions via reflection with default values
     # NOTE: no order in function calls
     def printAll(self, xmldata, pageReady, uri):
+        logger = logging.getLogger(self.__class__.__name__)
         if xmldata is None or pageReady is None:
-                print("Insufficient number of parameters")
+                logger.error("Insufficient number of parameters")
                 return
         self.setXMLData(xmldata)
         self.setPageReady(pageReady)
@@ -963,7 +983,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         # FIXME remove in production
         #if(True):
         #    return
-        print("\n\nhtml Analyser ----------------------")
+        logger.info("\n\nhtml Analyser ----------------------")
         begin = timeit.default_timer()
         for funcName, funcValue in htmlAnalyzer.__dict__.items():
             if str(funcName).startswith("print") and callable(funcValue):
@@ -974,8 +994,8 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
                     logger.exception(error)
                     pass
         end = timeit.default_timer()
-        print("\nElapsed time: " + str(end - begin) + " seconds")
-        print("----------------------------------------")
+        logger.info("\nElapsed time: " + str(end - begin) + " seconds")
+        logger.info("----------------------------------------")
     #
     ###################################################################################################################
 
@@ -1008,14 +1028,14 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         except KeyError, error:
             logger = logging.getLogger(self.__class__.__name__)
             logger.exception(error)
-            print("Insufficient number of parameters")
+            logger.error("Insufficient number of parameters")
             return
 
         if kwargs['xmldata'] is None or kwargs['pageReady'] is None:
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning('Error in input parameters:\n xmldata:\t%s\n pageReady:\t%s' % (kwargs['xmldata'],
                                                                                            kwargs['pageReady']))
-            print("Insufficient number of parameters")
+            logger.warning("Insufficient number of parameters")
             return
 
         self.setXMLData(kwargs['xmldata'])

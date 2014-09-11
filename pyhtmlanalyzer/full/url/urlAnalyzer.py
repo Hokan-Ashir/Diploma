@@ -32,7 +32,8 @@ class urlAnalyzer(commonURLFunctions, dnsFunctions, geoIPFunctions, whoisFunctio
         whoisFunctions.__init__(self, uri)
         urlVoidFunctions.__init__(self, uri)
         if configDict is None:
-            print("\nInvalid parameters")
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.error("\nInvalid parameters")
             return
 
         self.__configDict = configDict
@@ -69,7 +70,8 @@ class urlAnalyzer(commonURLFunctions, dnsFunctions, geoIPFunctions, whoisFunctio
     # NOTE: no order in function calls
     def printAll(self, uri):
         if uri is None:
-            print("Insufficient number of parameters")
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.error("Insufficient number of parameters")
             return
         # TODO (un)comment
         self.setActiveModules(True, True, True, True, False)
@@ -82,7 +84,8 @@ class urlAnalyzer(commonURLFunctions, dnsFunctions, geoIPFunctions, whoisFunctio
         # TODO remove in production
         #if (True):
         #    return
-        print("\n\nurl Analyser ----------------------")
+        logger = logging.getLogger(self.__class__.__name__)
+        logger.info("\n\nurl Analyser ----------------------")
         begin = timeit.default_timer()
         for className in urlAnalyzer.__bases__:
             if className.__name__ == commonURLFunctions.__name__ and not self.__isCommonURLModuleActive:
@@ -104,14 +107,15 @@ class urlAnalyzer(commonURLFunctions, dnsFunctions, geoIPFunctions, whoisFunctio
                         logger.exception(error)
                         pass
         end = timeit.default_timer()
-        print("\nElapsed time: " + str(end - begin) + " seconds")
-        print("---------------------------------------")
+        logger.info("\nElapsed time: " + str(end - begin) + " seconds")
+        logger.info("---------------------------------------")
     #
     ###################################################################################################################
 
     def getTotalAll(self, uri):
         if uri is None:
-            print("Insufficient number of parameters")
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.error("Insufficient number of parameters")
             return
         self._uri = uri
         resultDict = {}
@@ -145,13 +149,12 @@ class urlAnalyzer(commonURLFunctions, dnsFunctions, geoIPFunctions, whoisFunctio
         except KeyError, error:
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning(error)
-            print("Insufficient number of parameters")
+            logger.warning("Insufficient number of parameters")
             return
 
         if kwargs['uri'] is None:
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning('Error in input parameters:\n uri:\t%s' % (kwargs['uri']))
-            print("Insufficient number of parameters")
             return
         self._uri = kwargs['uri']
         self.setURI(self._uri)
