@@ -1,6 +1,8 @@
 import logging
+import os
 from pybrain.datasets import SupervisedDataSet
 from pybrain.supervised import BackpropTrainer
+from pybrain.tools.customxml import NetworkWriter, NetworkReader
 from pybrain.tools.shortcuts import buildNetwork
 
 __author__ = 'hokan'
@@ -16,16 +18,41 @@ class neuroNet(object):
     __numberOfOutputParameters = None
     __numberOfInnerLayers = None
 
-    def __init__(self, numberOfInputParameters, numberOfOutputParameters = 1, numberOfInnerLayers = None):
+    # if "numberOfInputParameters" is None, we create simply stub of network
+    def __init__(self, numberOfInputParameters = None, numberOfOutputParameters = 1, numberOfInnerLayers = None):
+        self.createNetwork(numberOfInputParameters, numberOfOutputParameters, numberOfInnerLayers)
+
+    def createNetwork(self, numberOfInputParameters, numberOfOutputParameters = 1, numberOfInnerLayers = None):
+        self.__numberOfInputParameters = numberOfInputParameters
+        self.__numberOfOutputParameters = numberOfOutputParameters
+        self.__numberOfInnerLayers = numberOfInnerLayers
 
         if numberOfInnerLayers is None:
             # TODO manage this
             numberOfInnerLayers = 3#numberOfInputParameters + numberOfOutputParameters
 
-        self.__network = buildNetwork(numberOfInputParameters, numberOfInnerLayers, numberOfOutputParameters)
-        self.__numberOfInputParameters = numberOfInputParameters
-        self.__numberOfOutputParameters = numberOfOutputParameters
-        self.__numberOfInnerLayers = numberOfInnerLayers
+        if numberOfInputParameters is not None:
+            self.__network = buildNetwork(numberOfInputParameters, numberOfInnerLayers, numberOfOutputParameters)
+
+    def saveNetworkToDirectory(self, networkName, directoryPath):
+        try:
+            if not os.path.exists(directoryPath):
+                os.makedirs(directoryPath)
+            NetworkWriter.writeToFile(self.__network, directoryPath + os.sep + ('%s.xml' % networkName))
+            return True
+        except Exception, error:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.exception(error)
+            return False
+
+    def loadNetworkFromDirectory(self, networkName, directoryPath):
+        try:
+            self.__network = NetworkReader.readFrom(directoryPath + os.sep + ('%s.xml' % networkName))
+            return True
+        except Exception, error:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.exception(error)
+            return False
 
     def getNumberOfInputParameters(self):
         return self.__numberOfInputParameters

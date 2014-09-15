@@ -206,9 +206,6 @@ class commonFunctions:
             result = getattr(classInstance, methodName)(**arguments)
         except Exception, error:
             logger = logging.getLogger('callFunctionByNameQeued')
-            logger.error(classInstance)
-            logger.error(methodName)
-            logger.error(arguments)
             logger.exception(error)
             pass
 

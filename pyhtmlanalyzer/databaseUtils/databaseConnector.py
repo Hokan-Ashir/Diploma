@@ -92,7 +92,8 @@ class databaseConnector(object):
 
                         # create relation-object
                         relationColumns.append(['relation_%s' % relation[1],
-                                                relationship('%s' % relation[1], cascade="all, delete-orphan")])
+                                                relationship('%s' % relation[1],
+                                                             cascade="all, delete-orphan", single_parent=True)])
                         break
 
             columns[columnName] = Column(typeObject, foreignKey)

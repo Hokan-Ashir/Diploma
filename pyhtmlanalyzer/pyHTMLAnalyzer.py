@@ -31,12 +31,15 @@ class pyHTMLAnalyzer:
 
     # predefined section name of analyzed functions
     __databaseSectionName = 'Analyze functions database'
+    # predefined networks
+    __networksDirectory = './networks'
 
     def __init__(self, configFileName):
         self.__initialize(configFileName)
 
     def __initialize(self, configFileName):
         self.__modulesRegister = modulesRegister()
+        logger = logging.getLogger(self.__class__.__name__)
         configList = self.getConfigList(configFileName)
         self.createDatabaseFromFile(configFileName)
 
@@ -50,27 +53,48 @@ class pyHTMLAnalyzer:
         for moduleName in self.__modulesRegister.getClassInstanceDictionary().keys():
             self.__networksResultSolutionWeightsDict[moduleName] = [1, 1]
 
-        # TODO write code for saving/uploading file that describes network
+        # load networks from files, if it's possible
+        # first create networks stubs
+        for moduleName in self.__modulesRegister.getClassInstanceDictionary().keys():
+            self.__networksDict[moduleName] = neuroNet()
+
+        # load networks from files
+        logger.info("Loading networks from files ...")
+        loadingSuccess = False
+        try:
+            loadingSuccess = self.loadNetworksFromDirectory(self.__networksDirectory)
+        except Exception, error:
+            logger.exception(error)
+
+        if loadingSuccess:
+            logger.info("Loading networks succeeded")
+            return
+
+        # something is wrong - not all files exist, or directory - create networks from
+        # valid and invalid data
+        logger.info("Loading networks failed")
+
         # gather train data
         logger = logging.getLogger(self.__class__.__name__)
         logger.info("Getting invalid data from pages to train networks...")
         invalidDataDict = self.getNetworkTrainDataFromPages(commonFunctions.getObjectNamesFromFile('invalidPages'),
-                                                          False)
+                                                              False)
         logger.info("Getting valid data from pages to train networks...")
         validDataDict = self.getNetworkTrainDataFromPages(commonFunctions.getObjectNamesFromFile('validPages'), True)
 
         logger.info("Creating and training networks ...")
         # create train networks
         for moduleName, moduleValueList in validDataDict.items():
-            # create network for current module, if it doesn't exists
-            if moduleName not in self.__networksDict:
-                self.__networksDict[moduleName] = neuroNet(len(moduleValueList[0]))
+            self.__networksDict[moduleName] = neuroNet(len(moduleValueList[0]))
 
             # create common (valid and invalid) input values list of lists
             inputDataList = moduleValueList + invalidDataDict[moduleName]
             outputDataList = ([[True]] * len(moduleValueList)) + ([[False]] * len(invalidDataDict[moduleName]))
             logger.info("Network name: " + moduleName)
             logger.info(self.__trainNetworkWithData(moduleName, inputDataList, outputDataList, 200))
+            logger.info("Saving '%s' network to directory '%s'" % (moduleName, self.__networksDirectory))
+            self.__networksDict[moduleName].saveNetworkToDirectory(moduleName, self.__networksDirectory)
+            logger.info("Network '%s' saved" % moduleName)
 
     def createDatabaseFromFile(self, configFileName, deleteTablesContent = True):
         databaseInfo = commonFunctions.getSectionContent(configFileName, r'[^\n\s=,]+',
@@ -724,6 +748,56 @@ class pyHTMLAnalyzer:
 
     def getNetworkTrainDataFromFiles(self, listOfFiles, allObjectsAreValid):
         return self.__getNetworkTrainDataFromObjects(listOfFiles, allObjectsAreValid, False)
+
+    def loadNetworksFromDirectory(self, directoryPath):
+        try:
+            for networkName in self.__networksDict.keys():
+                if not self.loadNetworkFromDirectory(networkName, directoryPath):
+                    return False
+            return True
+        except Exception, error:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.exception(error)
+            return False
+
+    def loadNetworkFromDirectory(self, networkName, directoryPath):
+        try:
+            network = self.__networksDict[networkName]
+            return network.loadNetworkFromDirectory(networkName, directoryPath)
+        except KeyError, error:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.error(error)
+            logger.error("Network '%s' doesn't exists" % networkName)
+            return False
+        except Exception, error:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.exception(error)
+            return False
+
+    def saveNetworksToDirectory(self, directoryPath):
+        try:
+            for networkName in self.__networksDict.keys():
+                self.saveNetworkToDirectory(networkName, directoryPath)
+            return True
+        except Exception, error:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.exception(error)
+            return False
+
+    def saveNetworkToDirectory(self, networkName, directoryPath):
+        try:
+            network = self.__networksDict[networkName]
+            network.saveNetworkToDirectory(networkName, directoryPath)
+            return True
+        except KeyError, error:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.error(error)
+            logger.error("Network '%s' doesn't exists" % networkName)
+            return False
+        except Exception, error:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.exception(error)
+            return False
 
     def __analyzeObjects(self, listOfObjects, isPages = True):
         # TODO optimize analyze call - before doing analysis, get URLVoid data about this host,
