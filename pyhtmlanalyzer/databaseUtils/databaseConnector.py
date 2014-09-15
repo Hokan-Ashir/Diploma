@@ -43,8 +43,6 @@ class databaseConnector(object):
             and databaseName is not None:
             self.getDatabaseEngine(user, password, hostname, databaseName)
 
-        self.__Base = declarative_base()
-
     def detachObject(self, classInstance):
         Session = scoped_session(sessionmaker(self.__engine))
         session = Session()
@@ -89,11 +87,12 @@ class databaseConnector(object):
                         # with circular dependencies, for example
                         foreignKey = ForeignKey('%s.%s' % (relation[1], relation[2]),
                                                 use_alter=True,
-                                                name='fk_%s_%s_%s' % (tableName, relation[1], relation[2]))
+                                                name='fk_%s_%s_%s' % (tableName, relation[1], relation[2]),
+                                                ondelete="CASCADE")
 
                         # create relation-object
                         relationColumns.append(['relation_%s' % relation[1],
-                                                relationship('%s' % relation[1])])
+                                                relationship('%s' % relation[1], cascade="all, delete-orphan")])
                         break
 
             columns[columnName] = Column(typeObject, foreignKey)
@@ -159,7 +158,7 @@ def __repr__ (self):
                                                           methodsList, methodNamesList)
         self.__modulesRegister.registerORMClass(SomeClass, tableName)
 
-        if createTablesSeparately:
+        if createTablesSeparately is not None and createTablesSeparately == True:
             # creates table it self
             self.__Base.metadata.create_all(self.__engine)
 
@@ -377,20 +376,48 @@ def __repr__ (self):
 
         return self.executeRawQuery('use %s' % databaseName)
 
+    def deleteAllTablesContent(self):
+        try:
+            for tableName in self.__Base.metadata.tables:
+                self.deleteTableContent(tableName)
+            return True
+        except Exception, error:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.exception(error)
+            logger.error("Cannot delete all tables")
+            return False
+
+    def deleteTableContent(self, tableName):
+        try:
+            self.__engine.execute(self.__Base.metadata.tables[tableName].delete())
+            return True
+        except Exception, error:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.exception(error)
+            logger.error("Cannot delete table (%s)" % tableName)
+            return False
 
     def getDatabaseEngine(self, user, password, hostname, databaseName, createIfNotExists=False):
         connectionString = 'mysql://' + user + ':' + password + '@' + hostname
         self.__engine = create_engine(connectionString, encoding='latin1')
         self.useDatabase(user, password, hostname, databaseName)
+        self.__Base = declarative_base(bind=self.__engine)
 
         if createIfNotExists:
             self.createDatabase(user, password, hostname, databaseName)
             self.useDatabase(user, password, hostname, databaseName)
 
-    # this method creates tables from config file and, if "recreateDatabase" set to True, recreates database
+    # this method creates tables from config file and, if "recreateDatabase" set to True, recreates database,
+    # if "createTablesSeparately" set to None only ORM classes will be created and registered in modulesRegister
+    # this is useful if you don't want to recreate database, but want to have access to it
     # this method will return False in any case of problems, also if database doesn't exists
+    #
     def createDatabaseTables(self, user, password, hostname, databaseName, recreateDatabase=False,
                              createTablesSeparately=True):
+        # if we don't want to create database, simply do not even create tables, just ORM-classes
+        if recreateDatabase == False:
+            createTablesSeparately = None
+
         self.getDatabaseEngine(user, password, hostname, databaseName)
 
         if recreateDatabase:
@@ -400,7 +427,6 @@ def __repr__ (self):
         elif self.useDatabase(user, password, hostname, databaseName) == False:
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning('Database %s does not exists' % databaseName)
-            return False
 
         # load analysing tables
         tables = commonFunctions.getSectionContent(configNames.configFileName, r'[^\n\s=,]+\s*:\s*[^\n\s=,]+', 'Extractors functions')
@@ -481,7 +507,7 @@ def __repr__ (self):
         # and http://docs.sqlalchemy.org/en/rel_0_9/orm/relationships.html#one-to-many
         #
         # Also if you would like to get ALTER-statements in SQLAlchemy, you can use SQLAlchemy Migrate tools
-        if not createTablesSeparately:
+        if createTablesSeparately is not None and createTablesSeparately == False:
             metadata = self.__Base.metadata
             metadata.create_all(self.__engine)
 

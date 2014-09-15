@@ -43,8 +43,6 @@ class pyHTMLAnalyzer:
         self.setModule(htmlAnalyzer(configList[0]))
         self.setModule(scriptAnalyzer(configList[1]))
         self.setModule(urlAnalyzer(configList[2]))
-        #if True:
-        #    return
 
         # networks part
         # set weights for register modules
@@ -74,7 +72,7 @@ class pyHTMLAnalyzer:
             logger.info("Network name: " + moduleName)
             logger.info(self.__trainNetworkWithData(moduleName, inputDataList, outputDataList, 200))
 
-    def createDatabaseFromFile(self, configFileName):
+    def createDatabaseFromFile(self, configFileName, deleteTablesContent = True):
         databaseInfo = commonFunctions.getSectionContent(configFileName, r'[^\n\s=,]+',
                                                          self.__databaseSectionName)
         user = None
@@ -98,9 +96,10 @@ class pyHTMLAnalyzer:
             logger.warning(error)
 
         connector = databaseConnector()
-        #connector.createDatabase(user, password, hostname, databaseName)
-        connector.createDatabaseTables(user, password, hostName, databaseName, recreateDatabase=True,
+        connector.createDatabaseTables(user, password, hostName, databaseName, recreateDatabase=False,
                                        createTablesSeparately=False)
+        if deleteTablesContent:
+            connector.deleteAllTablesContent()
 
 
     # module section
