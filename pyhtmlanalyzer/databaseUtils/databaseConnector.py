@@ -1,6 +1,6 @@
 import logging
 from sqlalchemy import Integer, Float, String, Boolean, Column, create_engine, ForeignKey
-from sqlalchemy.exc import OperationalError, NoReferencedTableError
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker, relationship, load_only
 from pyhtmlanalyzer.commonFunctions import configNames
@@ -49,7 +49,7 @@ class databaseConnector(object):
         session.expunge(classInstance)
 
     # columnNames and columnTypes must have same length
-    def createTable(self, tableName, columns, tablesRelations, createTablesSeparately):
+    def createORMClass(self, tableName, columns, tablesRelations):
         # currently support only one FK per column
         # TODO improve that
 
@@ -158,18 +158,6 @@ def __repr__ (self):
         SomeClass = commonFunctions.makeClassByDictionary(tableName, [self.__Base], columns,
                                                           methodsList, methodNamesList)
         self.__modulesRegister.registerORMClass(SomeClass, tableName)
-
-        if createTablesSeparately is not None and createTablesSeparately == True:
-            # creates table it self
-            self.__Base.metadata.create_all(self.__engine)
-
-        # fill with some data
-        #Session = scoped_session(sessionmaker(bind=self.engine))
-        #session = Session()
-        #instance = SomeClass(100, 4.0)
-        #instance2 = SomeClass(100, 4.0)
-        #session.add_all([instance, instance2])
-        #session.commit()
 
     def executeRawQuery(self, query):
         if self.__engine is None:
@@ -409,15 +397,16 @@ def __repr__ (self):
             self.useDatabase(user, password, hostname, databaseName)
 
     # this method creates tables from config file and, if "recreateDatabase" set to True, recreates database,
-    # if "createTablesSeparately" set to None only ORM classes will be created and registered in modulesRegister
-    # this is useful if you don't want to recreate database, but want to have access to it
+    # if "createTables" set to True method also creates tables, otherwise only ORM classes will be created and
+    # registered in modulesRegister
     # this method will return False in any case of problems, also if database doesn't exists
     #
-    def createDatabaseTables(self, user, password, hostname, databaseName, recreateDatabase=False,
-                             createTablesSeparately=True):
-        # if we don't want to create database, simply do not even create tables, just ORM-classes
-        if recreateDatabase == False:
-            createTablesSeparately = None
+    def createORMClasses(self, user, password, hostname, databaseName, recreateDatabase=False,
+                             cleanTablesContent=False):
+
+        # no need to clean up database and make additional method calls, if database will be empty after recreation
+        if recreateDatabase:
+            cleanTablesContent = False
 
         self.getDatabaseEngine(user, password, hostname, databaseName)
 
@@ -479,14 +468,7 @@ def __repr__ (self):
             # combine column names and types in one object, for simplicity
             columns = dict(zip(columnNames, columnTypes))
 
-            try:
-                self.createTable(key, columns, self.__tableRelationsDictionary, createTablesSeparately)
-            except NoReferencedTableError, error:
-                # this error will raise if we try to create tables separately,
-                # but tables themselves has relations
-                # in this case we must run "metadata.create_all(engine)" method after all tables created
-                logger = logging.getLogger(self.__class__.__name__)
-                logger.warning(error)
+            self.createORMClass(key, columns, self.__tableRelationsDictionary)
 
         # run metadata commit only if we create tables all at once
         # this technique needed in case we would like to add foreign keys on tables later
@@ -508,8 +490,11 @@ def __repr__ (self):
         # and http://docs.sqlalchemy.org/en/rel_0_9/orm/relationships.html#one-to-many
         #
         # Also if you would like to get ALTER-statements in SQLAlchemy, you can use SQLAlchemy Migrate tools
-        if createTablesSeparately is not None and createTablesSeparately == False:
+        if recreateDatabase:
             metadata = self.__Base.metadata
             metadata.create_all(self.__engine)
+
+        if cleanTablesContent:
+            self.deleteAllTablesContent()
 
         return True

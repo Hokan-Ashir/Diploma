@@ -77,10 +77,26 @@ class pyHTMLAnalyzer:
         # gather train data
         logger = logging.getLogger(self.__class__.__name__)
         logger.info("Getting invalid data from pages to train networks...")
-        invalidDataDict = self.getNetworkTrainDataFromPages(commonFunctions.getObjectNamesFromFile('invalidPages'),
-                                                              False)
+        invalidPagesList = commonFunctions.getObjectNamesFromFile('invalidPages')
+        validPagesList = commonFunctions.getObjectNamesFromFile('validPages')
+
+        # check that both lists consist of UNIQUE data, if not - abort everything
+        nonUniquePages = []
+        for item in validPagesList:
+            if item in invalidPagesList:
+                nonUniquePages.append(item)
+
+        if nonUniquePages:
+            logger.error('This pages exists in both valid and invalid pages lists')
+            for item in nonUniquePages:
+                logger.error(item)
+
+            logger.error('Cannot perform analysis further. Application will be terminated')
+            raise Exception('Pages duplication in valid and invalid lists')
+
+        invalidDataDict = self.getNetworkTrainDataFromPages(invalidPagesList, False)
         logger.info("Getting valid data from pages to train networks...")
-        validDataDict = self.getNetworkTrainDataFromPages(commonFunctions.getObjectNamesFromFile('validPages'), True)
+        validDataDict = self.getNetworkTrainDataFromPages(validPagesList, True)
 
         logger.info("Creating and training networks ...")
         # create train networks
@@ -120,11 +136,8 @@ class pyHTMLAnalyzer:
             logger.warning(error)
 
         connector = databaseConnector()
-        connector.createDatabaseTables(user, password, hostName, databaseName, recreateDatabase=False,
-                                       createTablesSeparately=False)
-        if deleteTablesContent:
-            connector.deleteAllTablesContent()
-
+        connector.createORMClasses(user, password, hostName, databaseName, recreateDatabase=False,
+                                       cleanTablesContent=deleteTablesContent)
 
     # module section
     def getModules(self):
@@ -808,6 +821,11 @@ class pyHTMLAnalyzer:
         # get analyze data itself
         resultDict = self.getTotalNumberOfAnalyzedObjectsFeatures(listOfObjects, isPages)
         for analyzedObjectName, analyzedObjectValue in resultDict.items():
+            if analyzedObjectValue[1] is None:
+                logger = logging.getLogger(self.__class__.__name__)
+                logger.warning("Object '%s' cannot be analyzed - errors during data extraction. Continuing ..."
+                               % analyzedObjectName)
+                continue
 
             # get isValid-solution
             isValid = self.analyzeObjectViaNetworks(analyzedObjectValue[1])

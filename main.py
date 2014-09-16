@@ -32,7 +32,7 @@ if __name__ == "__main__":
     #analyzer.analyzeFiles(['xmlFiles/test.htm'])
     #dic = analyzer.getNumberOfAnalyzedPageFeaturesByFunction('http://www.yandex.ru')
     end = timeit.default_timer()
-    logger.info("\nElapsed time: " + str(end - begin) + " seconds")
+    logger.info("Elapsed time: " + str(end - begin) + " seconds")
 
     # print all data via print and __repr__ class methods
     #connector = databaseConnector()
@@ -43,17 +43,16 @@ if __name__ == "__main__":
     #dic = analyzer.getNumberOfAnalyzedPageFeaturesByFunction('http://www.yandex.ru')
     analyzer.analyzeFiles(['xmlFiles/test.htm'])
     end = timeit.default_timer()
-    logger.info("\nElapsed time: " + str(end - begin) + " seconds")'''
+    logger.info("Elapsed time: " + str(end - begin) + " seconds")'''
     #logger.info(dic.items())
     #html = htmlAnalyzer.printPagesPercentageMismatch(commonConnectionUtils.openFile('xmlFiles/VLC.htm')[0],
     #                                                commonConnectionUtils.openFile('xmlFiles/VLC1.htm')[0])
     #plottingFunctions.plotArrayOfValues('test', [10, 20, 40], [100, 400, 300], 'xLabel', 'yLabel')
     #logger.info("sadf" + str(len(dic)))
     totalEnd = timeit.default_timer()
-    logger.info("\nTotal elapsed time: " + str(totalEnd - totalBegin) + " seconds")
+    logger.info("Total elapsed time: " + str(totalEnd - totalBegin) + " seconds")
 
     # TODO Global
-    # - sql-integration (DB-4-lab, postgres preferable)
     # - browser-plugin - must save malicious url for post-analysis, black/white-listing
     # - statistics-class so as example and graphics
     # - cashing
@@ -63,3 +62,20 @@ if __name__ == "__main__":
 
     # TODO ask
     # in <script> tags with @src attribute no embed script will be executed, is there a way to break this rule?
+
+    # TODO known bugs:
+    # 1.
+    #   make lists of invalid and valid pages, no networks saved, run analysis, delete networks files, run analysis
+    # again (DO NOT drop or clean database)
+    #   result: data that you got from second analysis almost consists of dicts like {'id' : X}, which indicate that
+    #           such object already exists in database
+    #           so when it comes to networks creation you got error like
+    #           "ValueError: cannot copy sequence with size 18 to array axis with dimension 1"
+    #           that means your analysis data has less dimension that network input
+    #
+    #           it CAN be improved - we can obtain data from database for already existed objects, but for common sense
+    #           it is not necessary - when no networks exists, we must clean up everything, analyze valid/invalid
+    #           pages and ONLY THEN perform any other analysis. If any networks exists we DO NOT need to clean up
+    #           anything and can perform analysis right from the start
+    #
+    #           shorter: no networks - recreate database, networks exists - DO NOT clean up database or recreate it
