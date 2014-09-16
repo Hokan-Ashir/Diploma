@@ -712,6 +712,12 @@ class pyHTMLAnalyzer:
         resultDict = self.getTotalNumberOfAnalyzedObjectsFeatures(listOfObjects, isPages)
         dictOfInputParameters = {}
         for analyzedObjectName, analyzedObjectValue in resultDict.items():
+            if analyzedObjectValue[1] is None:
+                logger = logging.getLogger(self.__class__.__name__)
+                logger.warning("Object '%s' cannot be analyzed - errors during data extraction. Continuing ..."
+                               % analyzedObjectName)
+                continue
+
             # flatten all dicts and lists (which is not FKs to some tables)
             # remove all FKs columns (dict keys) from analyzedObjectValue
             modulesDict = analyzedObjectValue[1]
