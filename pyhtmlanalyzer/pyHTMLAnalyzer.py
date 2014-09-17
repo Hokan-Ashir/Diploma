@@ -136,7 +136,7 @@ class pyHTMLAnalyzer:
             logger.warning(error)
 
         connector = databaseConnector()
-        connector.createORMClasses(user, password, hostName, databaseName, recreateDatabase=False,
+        connector.createORMClasses(user, password, hostName, databaseName, recreateDatabase=True,
                                        cleanTablesContent=deleteTablesContent)
 
     # module section
@@ -449,8 +449,6 @@ class pyHTMLAnalyzer:
                 for innerFK in childTableFks:
                     # get table name TO WHICH references current FK
                     childTargetTableName = innerFK.target_fullname.split('.')[0]
-                    # FIXME fails with IndexError: list index out of range
-                    # if same url exists in both valid and invalid pages lists
                     for innerItem in tableData[tableIdList.index(item)][targetTableName]:
                         # if FK references to table which is not in tableData, such table is not child
                         if childTargetTableName not in innerItem:

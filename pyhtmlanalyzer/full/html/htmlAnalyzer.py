@@ -795,7 +795,14 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
             # .* - any symbol 0+ times
             # \n?) - until end of line, which can be off
             regExp = re.compile(r'(/\*[^\*/]*\*/|//.*\n?)')
-            numberOfCharactersInPage = len(re.sub(regExp, '', str(item.encode('utf-8'))))
+            try:
+                tempItem = item.encode('utf-8')
+            except UnicodeDecodeError, error:
+                logger = logging.getLogger(self.__class__.__name__)
+                logger.warning(error)
+                tempItem = item
+
+            numberOfCharactersInPage = len(re.sub(regExp, '', str(tempItem)))
 
         return numberOfCharactersInPage
 
@@ -829,7 +836,14 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         for item in listOfInlineScriptTextNodes:
             # additional '|\s' for replacing spaces in one turn
             regExp = re.compile(r'(/\*[^\*/]*\*/|//.*\n?|\s)')
-            numberOfCharactersInPage += len(re.sub(regExp, '', str(item.encode('utf-8'))))
+            try:
+                tempItem = item.encode('utf-8')
+            except UnicodeDecodeError, error:
+                logger = logging.getLogger(self.__class__.__name__)
+                logger.warning(error)
+                tempItem = item
+
+            numberOfCharactersInPage += len(re.sub(regExp, '', str(tempItem)))
 
         return numberOfCharactersInPage
 
@@ -954,8 +968,14 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
 
     # page hashing
     def getPageHashValues(self):
-        pageHashSHA256 = hashlib.sha256(self._pageReady.encode('utf-8')).hexdigest()
-        pageHashSHA512 = hashlib.sha512(self._pageReady.encode('utf-8')).hexdigest()
+        try:
+            pageHashSHA256 = hashlib.sha256(self._pageReady.encode('utf-8')).hexdigest()
+            pageHashSHA512 = hashlib.sha512(self._pageReady.encode('utf-8')).hexdigest()
+        except UnicodeDecodeError, error:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning(error)
+            pageHashSHA256 = hashlib.sha256(self._pageReady).hexdigest()
+            pageHashSHA512 = hashlib.sha512(self._pageReady).hexdigest()
 
         return [pageHashSHA256, pageHashSHA512]
 

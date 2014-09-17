@@ -5,6 +5,8 @@ import lxml
 import lxml.html
 import os
 import urllib2
+import urlparse
+from lxml.etree import ParserError
 
 __author__ = 'hokan'
 
@@ -69,26 +71,25 @@ class commonConnectionUtils:
             # encode to utf-8 backwards
             pageReady = pageReady.encode('utf-8')
             xmldata = lxml.html.document_fromstring(pageReady)
+        except ParserError, error:
+            # "Document is empty" also catches here
+            logger = logging.getLogger('commonConnectionUtils')
+            logger.warning(error)
+            return []
 
         return [xmldata, pageReady]
 
     @staticmethod
     def openRelativeScriptObject(uri, filePath):
-        # in case 'src=http://path-to-script'
-        if str(filePath).startswith('http'):
-            openedFile = commonConnectionUtils.openPage(filePath)
-        # in case 'src=http://path-to-script'
-        elif str(filePath).startswith('//'):
-            openedFile = commonConnectionUtils.openPage('http:' + filePath)
-        # in case of relative path to script
+        # in case of page analyzing
+        if uri.startswith('http'):
+            tmpPath = urlparse.urljoin(uri, filePath)
+            logger = logging.getLogger("openRelativeScriptObject")
+            logger.info(tmpPath)
+            openedFile = commonConnectionUtils.openPage(tmpPath)
+        # in case of file analyzing
         else:
-            # in case of file analyzing
-            if not str(uri).startswith('http'):
-                tmpPath = os.path.join(os.path.dirname(uri), filePath)
-                openedFile = commonConnectionUtils.openFile(tmpPath)
-            # in case of page analyzing
-            else:
-                # http(s): + // + path-to-TLD + path-to-script
-                tmpPath = str(uri).split('/')[0] + '//' + str(uri).split('/')[2] + filePath
-                openedFile = commonConnectionUtils.openPage(tmpPath)
+            tmpPath = os.path.join(os.path.dirname(uri), filePath)
+            openedFile = commonConnectionUtils.openFile(tmpPath)
+
         return openedFile
