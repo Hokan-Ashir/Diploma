@@ -1,38 +1,28 @@
 from collections import defaultdict
-import json
 import logging
 from multiprocessing import Queue
-from datetime import datetime, date
 from pyhtmlanalyzer.commonFunctions import configNames
 from pyhtmlanalyzer.commonFunctions.commonConnectionUtils import commonConnectionUtils
 from pyhtmlanalyzer.commonFunctions.commonFunctions import commonFunctions
 from pyhtmlanalyzer.commonFunctions.modulesRegister import modulesRegister
 from pyhtmlanalyzer.commonFunctions.processProxy import processProxy
 from pyhtmlanalyzer.databaseUtils.databaseConnector import databaseConnector
+from pyhtmlanalyzer.databaseUtils.databaseWrapperFunctions import databaseWrapperFunctions
 from pyhtmlanalyzer.full.html.htmlAnalyzer import htmlAnalyzer
 from pyhtmlanalyzer.full.script.scriptAnalyzer import scriptAnalyzer
 from pyhtmlanalyzer.full.url.urlAnalyzer import urlAnalyzer
-from pyhtmlanalyzer.neuronetUtils.neuroNet import neuroNet
+from pyhtmlanalyzer.neuronetUtils.neuroNetsController import neuroNetsController
 
 __author__ = 'hokan'
 
 class pyHTMLAnalyzer:
-    __networksDict = {}
-    # this dictionary is respond for result solution (valid/invalid), by passing each module weight in result function
-    # In another words it store values that represents HOW MUCH each module (i.e. scriptModule) AND each value
-    # (i.e. script piece of current page) affects on result
-    # i.e:
-    # isValid = isValid * (weightsDict[moduleName] * networkDict[moduleName].analyzeData(...))
-    #
-    # stores list of 2 values, first - weight of current module, second - weight of each value of current module
-    __networksResultSolutionWeightsDict = {}
     __modulesRegister = None
+    # neuroNets controller
+    __controller = None
     __activeModulesDictionary = defaultdict(bool)
 
     # predefined section name of analyzed functions
     __databaseSectionName = 'Analyze functions database'
-    # predefined networks
-    __networksDirectory = './networks'
 
     def __init__(self, configFileName):
         self.__initialize(configFileName)
@@ -48,69 +38,14 @@ class pyHTMLAnalyzer:
         self.setModule(urlAnalyzer(configList[2]))
 
         # networks part
-        # set weights for register modules
-        # TODO make own function or module for this stuff, cause it's one of the main controlling mechanisms
-        for moduleName in self.__modulesRegister.getClassInstanceDictionary().keys():
-            self.__networksResultSolutionWeightsDict[moduleName] = [1, 1]
-
-        # load networks from files, if it's possible
-        # first create networks stubs
-        for moduleName in self.__modulesRegister.getClassInstanceDictionary().keys():
-            self.__networksDict[moduleName] = neuroNet()
-
-        # load networks from files
-        logger.info("Loading networks from files ...")
-        loadingSuccess = False
-        try:
-            loadingSuccess = self.loadNetworksFromDirectory(self.__networksDirectory)
-        except Exception, error:
-            logger.exception(error)
-
-        if loadingSuccess:
-            logger.info("Loading networks succeeded")
-            return
-
-        # something is wrong - not all files exist, or directory - create networks from
-        # valid and invalid data
-        logger.info("Loading networks failed")
-
-        # gather train data
-        logger = logging.getLogger(self.__class__.__name__)
+        validPagesFileName = 'validPages'
+        invalidPagesFileName = 'invalidPages'
+        self.__controller = neuroNetsController(invalidPagesFileName, validPagesFileName)
         logger.info("Getting invalid data from pages to train networks...")
-        invalidPagesList = commonFunctions.getObjectNamesFromFile('invalidPages')
-        validPagesList = commonFunctions.getObjectNamesFromFile('validPages')
-
-        # check that both lists consist of UNIQUE data, if not - abort everything
-        nonUniquePages = []
-        for item in validPagesList:
-            if item in invalidPagesList:
-                nonUniquePages.append(item)
-
-        if nonUniquePages:
-            logger.error('This pages exists in both valid and invalid pages lists')
-            for item in nonUniquePages:
-                logger.error(item)
-
-            logger.error('Cannot perform analysis further. Application will be terminated')
-            raise Exception('Pages duplication in valid and invalid lists')
-
-        invalidDataDict = self.getNetworkTrainDataFromPages(invalidPagesList, False)
+        invalidDataDict = self.getNetworkTrainDataFromFile(invalidPagesFileName, False)
         logger.info("Getting valid data from pages to train networks...")
-        validDataDict = self.getNetworkTrainDataFromPages(validPagesList, True)
-
-        logger.info("Creating and training networks ...")
-        # create train networks
-        for moduleName, moduleValueList in validDataDict.items():
-            self.__networksDict[moduleName] = neuroNet(len(moduleValueList[0]))
-
-            # create common (valid and invalid) input values list of lists
-            inputDataList = moduleValueList + invalidDataDict[moduleName]
-            outputDataList = ([[True]] * len(moduleValueList)) + ([[False]] * len(invalidDataDict[moduleName]))
-            logger.info("Network name: " + moduleName)
-            logger.info(self.__trainNetworkWithData(moduleName, inputDataList, outputDataList, 200))
-            logger.info("Saving '%s' network to directory '%s'" % (moduleName, self.__networksDirectory))
-            self.__networksDict[moduleName].saveNetworkToDirectory(moduleName, self.__networksDirectory)
-            logger.info("Network '%s' saved" % moduleName)
+        validDataDict = self.getNetworkTrainDataFromFile(validPagesFileName, True)
+        self.__controller.trainNetworks(invalidDataDict, validDataDict)
 
     def createDatabaseFromFile(self, configFileName, deleteTablesContent = True):
         databaseInfo = commonFunctions.getSectionContent(configFileName, r'[^\n\s=,]+',
@@ -299,275 +234,6 @@ class pyHTMLAnalyzer:
     def getTotalNumberOfAnalyzedFilesFeatures(self, listOfFiles):
         return self.getTotalNumberOfAnalyzedObjectsFeatures(listOfFiles, False)
 
-    def analyzeObjectViaNetworks(self, analyzeDataDict):
-        dictOfInputParameters = {}
-
-        # gather data for analysis
-        for moduleName, moduleValueList in analyzeDataDict.items():
-                listOfListsOfInputParameters = []
-                 # delete FKs elements
-                # ... that current module references to ...
-                ORMClass = self.__modulesRegister.getORMClass(moduleName)
-                tableFks = list(ORMClass.__table__.foreign_keys)
-                for dictOfModuleValues in moduleValueList:
-                    deletedData = {}
-                    for FK in tableFks:
-                        # get table name TO WHICH references current FK
-                        targetTableName = FK.target_fullname.split('.')[0]
-                        if targetTableName in dictOfModuleValues:
-                            deletedData[targetTableName] = dictOfModuleValues[targetTableName]
-                            del dictOfModuleValues[targetTableName]
-
-                    # ... and that references to current module
-                    for ormClassName, ORMClass in self.__modulesRegister.getORMClassDictionary().items():
-                        tableFks = list(ORMClass.__table__.foreign_keys)
-                        for FK in tableFks:
-                            # get table name TO WHICH references current FK
-                            targetTableName = FK.target_fullname.split('.')[0]
-                            if targetTableName in dictOfModuleValues:
-                                deletedData[targetTableName] = dictOfModuleValues[targetTableName]
-                                del dictOfModuleValues[targetTableName]
-
-                    listOfListsOfInputParameters.append(commonFunctions.recursiveFlattenDict(dictOfModuleValues))
-
-                    # restore deleted data, cause this is needed for database
-                    for name, value in deletedData.items():
-                        dictOfModuleValues[name] = value
-
-                if moduleName not in dictOfInputParameters:
-                    dictOfInputParameters[moduleName] = listOfListsOfInputParameters
-                else:
-                    dictOfInputParameters[moduleName] = dictOfInputParameters[moduleName] + listOfListsOfInputParameters
-
-        logger = logging.getLogger(self.__class__.__name__)
-        # pass data to neuro-nets, get isValid solution
-
-        # this flag represent cases, when all data from page DOESN'T changed, so "isValid" value must NOT changed
-        # either; such cases can be find when NO inputValue has expected length, that mean each inputValue contains
-        # row previous id
-        pageChanged = False
-        # TODO check abs() calls
-        solution = 0
-        for networkName in self.__networksDict.keys():
-            logger.info("Gathering result solution from network '%s'" % networkName)
-            moduleResultValue = 1
-            for item in dictOfInputParameters[networkName]:
-                if self.__networksDict[networkName].getNumberOfInputParameters() == len(item):
-                    pageChanged = True
-                    moduleResultValue = moduleResultValue \
-                                        * abs(self.__networksDict[networkName].analyzeData(item)) \
-                                        * self.__networksResultSolutionWeightsDict[networkName][1]
-
-            solution = solution + moduleResultValue * self.__networksResultSolutionWeightsDict[networkName][0]
-
-        # round solution
-        # TODO also make this parameter, border value (0.5), configurable
-        solution = True if abs(solution) >= 0.5 else False
-        logger.info("Result solution is: " + str(solution))
-        logger.info("Page changed: " + str(pageChanged))
-
-        return None if not pageChanged else solution
-
-    def __invalidateFKColumns(self, tableName, tableIdList, listOfChildTableNames):
-        connector = databaseConnector()
-        dictOfParentTableIds = {}
-
-        # search for tables that references to tableName
-        for ORMClass in self.__modulesRegister.getORMClassDictionary().values():
-            tableFks = list(ORMClass.__table__.foreign_keys)
-            for FK in tableFks:
-                # get table name TO WHICH references current FK
-                targetTableName = FK.target_fullname.split('.')[0]
-                if tableName != targetTableName:
-                    continue
-                else:
-                    columnFKName = FK.parent.description
-                    # select parent table Ids, so as invalidate FK column value, which references to tableName
-                    for ids in tableIdList:
-                        result = connector.select(ORMClass, [configNames.id], columnFKName, ids)
-                        # TODO check if result need to be checked
-                        parentTableId = result[0]
-                        # invalidate FK column value
-                        connector.update(ORMClass, getattr(parentTableId, configNames.id), columnFKName, None)
-
-                        if targetTableName not in dictOfParentTableIds:
-                            dictOfParentTableIds[targetTableName] = []
-
-                        dictOfParentTableIds[targetTableName].append(getattr(parentTableId, configNames.id))
-
-        # also search for tables that tableName references to
-        ORMClass = self.__modulesRegister.getORMClass(tableName)
-        tableFks = list(ORMClass.__table__.foreign_keys)
-        for FK in tableFks:
-            # get table name TO WHICH references current FK
-            targetTableName = FK.target_fullname.split('.')[0]
-
-            # this is parent table to tableName
-            if targetTableName not in listOfChildTableNames:
-                columnFKName = FK.parent.description
-                for ids in tableIdList:
-                    result = connector.select(ORMClass, [columnFKName], configNames.id, ids)
-                    # TODO check if result need to be checked
-                    parentTableId = result[0]
-                    # get columns name TO WHICH references current FK
-                    columnTableName = FK.target_fullname.split('.')[1]
-                    # invalidate FK column value
-                    connector.update(ORMClass, ids, columnFKName, None)
-
-                    if targetTableName not in dictOfParentTableIds:
-                        dictOfParentTableIds[targetTableName] = []
-
-                    dictOfParentTableIds[targetTableName].append(getattr(parentTableId, columnFKName))
-
-        return dictOfParentTableIds
-
-
-    def __recursivelyDeleteObjects(self, tableIdList, ORMClass, listOfChildTableNames, tableData):
-        connector = databaseConnector()
-        tableFks = list(ORMClass.__table__.foreign_keys)
-        for item in tableIdList:
-            for FK in tableFks:
-                # get table name TO WHICH references current FK
-                targetTableName = FK.target_fullname.split('.')[0]
-                # delete only child tables
-                if targetTableName not in listOfChildTableNames:
-                    continue
-
-                columnFKName = FK.parent.description
-                result = connector.select(ORMClass, [columnFKName], configNames.id, item)
-
-                # invalidate child FK column
-                connector.update(ORMClass, item, columnFKName, None)
-
-                # TODO check if result need to be checked
-                childORMClass = self.__modulesRegister.getORMClass(targetTableName)
-
-                # get child tables of new child
-                # TODO refactor, cause of too many input parameters in this function
-                childTableFks = list(ORMClass.__table__.foreign_keys)
-                childTableNames = []
-                for innerFK in childTableFks:
-                    # get table name TO WHICH references current FK
-                    childTargetTableName = innerFK.target_fullname.split('.')[0]
-                    for innerItem in tableData[tableIdList.index(item)][targetTableName]:
-                        # if FK references to table which is not in tableData, such table is not child
-                        if childTargetTableName not in innerItem:
-                            continue
-                        else:
-                            childTableNames.append(childTargetTableName)
-
-                self.__recursivelyDeleteObjects([getattr(innerItem, columnFKName) for innerItem in result],
-                                                childORMClass, childTableNames,
-                                                tableData[tableIdList.index(item)][targetTableName])
-
-            connector.deleteObject(ORMClass, configNames.id, item)
-
-    # tableData is list of future rows
-    def __recursivelyUpdateObjects(self, tableName, tableData, tableIdList):
-        connector = databaseConnector()
-        ORMClass = self.__modulesRegister.getORMClass(tableName)
-        tableFks = list(ORMClass.__table__.foreign_keys)
-
-        # need to update single row, so we actually able to get its id and update it
-        if len(tableData) == 1:
-
-            # tableData dict has only @id key, so this object not needed to be updated
-            if configNames.id in tableData[0]:
-                return
-
-            listOfFKTableNames = []
-            for FK in tableFks:
-                # get table name TO WHICH references current FK
-                targetTableName = FK.target_fullname.split('.')[0]
-                if targetTableName not in tableData[0]:
-                    # simply can't find such table name in dict of foreign keys, nothing special
-                    continue
-                else:
-                    columnFKName = FK.parent.description
-                    result = connector.select(self.__modulesRegister.getORMClass(tableName),
-                                                     [columnFKName], configNames.id,
-                                                     tableIdList[0])
-                    # TODO check if result need to be checked
-                    self.__recursivelyUpdateObjects(targetTableName,
-                                                    tableData[0][targetTableName],
-                                                    [getattr(item, columnFKName) for item in result])
-                    listOfFKTableNames.append(targetTableName)
-
-            # remove all FK data before update parent object
-            for item in listOfFKTableNames:
-                del tableData[0][item]
-
-            # remove 'get' from beginning of future column name and decapitalize first character
-            # as we done it before in databaseConnector, when create database
-            for columnName, columnValue in tableData[0].items():
-                tempString = columnName.lstrip('get')
-                # get from http://stackoverflow.com/questions/455580/json-datetime-between-python-and-javascript
-                dthandler = lambda obj: (obj.isoformat()
-                                         if isinstance(obj, datetime)
-                                            or isinstance(obj, date)
-                                         else None)
-                # serialize via JSON all dict and list values (assumed, that in DB corresponding rows has String type)
-                if type(tableData[0][columnName]) is list \
-                    or type(tableData[0][columnName]) is dict:
-                        tableData[0][columnName] = json.dumps(tableData[0][columnName], default=dthandler)
-                tableData[0][tempString[0].lower() + tempString[1:]] = tableData[0].pop(columnName)
-
-            # update parent object
-            connector.updateByDict(ORMClass, tableIdList[0], tableData[0])
-
-        # need to update more than one row, so we have no idea which row must be updated with which data
-        # so we delete all rows recursively and recreate them
-        else:
-            # check if any rows in tableData has only @id key, this means that this data not changed and must not be
-            # updated by any NEW information, so we basically delete all rows like:
-            # row['id'] in tableIdList
-            itemsToDelete = []
-            for item in tableData:
-                if len(item) == 1 \
-                    and configNames.id in item \
-                    and item[configNames.id] in tableIdList:
-                    tableIdList.remove(item[configNames.id])
-                    itemsToDelete.append(item)
-
-            # remove items that is not need to delete
-            for item in itemsToDelete:
-                tableData.remove(item)
-
-            # table data doesn't changed at all - nothing to update
-            if not tableIdList:
-                return
-
-            # get list of all tables that depends on tableName
-            # later, when we will be invalidating parent table Ids, we will need to know which table
-            # is "child" of tableName and which is not
-            listOfChildTableNames = []
-            for FK in tableFks:
-                # get table name TO WHICH references current FK
-                targetTableName = FK.target_fullname.split('.')[0]
-                for item in tableData:
-                    # if FK references to table which is not in tableData, such table is not child
-                    if targetTableName not in item:
-                        continue
-                    else:
-                        listOfChildTableNames.append(targetTableName)
-
-
-            # temporary invalidate all FK columns, which has values from tableIdList (make them all null)
-            # this is needed by 2 reasons:
-            # - if somebody will access this FK columns they will have null values and there will be no error
-            # - we have to get parent tables PK, so we can attach recreated rows back to its parents
-            dictOfParentTableIds = self.__invalidateFKColumns(tableName, tableIdList, listOfChildTableNames)
-
-            # recursively delete other rows
-            self.__recursivelyDeleteObjects(tableIdList, ORMClass, listOfChildTableNames, tableData)
-
-            # recursively insert other rows
-            dictOfInsertedIds = {}
-            dictOfInsertedIds[tableName] = self.__recursivelyInsertData(tableName, tableData)
-
-            # attach foreign keys
-            self.__attachForeignKeys(dict(dictOfInsertedIds.items() + dictOfParentTableIds.items()))
-
     def updateObjects(self, analyzeData, pageRowId):
         connector = databaseConnector()
 
@@ -607,82 +273,18 @@ class pyHTMLAnalyzer:
 
         dictOfInsertedIds = {}
         for moduleName, moduleValue in analyzeData.items():
-            dictOfInsertedIds[moduleName] = self.__recursivelyUpdateObjects(moduleName, moduleValue,
-                                                                            dictOfPreviousRowIds[moduleName])
-
-    def __attachForeignKeys(self, dictOfForeignKeys):
-        # no FKs, nothing to attach
-        if not dictOfForeignKeys:
-            return
-
-        connector = databaseConnector()
-        for tableName, keyIdList in dictOfForeignKeys.items():
-            ORMClass = self.__modulesRegister.getORMClass(tableName)
-            tableFks = list(ORMClass.__table__.foreign_keys)
-            for FK in tableFks:
-                # get table name TO WHICH references current FK
-                fkTableName = FK.target_fullname.split('.')[0]
-                if fkTableName not in dictOfForeignKeys:
-                    # simply can't find such table name in dict of foreign keys, nothing special
-                    continue
-                else:
-                    # get column name which contain FK to other table
-                    masterTableColumnName = FK.parent.description
-                    for item in dictOfForeignKeys[fkTableName]:
-                        for keyId in keyIdList:
-                            connector.update(ORMClass, keyId, masterTableColumnName, item)
-
-    def __recursivelyInsertData(self, tableName, dataList):
-        connector = databaseConnector()
-        listOfInsertedIds = []
-        for item in dataList:
-            dictOfFKs = {}
-            for name, value in item.items():
-                tableFks = list(self.__modulesRegister.getORMClass(tableName).__table__.foreign_keys)
-                for FK in tableFks:
-                    # get table name TO WHICH references current FK
-                    fkTableName = FK.target_fullname.split('.')[0]
-                    if fkTableName == name:
-                        dictOfFKs[name] = self.__recursivelyInsertData(name, value)
-
-            Class = self.__modulesRegister.getORMClass(tableName)
-
-            # delete FK references from new row data
-            for key in dictOfFKs.keys():
-                del item[key]
-
-            # remove 'get' from beginning of future column name and decapitalize first character
-            # as we done it before in databaseConnector, when create database
-            for columnName, columnValue in item.items():
-                tempString = columnName.lstrip('get')
-                # get from http://stackoverflow.com/questions/455580/json-datetime-between-python-and-javascript
-                dthandler = lambda obj: (obj.isoformat()
-                                         if isinstance(obj, datetime)
-                                            or isinstance(obj, date)
-                                         else None)
-                # serialize via JSON all dict and list values (assumed, that in DB corresponding rows has String type)
-                if type(item[columnName]) is list \
-                    or type(item[columnName]) is dict:
-                        item[columnName] = json.dumps(item[columnName], default=dthandler)
-                item[tempString[0].lower() + tempString[1:]] = item.pop(columnName)
-
-            newRow = Class(**item)
-            newRowId = connector.insertObject(newRow)
-            dictOfFKs[tableName] = [newRowId]
-
-            self.__attachForeignKeys(dictOfFKs)
-            listOfInsertedIds.append(newRowId)
-
-        return listOfInsertedIds
-
+            dictOfInsertedIds[moduleName] = databaseWrapperFunctions.recursivelyUpdateObjects(moduleName,
+                                                                                              moduleValue,
+                                                                                              dictOfPreviousRowIds[moduleName])
 
     def insertObjects(self, analyzeData, pageRowId):
         dictOfInsertedIds = {}
         for moduleName, moduleValue in analyzeData.items():
-            dictOfInsertedIds[moduleName] = self.__recursivelyInsertData(moduleName, moduleValue)
+            dictOfInsertedIds[moduleName] = databaseWrapperFunctions.recursivelyInsertData(moduleName,
+                                                                                           moduleValue)
 
         dictOfInsertedIds['page'] = [pageRowId]
-        self.__attachForeignKeys(dictOfInsertedIds)
+        databaseWrapperFunctions.attachForeignKeys(dictOfInsertedIds)
 
     def __insertDataInDatabase(self, analyzedObjectName, analyzedObjectValue, isValid):
         connector = databaseConnector()
@@ -701,9 +303,6 @@ class pyHTMLAnalyzer:
             newPage = Page(analyzedObjectName, isValid)
             pageRowId = connector.insertObject(newPage)
             self.insertObjects(analyzedObjectValue, pageRowId)
-
-    def __trainNetworkWithData(self, networkName, listOfInputParameters, listOfOutputParameters, numberOfEpochs = None):
-        return self.__networksDict[networkName].trainNetworkWithData(listOfInputParameters, listOfOutputParameters, numberOfEpochs)
 
     def __getNetworkTrainDataFromObjects(self, listOfObjects, allObjectsAreValid = True, isPages = True):
         # get analyze data itself
@@ -759,62 +358,15 @@ class pyHTMLAnalyzer:
 
         return dictOfInputParameters
 
+    def getNetworkTrainDataFromFile(self, fileName, allObjectsAreValid):
+        objectList = commonFunctions.getObjectNamesFromFile(fileName)
+        return self.__getNetworkTrainDataFromObjects(objectList, allObjectsAreValid)
 
     def getNetworkTrainDataFromPages(self, listOfPages, allObjectsAreValid):
         return self.__getNetworkTrainDataFromObjects(listOfPages, allObjectsAreValid)
 
     def getNetworkTrainDataFromFiles(self, listOfFiles, allObjectsAreValid):
         return self.__getNetworkTrainDataFromObjects(listOfFiles, allObjectsAreValid, False)
-
-    def loadNetworksFromDirectory(self, directoryPath):
-        try:
-            for networkName in self.__networksDict.keys():
-                if not self.loadNetworkFromDirectory(networkName, directoryPath):
-                    return False
-            return True
-        except Exception, error:
-            logger = logging.getLogger(self.__class__.__name__)
-            logger.exception(error)
-            return False
-
-    def loadNetworkFromDirectory(self, networkName, directoryPath):
-        try:
-            network = self.__networksDict[networkName]
-            return network.loadNetworkFromDirectory(networkName, directoryPath)
-        except KeyError, error:
-            logger = logging.getLogger(self.__class__.__name__)
-            logger.error(error)
-            logger.error("Network '%s' doesn't exists" % networkName)
-            return False
-        except Exception, error:
-            logger = logging.getLogger(self.__class__.__name__)
-            logger.exception(error)
-            return False
-
-    def saveNetworksToDirectory(self, directoryPath):
-        try:
-            for networkName in self.__networksDict.keys():
-                self.saveNetworkToDirectory(networkName, directoryPath)
-            return True
-        except Exception, error:
-            logger = logging.getLogger(self.__class__.__name__)
-            logger.exception(error)
-            return False
-
-    def saveNetworkToDirectory(self, networkName, directoryPath):
-        try:
-            network = self.__networksDict[networkName]
-            network.saveNetworkToDirectory(networkName, directoryPath)
-            return True
-        except KeyError, error:
-            logger = logging.getLogger(self.__class__.__name__)
-            logger.error(error)
-            logger.error("Network '%s' doesn't exists" % networkName)
-            return False
-        except Exception, error:
-            logger = logging.getLogger(self.__class__.__name__)
-            logger.exception(error)
-            return False
 
     def __analyzeObjects(self, listOfObjects, isPages = True):
         # TODO optimize analyze call - before doing analysis, get URLVoid data about this host,
@@ -832,7 +384,7 @@ class pyHTMLAnalyzer:
                 continue
 
             # get isValid-solution
-            isValid = self.analyzeObjectViaNetworks(analyzedObjectValue[1])
+            isValid = self.__controller.analyzeObjectViaNetworks(analyzedObjectValue[1])
             self.__insertDataInDatabase(analyzedObjectName, analyzedObjectValue[1], isValid)
 
     def analyzePages(self, listOfPages):
