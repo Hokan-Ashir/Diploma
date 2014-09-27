@@ -2,19 +2,14 @@ import logging
 from pyhtmlanalyzer.commonFunctions.commonFunctions import commonFunctions
 from pyhtmlanalyzer.commonFunctions.modulesRegister import modulesRegister
 from pyhtmlanalyzer.neuronetUtils.neuroNet import neuroNet
+from pyhtmlanalyzer.neuronetUtils.weightsController import weightsController
 
 __author__ = 'hokan'
 
 class neuroNetsController:
     __networksDict = {}
-    # this dictionary is respond for result solution (valid/invalid), by passing each module weight in result function
-    # In another words it store values that represents HOW MUCH each module (i.e. scriptModule) AND each value
-    # (i.e. script piece of current page) affects on result
-    # i.e:
-    # isValid = isValid * (weightsDict[moduleName] * networkDict[moduleName].analyzeData(...))
-    #
-    # stores list of 2 values, first - weight of current module, second - weight of each value of current module
-    __networksResultSolutionWeightsDict = {}
+    __weightsController = None
+    __solutionBorderValue = 0.5
 
     # predefined networks directory
     __networksDirectory = './networks'
@@ -27,9 +22,7 @@ class neuroNetsController:
         register = modulesRegister()
 
         # set weights for register modules
-        # TODO make own function or module for this stuff, cause it's one of the main controlling mechanisms
-        for moduleName in register.getClassInstanceDictionary().keys():
-            self.__networksResultSolutionWeightsDict[moduleName] = [1, 1]
+        self.__weightsController = weightsController()
 
         # load networks from files, if it's possible
         # first create networks stubs
@@ -145,17 +138,22 @@ class neuroNetsController:
                     pageChanged = True
                     moduleResultValue = moduleResultValue \
                                         * abs(self.__networksDict[networkName].analyzeData(item)) \
-                                        * self.__networksResultSolutionWeightsDict[networkName][1]
+                                        * self.__weightsController.getModuleWeight(networkName)
 
-            solution = solution + moduleResultValue * self.__networksResultSolutionWeightsDict[networkName][0]
+            solution = solution + moduleResultValue * self.__weightsController.getModuleValueWeight(networkName)
 
         # round solution
-        # TODO also make this parameter, border value (0.5), configurable
-        solution = True if abs(solution) >= 0.5 else False
+        solution = True if abs(solution) >= self.__solutionBorderValue else False
         logger.info("Result solution is: " + str(solution))
         logger.info("Page changed: " + str(pageChanged))
 
         return None if not pageChanged else solution
+
+    def getSolutionBorderValue(self):
+        return self.__solutionBorderValue
+
+    def setSolutionBorderValue(self, value):
+        self.__solutionBorderValue = value
 
     def __trainNetworkWithData(self, networkName, listOfInputParameters, listOfOutputParameters, numberOfEpochs = None):
         return self.__networksDict[networkName].trainNetworkWithData(listOfInputParameters, listOfOutputParameters, numberOfEpochs)
