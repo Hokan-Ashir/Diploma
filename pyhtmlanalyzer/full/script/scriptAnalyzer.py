@@ -1002,13 +1002,13 @@ class scriptAnalyzer(commonAnalysisData):
             text = re.sub(self.__commentsRegExp, '', text)
 
         try:
-            pageHashSHA256 = hashlib.sha256(self._pageReady.encode('utf-8')).hexdigest()
-            pageHashSHA512 = hashlib.sha512(self._pageReady.encode('utf-8')).hexdigest()
+            pageHashSHA256 = hashlib.sha256(text.encode('utf-8')).hexdigest()
+            pageHashSHA512 = hashlib.sha512(text.encode('utf-8')).hexdigest()
         except UnicodeDecodeError, error:
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning(error)
-            pageHashSHA256 = hashlib.sha256(self._pageReady).hexdigest()
-            pageHashSHA512 = hashlib.sha512(self._pageReady).hexdigest()
+            pageHashSHA256 = hashlib.sha256(text).hexdigest()
+            pageHashSHA512 = hashlib.sha512(text).hexdigest()
 
         return [pageHashSHA256, pageHashSHA512]
 
