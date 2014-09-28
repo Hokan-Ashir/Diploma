@@ -24,21 +24,21 @@ class dnsFunctions(commonURIAnalysisData):
     def retrieveDNShostInfo(self):
         try:
             self.__listOfMXRecords = dns.resolver.query(self._uri.split("://")[1].split("/")[0], 'MX')
-        except dns.resolver.NoAnswer, error:
+        except Exception, error:
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning('Page has no MX records\n\t %s' % error)
             pass
 
         try:
             self.__listOfARecords = dns.resolver.query(self._uri.split("://")[1].split("/")[0], 'A')
-        except dns.resolver.NoAnswer, error:
+        except Exception, error:
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning('Page has no A records\n\t %s' % error)
             pass
 
         try:
             self.__listOfNSRecords = dns.resolver.query(self._uri.split("://")[1].split("/")[0], 'NS')
-        except dns.resolver.NoAnswer, error:
+        except Exception, error:
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning('Page has no NS records\n\t %s' % error)
             pass

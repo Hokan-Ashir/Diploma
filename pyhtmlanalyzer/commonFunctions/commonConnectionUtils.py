@@ -50,7 +50,7 @@ class commonConnectionUtils:
                 else:
                     pageReady = page.read()
 
-        except urllib2.HTTPError, error:
+        except (urllib2.URLError, urllib2.HTTPError, UnicodeDecodeError) as error:
             logger = logging.getLogger("commonConnectionUtils")
             logger.error(url)
             logger.exception(error)
