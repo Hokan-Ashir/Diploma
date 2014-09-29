@@ -211,8 +211,6 @@ class commonFunctions:
 
         return queue.put([methodName, result])
 
-
-
     # inspired by:
     # http://www.pythonexamples.org/2011/01/12/how-to-dynamically-create-a-class-at-runtime-in-python/
     # http://stackoverflow.com/questions/209840/map-two-lists-into-a-dictionary-in-python

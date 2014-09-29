@@ -141,11 +141,14 @@ class pyHTMLAnalyzer:
     # or "getNumberOfAnalyzedPageFeaturesByFunction"
     #
     # NOTE: all functions run it separate processes
-    def getNumberOfAnalyzedAbstractObjectFeaturesByFunction(self, xmldata, pageReady, uri, functionName):
-        if xmldata is None or pageReady is None:
+    def getNumberOfAnalyzedAbstractObjectFeaturesByFunction(self, openedObject, uri, functionName):
+        if openedObject.getXMLData() is None or openedObject.getPageReady() is None:
             logger = logging.getLogger(self.__class__.__name__)
-            logger.error("Insufficient number of parameters:\n - xmlData (%s)\n - pageReady (%s)" % (xmldata, pageReady))
+            logger.error("Insufficient number of parameters:\n - xmlData (%s)\n - pageReady (%s)"
+                         % (openedObject.getXMLData(),
+                            openedObject.getPageReady()))
             return
+
         resultDict = {}
         processQueue = Queue()
         proxyProcessesList = []
@@ -154,7 +157,8 @@ class pyHTMLAnalyzer:
         for moduleName, module in self.getModules().items():
             if self.getIsActiveModule(moduleName):
                 # {'numberOfProcesses' : 1}
-                process = processProxy(None, [module, {'xmldata' : xmldata, 'pageReady' : pageReady, 'uri' : uri},
+                process = processProxy(None, [module, {'object': openedObject,
+                                                       'uri': uri},
                                               processQueue, functionName], commonFunctions.callFunctionByNameQeued)
                 proxyProcessesList.append(process)
                 process.start()
@@ -183,9 +187,7 @@ class pyHTMLAnalyzer:
             logger.error("Cannot analyze file: impossible to open file (%s)" % objectName)
             return
 
-        xmldata = openedFile[0]
-        pageReady = openedFile[1]
-        return self.getNumberOfAnalyzedAbstractObjectFeaturesByFunction(xmldata, pageReady, objectName, functionName)
+        return self.getNumberOfAnalyzedAbstractObjectFeaturesByFunction(openedFile, objectName, functionName)
 
     def getNumberOfAnalyzedPageFeaturesByFunction(self, objectName, functionName = 'getAllAnalyzeReport'):
         openedPage = commonConnectionUtils.openPage(objectName)
@@ -194,9 +196,7 @@ class pyHTMLAnalyzer:
             logger.error("Cannot analyze page: impossible to open page (%s)" % objectName)
             return
 
-        xmldata = openedPage[0]
-        pageReady = openedPage[1]
-        return self.getNumberOfAnalyzedAbstractObjectFeaturesByFunction(xmldata, pageReady, objectName, functionName)
+        return self.getNumberOfAnalyzedAbstractObjectFeaturesByFunction(openedPage, objectName, functionName)
     #
     ###################################################################################################################
 

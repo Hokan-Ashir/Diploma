@@ -27,17 +27,21 @@ class urlVoidFunctions(commonURIAnalysisData):
         result = commonConnectionUtils.openPage('http://api.urlvoid.com/api1000/'
                                                        + self.__API_KEY
                                                        + '/host/'
-                                                       + self._uri.split("://")[1].split("/")[0])[0]
+                                                       + self._uri.split("://")[1].split("/")[0])
 
         # if there exists any info about site (details tag exists) - save it
-        if len(result.xpath('//details')) != 0:
-            self.__pageData = result
+        if len(result.getXMLData().xpath('//details')) != 0:
+            self.__pageData = result.getXMLData()
 
     def getRemainedQueries(self):
         remainedQueries = commonConnectionUtils.openPage('http://api.urlvoid.com/api1000/'
                                                          + self.__API_KEY
                                                          + '/stats/remained/')
-        return remainedQueries[0].xpath('//queriesremained/text()')[0]
+        if remainedQueries is None \
+            or remainedQueries == []:
+            return 0
+
+        return remainedQueries.getXMLData().xpath('//queriesremained/text()')[0]
 
     def getIsHostMalicious(self):
         if self._uri is None:

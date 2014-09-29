@@ -48,6 +48,9 @@ class neuroNet(object):
     def loadNetworkFromDirectory(self, networkName, directoryPath):
         try:
             self.__network = NetworkReader.readFrom(directoryPath + os.sep + ('%s.xml' % networkName))
+            self.__numberOfInputParameters = self.__network.indim
+            self.__numberOfOutputParameters = self.__network.outdim
+            # TODO innerLayers count
             return True
         except Exception, error:
             logger = logging.getLogger(self.__class__.__name__)

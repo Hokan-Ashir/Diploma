@@ -4,11 +4,13 @@ class commonAnalysisData(object):
     # class members
     _xmldata = None
     _pageReady = None
+    _encoding = None
 
     # constructor
-    def __init__(self, xmldata = None, pageReady = None):
+    def __init__(self, xmldata = None, pageReady = None, encoding = None):
         self._xmldata = xmldata
         self._pageReady = pageReady
+        self._encoding = encoding
     #
     ###################################################################################################################
 
@@ -27,3 +29,12 @@ class commonAnalysisData(object):
 
     def setXMLData(self, xmldata):
         self._xmldata = xmldata
+    #
+    ###################################################################################################################
+
+    # setter and getter for encoding
+    def getEncoding(self):
+        return self._encoding
+
+    def setEncoding(self, encoding):
+        self._encoding = encoding

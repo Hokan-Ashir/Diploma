@@ -1,4 +1,5 @@
 import StringIO
+import chardet
 import gzip
 import logging
 import lxml
@@ -7,20 +8,33 @@ import os
 import urllib2
 import urlparse
 from lxml.etree import ParserError
+from pyhtmlanalyzer.full.commonAnalysisData import commonAnalysisData
 
 __author__ = 'hokan'
 
 class commonConnectionUtils:
     @staticmethod
     def openFile(filePath):
+        isUtf8 = True
         try:
             file = open(filePath)
             pageReady = file.read().decode('utf-8')
-        except:
+        except UnicodeDecodeError, error:
             logger = logging.getLogger("commonConnectionUtils")
-            logger.error("Cannot open file (%s)" % filePath)
-            return []
-        return [lxml.html.document_fromstring(pageReady), pageReady]
+            logger.warning(filePath)
+            logger.warning(error)
+            try:
+                pageReady = file.read()
+                isUtf8 = False
+            except Exception, error:
+                logger = logging.getLogger("commonConnectionUtils")
+                logger.error(filePath)
+                logger.exception(error)
+                return []
+
+        return commonAnalysisData(lxml.html.document_fromstring(pageReady),
+                                  pageReady,
+                                  'utf-8' if isUtf8 else None)
 
     @staticmethod
     def openPage(url):
@@ -40,15 +54,13 @@ class commonConnectionUtils:
             if page.info().get('Content-Encoding') == 'gzip':
                 buf = StringIO.StringIO(page.read())
                 gzip_f = gzip.GzipFile(fileobj=buf)
-                if page.headers.getparam('charset') is not None:
-                    pageReady = gzip_f.read().decode(page.headers.getparam('charset'))
-                else:
-                    pageReady = gzip_f.read()
+                rawdata = gzip_f.read()
+                encoding = chardet.detect(rawdata)
+                pageReady = rawdata.decode(encoding['encoding'])
             else:
-                if page.headers.getparam('charset') is not None:
-                    pageReady = page.read().decode(page.headers.getparam('charset'))
-                else:
-                    pageReady = page.read()
+                rawdata = page.read()
+                encoding = chardet.detect(rawdata)
+                pageReady = rawdata.decode(encoding['encoding'])
 
         except (urllib2.URLError, urllib2.HTTPError, UnicodeDecodeError) as error:
             logger = logging.getLogger("commonConnectionUtils")
@@ -69,7 +81,7 @@ class commonConnectionUtils:
             logger = logging.getLogger('commonConnectionUtils')
             logger.warning(error)
             # encode to utf-8 backwards
-            pageReady = pageReady.encode('utf-8')
+            pageReady = pageReady.encode(encoding['encoding'])
             xmldata = lxml.html.document_fromstring(pageReady)
         except ParserError, error:
             # "Document is empty" also catches here
@@ -77,7 +89,9 @@ class commonConnectionUtils:
             logger.warning(error)
             return []
 
-        return [xmldata, pageReady]
+        return commonAnalysisData(xmldata,
+                                  pageReady,
+                                  encoding['encoding'])
 
     @staticmethod
     def openRelativeScriptObject(uri, filePath):

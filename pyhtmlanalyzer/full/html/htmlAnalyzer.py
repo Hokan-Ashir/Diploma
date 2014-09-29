@@ -795,12 +795,11 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
             # .* - any symbol 0+ times
             # \n?) - until end of line, which can be off
             regExp = re.compile(r'(/\*[^\*/]*\*/|//.*\n?)')
-            try:
-                tempItem = item.encode('utf-8')
-            except UnicodeDecodeError, error:
-                logger = logging.getLogger(self.__class__.__name__)
-                logger.warning(error)
+
+            if self.getEncoding() is None:
                 tempItem = item
+            else:
+                tempItem = item.encode(self.getEncoding())
 
             numberOfCharactersInPage = len(re.sub(regExp, '', str(tempItem)))
 
@@ -836,12 +835,10 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         for item in listOfInlineScriptTextNodes:
             # additional '|\s' for replacing spaces in one turn
             regExp = re.compile(r'(/\*[^\*/]*\*/|//.*\n?|\s)')
-            try:
-                tempItem = item.encode('utf-8')
-            except UnicodeDecodeError, error:
-                logger = logging.getLogger(self.__class__.__name__)
-                logger.warning(error)
+            if self.getEncoding() is None:
                 tempItem = item
+            else:
+                tempItem = item.encode(self.getEncoding())
 
             numberOfCharactersInPage += len(re.sub(regExp, '', str(tempItem)))
 
@@ -968,14 +965,12 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
 
     # page hashing
     def getPageHashValues(self):
-        try:
-            pageHashSHA256 = hashlib.sha256(self._pageReady.encode('utf-8')).hexdigest()
-            pageHashSHA512 = hashlib.sha512(self._pageReady.encode('utf-8')).hexdigest()
-        except UnicodeDecodeError, error:
-            logger = logging.getLogger(self.__class__.__name__)
-            logger.warning(error)
+        if self.getEncoding() is None:
             pageHashSHA256 = hashlib.sha256(self._pageReady).hexdigest()
             pageHashSHA512 = hashlib.sha512(self._pageReady).hexdigest()
+        else:
+            pageHashSHA256 = hashlib.sha256(self._pageReady.encode(self.getEncoding())).hexdigest()
+            pageHashSHA512 = hashlib.sha512(self._pageReady.encode(self.getEncoding())).hexdigest()
 
         return [pageHashSHA256, pageHashSHA512]
 
@@ -1043,30 +1038,32 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
 
     def getAllAnalyzeReport(self, **kwargs):
         try:
-            kwargs['xmldata']
-            kwargs['pageReady']
+            kwargs['object']
         except KeyError, error:
             logger = logging.getLogger(self.__class__.__name__)
             logger.exception(error)
             logger.error("Insufficient number of parameters")
             return
 
-        if kwargs['xmldata'] is None or kwargs['pageReady'] is None:
+        objectData = kwargs['object']
+        if objectData.getXMLData() is None \
+            or objectData.getPageReady() is None:
             logger = logging.getLogger(self.__class__.__name__)
-            logger.warning('Error in input parameters:\n xmldata:\t%s\n pageReady:\t%s' % (kwargs['xmldata'],
-                                                                                           kwargs['pageReady']))
+            logger.warning('Error in input parameters:\n xmldata:\t%s\n pageReady:\t%s' % (objectData.getXMLData(),
+                                                                                           objectData.getPageReady()))
             logger.warning("Insufficient number of parameters")
             return
 
-        self.setXMLData(kwargs['xmldata'])
-        self.setPageReady(kwargs['pageReady'])
+        self.setXMLData(objectData.getXMLData())
+        self.setPageReady(objectData.getPageReady())
+        self.setEncoding(objectData.getEncoding())
         self._uri = kwargs['uri']
 
         # get previous hash values, corresponding to this page
         connector = databaseConnector()
         register = modulesRegister()
         self.__listOfHashes = None
-        previousHTMLFk = connector.select(register.getORMClass('page'), ['htmlAnalysisFk'], 'url', self._uri)
+        previousHTMLFk = connector.select(register.getORMClass(configNames.page), ['htmlAnalysisFk'], 'url', self._uri)
         if previousHTMLFk:
             previousHashValuesFK = connector.select(register.getORMClass(self.__class__.__name__), ['hashValuesFk'],
                                                   configNames.id, previousHTMLFk[0].htmlAnalysisFk)

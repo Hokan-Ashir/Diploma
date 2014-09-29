@@ -137,7 +137,7 @@ getExternalDomainToInternalDomainSourceElementsRatio : Float
 
 getNumberOfEvalFunctionCalls : Integer,
 getTotalNumberOfSetTimeoutIntervalCalls : Integer,
-getKeywordsToWordsRatio : Integer,
+getKeywordsToWordsRatio : Float,
 getNumberOfLongStrings : Integer,
 getTotalNumberOfBuiltInFunctions : Integer,
 getScriptWhitespacePercentage : Float,

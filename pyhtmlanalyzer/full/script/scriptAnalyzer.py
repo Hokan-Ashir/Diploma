@@ -150,18 +150,16 @@ class scriptAnalyzer(commonAnalysisData):
 
         def callbackFunction(text, arguments):
             # totalLengthOfScriptContent
-            try:
-                tempText = text.encode('utf-8')
-            except UnicodeDecodeError, error:
-                logger = logging.getLogger(self.__class__.__name__)
-                logger.warning(error)
+            if self.getEncoding() is None:
                 tempText = text
+            else:
+                tempText = text.encode(self.getEncoding())
 
             arguments[0] += len(str(tempText))
             for keyword in commonListOfKeyWords:
-                text = commonFunctions.replaceUnquoted(text, keyword, "")
+                tempText = commonFunctions.replaceUnquoted(tempText, keyword, "")
             # totalLengthOfScriptContentWithoutKeywords
-            arguments[1] += len(text)
+            arguments[1] += len(tempText)
             return arguments
 
         totalLengthOfScriptContent = 0
@@ -186,12 +184,10 @@ class scriptAnalyzer(commonAnalysisData):
     def getListOfLongStrings(self, stringLength = 40, separatorList = ['\n', ';']):
         separator = '|'.join(separatorList)
         def callbackFunction(text, arguments):
-            try:
-                tempText = text.encode('utf-8')
-            except UnicodeDecodeError, error:
-                logger = logging.getLogger(self.__class__.__name__)
-                logger.warning(error)
+            if self.getEncoding() is None:
                 tempText = text
+            else:
+                tempText = text.encode(self.getEncoding())
 
             stringsList = re.split(separator, str(tempText))
             for string in stringsList:
@@ -262,12 +258,10 @@ class scriptAnalyzer(commonAnalysisData):
     # script's whitespace percentage
     def getScriptWhitespacePercentage(self):
         def callbackFunction(text, arguments):
-            try:
-                tempText = text.encode('utf-8')
-            except UnicodeDecodeError, error:
-                logger = logging.getLogger(self.__class__.__name__)
-                logger.warning(error)
+            if self.getEncoding() is None:
                 tempText = text
+            else:
+                tempText = text.encode(self.getEncoding())
 
             # totalScriptLength
             arguments[0] += len(str(tempText))
@@ -323,12 +317,10 @@ class scriptAnalyzer(commonAnalysisData):
     def getAverageLengthOfStringsUsedInScript(self, separatorList = ['\n', ';']):
         separator = '|'.join(separatorList)
         def callbackFunction(text, arguments):
-            try:
-                tempText = text.encode('utf-8')
-            except UnicodeDecodeError, error:
-                logger = logging.getLogger(self.__class__.__name__)
-                logger.warning(error)
+            if self.getEncoding() is None:
                 tempText = text
+            else:
+                tempText = text.encode(self.getEncoding())
 
             stringsList = re.split(separator, str(tempText))
             # totalNumberOfLines
@@ -515,12 +507,10 @@ class scriptAnalyzer(commonAnalysisData):
     def getMaximumLengthOfScriptStrings(self, separatorList = ['\n', ';']):
         separator = '|'.join(separatorList)
         def callbackFunction(text, arguments):
-            try:
-                tempText = text.encode('utf-8')
-            except UnicodeDecodeError, error:
-                logger = logging.getLogger(self.__class__.__name__)
-                logger.warning(error)
+            if self.getEncoding() is None:
                 tempText = text
+            else:
+                tempText = text.encode(self.getEncoding())
 
             stringsList = re.split(separator, str(tempText))
             for string in stringsList:
@@ -593,12 +583,10 @@ class scriptAnalyzer(commonAnalysisData):
         functionRegExp = re.compile(ur'[\s\t=\.\n]+%s{%d,}[\s\t]*\('
                                     % (jsVariableRegExp.jsVariableNameRegExp, functionNameLength))
         def callbackFunction(text, arguments):
-            try:
-                tempText = text.encode('utf-8')
-            except UnicodeDecodeError, error:
-                logger = logging.getLogger(self.__class__.__name__)
-                logger.warning(error)
+            if self.getEncoding() is None:
                 tempText = text
+            else:
+                tempText = text.encode(self.getEncoding())
 
             arguments[0] += len(re.findall(variableRegExp, tempText))
             arguments[1] += len(re.findall(functionRegExp, tempText))
@@ -851,12 +839,10 @@ class scriptAnalyzer(commonAnalysisData):
         for key, value in dictOfTagsEntropy.items():
             logger.info("source line: " + str(key))
             logger.info("maximum string entropy of this node: " + str(value[0]))
-            try:
-                tempValue = value[1].encode('utf-8')
-            except UnicodeDecodeError, error:
-                logger = logging.getLogger(self.__class__.__name__)
-                logger.warning(error)
+            if self.getEncoding() is None:
                 tempValue = value[1]
+            else:
+                tempValue = value[1].encode(self.getEncoding())
 
             logger.info("of string: " + str(tempValue))
     #
@@ -894,12 +880,10 @@ class scriptAnalyzer(commonAnalysisData):
 
         logger.info("\nEntropy of strings declared in script (by whole script)")
         for key, value in dictOfStringsEntropy.items():
-            try:
-                tempKey = key.encode('utf-8')
-            except UnicodeDecodeError, error:
-                logger = logging.getLogger(self.__class__.__name__)
-                logger.warning(error)
+            if self.getEncoding() is None:
                 tempKey = key
+            else:
+                tempKey = key.encode(self.getEncoding())
 
             logger.info("string: " + str(tempKey) + "\nentropy: " + str(value))
     #
@@ -942,12 +926,10 @@ class scriptAnalyzer(commonAnalysisData):
 
         logger.info("\nEntropy of strings declared in script (by nodes)")
         for key, value in dictOfStringsEntropy.items():
-            try:
-                tempKey = key.encode('utf-8')
-            except UnicodeDecodeError, error:
-                logger = logging.getLogger(self.__class__.__name__)
-                logger.warning(error)
+            if self.getEncoding() is None:
                 tempKey = key
+            else:
+                tempKey = key.encode(self.getEncoding())
 
             logger.info("string: " + str(tempKey) + "\nentropy: " + str(value))
     #
@@ -958,14 +940,12 @@ class scriptAnalyzer(commonAnalysisData):
     def getScriptContentHashingAll(self, includeComments = False):
         dictOfScriptTagsHashed = {}
         def callbackFunction(text, arguments, i, inlineTagContent):
-            try:
-                pageHashSHA256 = hashlib.sha256(text.encode('utf-8')).hexdigest()
-                pageHashSHA512 = hashlib.sha512(text.encode('utf-8')).hexdigest()
-            except UnicodeDecodeError, error:
-                logger = logging.getLogger('getScriptContentHashingAll:callback')
-                logger.warning(error)
+            if self.getEncoding() is None:
                 pageHashSHA256 = hashlib.sha256(text).hexdigest()
                 pageHashSHA512 = hashlib.sha512(text).hexdigest()
+            else:
+                pageHashSHA256 = hashlib.sha256(text.encode(self.getEncoding())).hexdigest()
+                pageHashSHA512 = hashlib.sha512(text.encode(self.getEncoding())).hexdigest()
 
             if inlineTagContent:
                 arguments[self.__listOfScriptTagsTextSourcelines[i]] = [pageHashSHA256, pageHashSHA512]
@@ -1001,14 +981,12 @@ class scriptAnalyzer(commonAnalysisData):
             # deleting comments
             text = re.sub(self.__commentsRegExp, '', text)
 
-        try:
-            pageHashSHA256 = hashlib.sha256(text.encode('utf-8')).hexdigest()
-            pageHashSHA512 = hashlib.sha512(text.encode('utf-8')).hexdigest()
-        except UnicodeDecodeError, error:
-            logger = logging.getLogger(self.__class__.__name__)
-            logger.warning(error)
+        if self.getEncoding() is None:
             pageHashSHA256 = hashlib.sha256(text).hexdigest()
             pageHashSHA512 = hashlib.sha512(text).hexdigest()
+        else:
+            pageHashSHA256 = hashlib.sha256(text.encode(self.getEncoding())).hexdigest()
+            pageHashSHA512 = hashlib.sha512(text.encode(self.getEncoding())).hexdigest()
 
         return [pageHashSHA256, pageHashSHA512]
 
@@ -1248,9 +1226,10 @@ class scriptAnalyzer(commonAnalysisData):
     ###################################################################################################################
 
     # initialization
-    def initialization(self, xmldata, pageReady, uri):
-        self.setXMLData(xmldata)
-        self.setPageReady(pageReady)
+    def initialization(self, objectData, uri):
+        self.setXMLData(objectData.getXMLData())
+        self.setPageReady(objectData.getPageReady())
+        self.setEncoding(objectData.getEncoding())
         self.__uri = uri
         listOfInlineScriptTags = self._xmldata.xpath('//script[not(@src)]')
 
@@ -1260,7 +1239,8 @@ class scriptAnalyzer(commonAnalysisData):
         for item in listOfInlineScriptTags:
             if item.xpath('text()'):
                 self.__listOfScriptTagsText.append(item.xpath('text()')[0])
-        self.__listOfScriptTagsTextSourcelines = [str(item.sourceline) + ":" + str(listOfInlineScriptTags.index(item)) for item in listOfInlineScriptTags]
+        self.__listOfScriptTagsTextSourcelines = [str(item.sourceline) + ":" + str(listOfInlineScriptTags.index(item))
+                                                  for item in listOfInlineScriptTags]
 
         # NOTE: we do not make dict of files of file content, cause it's too redundant; instead we use hashing
         # but here we get only unique files
@@ -1278,7 +1258,7 @@ class scriptAnalyzer(commonAnalysisData):
 
                 # we turn all text to upper register to speed up analysis in getObjectsWithSuspiciousContent() method
                 # in which we can not to use re.I (case insensitive) flag
-                self.__listOfIncludedScriptFilesContent.append(openedFile[1].upper())
+                self.__listOfIncludedScriptFilesContent.append(openedFile.getPageReady().upper())
                 self.__listOfIncludedScriptFiles.append(fileName)
 
         # NOTE: only JS-comments
@@ -1373,12 +1353,13 @@ class scriptAnalyzer(commonAnalysisData):
     # public functions for outer packages
     # print result of all functions via reflection with default values
     # NOTE: no order in function calls
-    def printAll(self, xmldata, pageReady, uri):
+    def printAll(self, objectData, uri):
         logger = logging.getLogger(self.__class__.__name__)
-        if xmldata is None or pageReady is None:
+        if objectData.getXMLData() is None \
+            or objectData.getPageReady() is None:
                 logger.error("Insufficient number of parameters")
                 return
-        self.initialization(xmldata, pageReady, uri)
+        self.initialization(objectData, uri)
         # TODO remove in production
         #if (True):
         #    return
@@ -1398,12 +1379,13 @@ class scriptAnalyzer(commonAnalysisData):
     #
     ###################################################################################################################
 
-    def getTotalAll(self, xmldata, pageReady, uri):
+    def getTotalAll(self, objectData, uri):
         logger = logging.getLogger(self.__class__.__name__)
-        if xmldata is None or pageReady is None:
+        if objectData.getXMLData() is None \
+            or objectData.getPageReady() is None:
                 logger.error("Insufficient number of parameters")
                 return
-        self.initialization(xmldata, pageReady, uri)
+        self.initialization(objectData, uri)
         resultDict = {}
         for funcName, funcValue in scriptAnalyzer.__dict__.items():
             if str(funcName).startswith("getTotal") and callable(funcValue):
@@ -1548,29 +1530,30 @@ class scriptAnalyzer(commonAnalysisData):
 
     def getAllAnalyzeReport(self, **kwargs):
         try:
-            kwargs['xmldata']
-            kwargs['pageReady']
+            kwargs['object']
         except KeyError, error:
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning(error)
             logger.warning("Insufficient number of parameters")
             return
 
-        if kwargs['xmldata'] is None or kwargs['pageReady'] is None:
+        objectData = kwargs['object']
+        if objectData.getXMLData() is None \
+            or objectData.getPageReady() is None:
             logger = logging.getLogger(self.__class__.__name__)
-            logger.warning('Error in input parameters:\n xmldata:\t%s\n pageReady:\t%s' % (kwargs['xmldata'],
-                                                                                           kwargs['pageReady']))
+            logger.warning('Error in input parameters:\n xmldata:\t%s\n pageReady:\t%s' % (objectData.getXMLData(),
+                                                                                           objectData.getPageReady()))
             logger.warning("Insufficient number of parameters")
             return
 
-        self.initialization(kwargs['xmldata'], kwargs['pageReady'], kwargs['uri'])
+        self.initialization(objectData, kwargs['uri'])
 
         # get previous hash values of script pieces, corresponding to this page
         listOfPreviousHashes = []
         connector = databaseConnector()
         register = modulesRegister()
         self.__listOfIds = []
-        pageId = connector.select(register.getORMClass('page'), [configNames.id], 'url', self.__uri)
+        pageId = connector.select(register.getORMClass(configNames.page), [configNames.id], 'url', self.__uri)
         if pageId:
             previousHashValuesFks = connector.select(register.getORMClass(self.__class__.__name__),
                                                      ['pageFk'], 'pageFk', pageId[0].id)
