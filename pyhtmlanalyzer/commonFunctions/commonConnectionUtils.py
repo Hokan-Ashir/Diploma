@@ -62,7 +62,24 @@ class commonConnectionUtils:
                 encoding = chardet.detect(rawdata)
                 pageReady = rawdata.decode(encoding['encoding'])
 
-        except (urllib2.URLError, urllib2.HTTPError, UnicodeDecodeError) as error:
+        except UnicodeDecodeError:
+            # try to decode encoding 'gb2312', usual for chinese sites. Also 'chardet' often not correctly detect
+            # chinese encoding. So we try to decode data with 'gbk', regular for chinese hieroglyphs
+            # inspired by:
+            # http://stackoverflow.com/questions/4092606/python-beautifulsoup-html-parsing-handle-gbk-encoding-poorly-chinese-webscra
+            try:
+                if encoding['encoding'].lower() == 'gb2312':
+                    pageReady = rawdata.decode('gbk')
+                    encoding['encoding'] = 'gbk'
+                else:
+                    raise UnicodeDecodeError
+            except UnicodeDecodeError, error:
+                logger = logging.getLogger("commonConnectionUtils")
+                logger.error(url)
+                logger.exception(error)
+                return []
+
+        except (urllib2.URLError, urllib2.HTTPError) as error:
             logger = logging.getLogger("commonConnectionUtils")
             logger.error(url)
             logger.exception(error)

@@ -24,6 +24,9 @@ class pyHTMLAnalyzer:
     # predefined section name of analyzed functions
     __databaseSectionName = 'Analyze functions database'
 
+    # predefined number of objects simultaneously analysing
+    __numberOfObjectsSimultaneouslyAnalysing = 5
+
     def __init__(self, configFileName):
         self.__initialize(configFileName)
 
@@ -73,6 +76,13 @@ class pyHTMLAnalyzer:
         connector = databaseConnector()
         connector.createORMClasses(user, password, hostName, databaseName, recreateDatabase=True,
                                        cleanTablesContent=deleteTablesContent)
+
+    # numberOfObjectsSimultaneouslyAnalysing
+    def getNumberOfObjectsSimultaneouslyAnalysing(self):
+        return self.__numberOfObjectsSimultaneouslyAnalysing
+
+    def setNumberOfObjectsSimultaneouslyAnalysing(self, value):
+        self.__numberOfObjectsSimultaneouslyAnalysing = value
 
     # module section
     def getModules(self):
@@ -305,37 +315,43 @@ class pyHTMLAnalyzer:
             self.insertObjects(analyzedObjectValue, pageRowId)
 
     def __getNetworkTrainDataFromObjects(self, listOfObjects, allObjectsAreValid = True, isPages = True):
-        # get analyze data itself
-        resultDict = self.getTotalNumberOfAnalyzedObjectsFeatures(listOfObjects, isPages)
         dictOfInputParameters = {}
-        for analyzedObjectName, analyzedObjectValue in resultDict.items():
-            if analyzedObjectValue[1] is None:
-                logger = logging.getLogger(self.__class__.__name__)
-                logger.warning("Object '%s' cannot be analyzed - errors during data extraction. Continuing ..."
-                               % analyzedObjectName)
-                continue
 
-            # flatten all dicts and lists (which is not FKs to some tables)
-            # remove all FKs columns (dict keys) from analyzedObjectValue
-            modulesDict = analyzedObjectValue[1]
-            for moduleName, moduleValueList in modulesDict.items():
-                listOfListsOfInputParameters = []
-                 # delete FKs elements
-                # ... that current module references to ...
-                ORMClass = self.__modulesRegister.getORMClass(moduleName)
-                tableFks = list(ORMClass.__table__.foreign_keys)
-                for dictOfModuleValues in moduleValueList:
-                    deletedData = {}
-                    for FK in tableFks:
-                        # get table name TO WHICH references current FK
-                        targetTableName = FK.target_fullname.split('.')[0]
-                        if targetTableName in dictOfModuleValues:
-                            deletedData[targetTableName] = dictOfModuleValues[targetTableName]
-                            del dictOfModuleValues[targetTableName]
+        analysingBlocks = len(listOfObjects) / self.__numberOfObjectsSimultaneouslyAnalysing
+        for i in xrange(0, analysingBlocks + 1):
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.info('List of analysing objects:')
+            logger.info(listOfObjects[i * self.__numberOfObjectsSimultaneouslyAnalysing :
+                (i + 1) * self.__numberOfObjectsSimultaneouslyAnalysing])
 
-                    # ... and that references to current module
-                    for ormClassName, ORMClass in self.__modulesRegister.getORMClassDictionary().items():
-                        tableFks = list(ORMClass.__table__.foreign_keys)
+            # in case len(listOfObjects) % self.__numberOfObjectsSimultaneouslyAnalysing == 0
+            if listOfObjects[i * self.__numberOfObjectsSimultaneouslyAnalysing :
+                (i + 1) * self.__numberOfObjectsSimultaneouslyAnalysing] == []:
+                break
+            # get analyze data itself
+            resultDict = self.getTotalNumberOfAnalyzedObjectsFeatures(
+                listOfObjects[i * self.__numberOfObjectsSimultaneouslyAnalysing :
+                (i + 1) * self.__numberOfObjectsSimultaneouslyAnalysing],
+                isPages
+            )
+            for analyzedObjectName, analyzedObjectValue in resultDict.items():
+                if analyzedObjectValue[1] is None:
+                    logger = logging.getLogger(self.__class__.__name__)
+                    logger.warning("Object '%s' cannot be analyzed - errors during data extraction. Continuing ..."
+                                   % analyzedObjectName)
+                    continue
+
+                # flatten all dicts and lists (which is not FKs to some tables)
+                # remove all FKs columns (dict keys) from analyzedObjectValue
+                modulesDict = analyzedObjectValue[1]
+                for moduleName, moduleValueList in modulesDict.items():
+                    listOfListsOfInputParameters = []
+                     # delete FKs elements
+                    # ... that current module references to ...
+                    ORMClass = self.__modulesRegister.getORMClass(moduleName)
+                    tableFks = list(ORMClass.__table__.foreign_keys)
+                    for dictOfModuleValues in moduleValueList:
+                        deletedData = {}
                         for FK in tableFks:
                             # get table name TO WHICH references current FK
                             targetTableName = FK.target_fullname.split('.')[0]
@@ -343,18 +359,28 @@ class pyHTMLAnalyzer:
                                 deletedData[targetTableName] = dictOfModuleValues[targetTableName]
                                 del dictOfModuleValues[targetTableName]
 
-                    listOfListsOfInputParameters.append(commonFunctions.recursiveFlattenDict(dictOfModuleValues))
+                        # ... and that references to current module
+                        for ormClassName, ORMClass in self.__modulesRegister.getORMClassDictionary().items():
+                            tableFks = list(ORMClass.__table__.foreign_keys)
+                            for FK in tableFks:
+                                # get table name TO WHICH references current FK
+                                targetTableName = FK.target_fullname.split('.')[0]
+                                if targetTableName in dictOfModuleValues:
+                                    deletedData[targetTableName] = dictOfModuleValues[targetTableName]
+                                    del dictOfModuleValues[targetTableName]
 
-                    # restore deleted data, cause this is needed for database
-                    for name, value in deletedData.items():
-                        dictOfModuleValues[name] = value
+                        listOfListsOfInputParameters.append(commonFunctions.recursiveFlattenDict(dictOfModuleValues))
 
-                if moduleName not in dictOfInputParameters:
-                    dictOfInputParameters[moduleName] = listOfListsOfInputParameters
-                else:
-                    dictOfInputParameters[moduleName] = dictOfInputParameters[moduleName] + listOfListsOfInputParameters
+                        # restore deleted data, cause this is needed for database
+                        for name, value in deletedData.items():
+                            dictOfModuleValues[name] = value
 
-            self.__insertDataInDatabase(analyzedObjectName, analyzedObjectValue[1], allObjectsAreValid)
+                    if moduleName not in dictOfInputParameters:
+                        dictOfInputParameters[moduleName] = listOfListsOfInputParameters
+                    else:
+                        dictOfInputParameters[moduleName] = dictOfInputParameters[moduleName] + listOfListsOfInputParameters
+
+                self.__insertDataInDatabase(analyzedObjectName, analyzedObjectValue[1], allObjectsAreValid)
 
         return dictOfInputParameters
 
@@ -374,18 +400,34 @@ class pyHTMLAnalyzer:
         # if number of detected engines >50% - DO NOT analyze page either (it is NOT valid)
         # else - analyze page
 
-        # get analyze data itself
-        resultDict = self.getTotalNumberOfAnalyzedObjectsFeatures(listOfObjects, isPages)
-        for analyzedObjectName, analyzedObjectValue in resultDict.items():
-            if analyzedObjectValue[1] is None:
-                logger = logging.getLogger(self.__class__.__name__)
-                logger.warning("Object '%s' cannot be analyzed - errors during data extraction. Continuing ..."
-                               % analyzedObjectName)
-                continue
+        analysingBlocks = len(listOfObjects) / self.__numberOfObjectsSimultaneouslyAnalysing
+        for i in xrange(0, analysingBlocks + 1):
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.info('List of analysing objects:')
+            logger.info(listOfObjects[i * self.__numberOfObjectsSimultaneouslyAnalysing :
+                (i + 1) * self.__numberOfObjectsSimultaneouslyAnalysing])
 
-            # get isValid-solution
-            isValid = self.__controller.analyzeObjectViaNetworks(analyzedObjectValue[1])
-            self.__insertDataInDatabase(analyzedObjectName, analyzedObjectValue[1], isValid)
+            # in case len(listOfObjects) % self.__numberOfObjectsSimultaneouslyAnalysing == 0
+            if listOfObjects[i * self.__numberOfObjectsSimultaneouslyAnalysing :
+                (i + 1) * self.__numberOfObjectsSimultaneouslyAnalysing] == []:
+                break
+
+            # get analyze data itself
+            resultDict = self.getTotalNumberOfAnalyzedObjectsFeatures(
+                listOfObjects[i * self.__numberOfObjectsSimultaneouslyAnalysing :
+                (i + 1) * self.__numberOfObjectsSimultaneouslyAnalysing],
+                isPages
+            )
+            for analyzedObjectName, analyzedObjectValue in resultDict.items():
+                if analyzedObjectValue[1] is None:
+                    logger = logging.getLogger(self.__class__.__name__)
+                    logger.warning("Object '%s' cannot be analyzed - errors during data extraction. Continuing ..."
+                                   % analyzedObjectName)
+                    continue
+
+                # get isValid-solution
+                isValid = self.__controller.analyzeObjectViaNetworks(analyzedObjectValue[1])
+                self.__insertDataInDatabase(analyzedObjectName, analyzedObjectValue[1], isValid)
 
     def analyzePages(self, listOfPages):
         self.__analyzeObjects(listOfPages)

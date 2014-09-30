@@ -330,7 +330,7 @@ def __repr__ (self):
             session.close()
             return result
 
-        except OperationalError, error:
+        except Exception, error:
             # dispatch transaction
             session.rollback()
             logger = logging.getLogger(self.__class__.__name__)
