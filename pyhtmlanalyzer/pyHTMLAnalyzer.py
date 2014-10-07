@@ -41,8 +41,8 @@ class pyHTMLAnalyzer:
         self.setModule(urlAnalyzer(configList[2]))
 
         # networks part
-        validPagesFileName = 'validPages'
-        invalidPagesFileName = 'invalidPages'
+        validPagesFileName = 'testDataSet/validPages/validPages'
+        invalidPagesFileName = 'testDataSet/invalidPages/invalidPages'
         self.__controller = neuroNetsController(invalidPagesFileName, validPagesFileName)
         logger.info("Getting invalid data from pages to train networks...")
         invalidDataDict = self.getNetworkTrainDataFromFile(invalidPagesFileName, False)

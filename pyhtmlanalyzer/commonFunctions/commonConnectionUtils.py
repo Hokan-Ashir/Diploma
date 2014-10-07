@@ -79,7 +79,7 @@ class commonConnectionUtils:
                 logger.exception(error)
                 return []
 
-        except (urllib2.URLError, urllib2.HTTPError) as error:
+        except Exception as error:
             logger = logging.getLogger("commonConnectionUtils")
             logger.error(url)
             logger.exception(error)
