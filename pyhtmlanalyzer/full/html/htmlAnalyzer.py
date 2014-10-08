@@ -7,10 +7,11 @@ import timeit
 import re
 from pyhtmlanalyzer import CLSID
 from pyhtmlanalyzer.commonFunctions import configNames
+from pyhtmlanalyzer.commonFunctions.commonConnectionUtils import commonConnectionUtils
 from pyhtmlanalyzer.commonFunctions.commonFunctions import commonFunctions
 from pyhtmlanalyzer.commonFunctions.commonXPATHUtils import commonXPATHUtils
 from pyhtmlanalyzer.commonFunctions.modulesRegister import modulesRegister
-from pyhtmlanalyzer.commonFunctions.processProxy import processProxy
+from pyhtmlanalyzer.commonFunctions.multiprocessing.processProxy import processProxy
 from pyhtmlanalyzer.databaseUtils.databaseConnector import databaseConnector
 from pyhtmlanalyzer.full.commonAnalysisData import commonAnalysisData
 from pyhtmlanalyzer.full.commonURIAnalysisData import commonURIAnalysisData
@@ -965,12 +966,19 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
 
     # page hashing
     def getPageHashValues(self):
-        if self.getEncoding() is None:
-            pageHashSHA256 = hashlib.sha256(self._pageReady).hexdigest()
-            pageHashSHA512 = hashlib.sha512(self._pageReady).hexdigest()
-        else:
-            pageHashSHA256 = hashlib.sha256(self._pageReady.encode(self.getEncoding())).hexdigest()
-            pageHashSHA512 = hashlib.sha512(self._pageReady.encode(self.getEncoding())).hexdigest()
+        try:
+            if self.getEncoding() is None:
+                pageHashSHA256 = hashlib.sha256(self._pageReady).hexdigest()
+                pageHashSHA512 = hashlib.sha512(self._pageReady).hexdigest()
+            else:
+                pageHashSHA256 = hashlib.sha256(self._pageReady.encode(self.getEncoding())).hexdigest()
+                pageHashSHA512 = hashlib.sha512(self._pageReady.encode(self.getEncoding())).hexdigest()
+        except Exception, error:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning(error)
+            pageHashSHA256 = hashlib.sha256(self._pageReady.encode('utf-8')).hexdigest()
+            pageHashSHA512 = hashlib.sha512(self._pageReady.encode('utf-8')).hexdigest()
+
 
         return [pageHashSHA256, pageHashSHA512]
 
@@ -1054,6 +1062,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
             logger.warning("Insufficient number of parameters")
             return
 
+        objectData = commonConnectionUtils.openPage(kwargs['uri'])
         self.setXMLData(objectData.getXMLData())
         self.setPageReady(objectData.getPageReady())
         self.setEncoding(objectData.getEncoding())
@@ -1153,6 +1162,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
                 except Exception, error:
                     logger = logging.getLogger(self.__class__.__name__)
                     logger.exception(error)
+                    logger.info(self._uri)
                     pass
 
         # if we get here, so function calls above are correct and we can add hashes values to result dictionary

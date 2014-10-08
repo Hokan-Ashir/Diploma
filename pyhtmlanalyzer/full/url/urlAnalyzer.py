@@ -3,7 +3,7 @@ from multiprocessing import Queue
 import timeit
 from pyhtmlanalyzer.commonFunctions import configNames
 from pyhtmlanalyzer.commonFunctions.commonFunctions import commonFunctions
-from pyhtmlanalyzer.commonFunctions.processProxy import processProxy
+from pyhtmlanalyzer.commonFunctions.multiprocessing.processProxy import processProxy
 from pyhtmlanalyzer.full.url.commonURL.commonURLFunctions import commonURLFunctions
 from pyhtmlanalyzer.full.url.dns.dnsFunctions import dnsFunctions
 from pyhtmlanalyzer.full.url.geoip.geoIPFunctions import geoIPFunctions

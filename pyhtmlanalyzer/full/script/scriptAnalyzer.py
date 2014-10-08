@@ -17,7 +17,7 @@ from pyhtmlanalyzer.commonFunctions import jsVariableRegExp, configNames
 from pyhtmlanalyzer.commonFunctions.commonConnectionUtils import commonConnectionUtils
 from pyhtmlanalyzer.commonFunctions.commonFunctions import commonFunctions
 from pyhtmlanalyzer.commonFunctions.modulesRegister import modulesRegister
-from pyhtmlanalyzer.commonFunctions.processProxy import processProxy
+from pyhtmlanalyzer.commonFunctions.multiprocessing.processProxy import processProxy
 from pyhtmlanalyzer.databaseUtils.databaseConnector import databaseConnector
 from pyhtmlanalyzer.full.commonAnalysisData import commonAnalysisData
 
@@ -981,12 +981,18 @@ class scriptAnalyzer(commonAnalysisData):
             # deleting comments
             text = re.sub(self.__commentsRegExp, '', text)
 
-        if self.getEncoding() is None:
-            pageHashSHA256 = hashlib.sha256(text).hexdigest()
-            pageHashSHA512 = hashlib.sha512(text).hexdigest()
-        else:
-            pageHashSHA256 = hashlib.sha256(text.encode(self.getEncoding())).hexdigest()
-            pageHashSHA512 = hashlib.sha512(text.encode(self.getEncoding())).hexdigest()
+        try:
+            if self.getEncoding() is None:
+                pageHashSHA256 = hashlib.sha256(text).hexdigest()
+                pageHashSHA512 = hashlib.sha512(text).hexdigest()
+            else:
+                pageHashSHA256 = hashlib.sha256(text.encode(self.getEncoding())).hexdigest()
+                pageHashSHA512 = hashlib.sha512(text.encode(self.getEncoding())).hexdigest()
+        except Exception, error:
+            logger = logging.getLogger(self.__class__.__name__)
+            logger.warning(error)
+            pageHashSHA256 = hashlib.sha256(text.encode('utf-8')).hexdigest()
+            pageHashSHA512 = hashlib.sha512(text.encode('utf-8')).hexdigest()
 
         return [pageHashSHA256, pageHashSHA512]
 
@@ -1270,7 +1276,11 @@ class scriptAnalyzer(commonAnalysisData):
         # // - begin of C++-like comment
         # .* - any symbol 0+ times
         # \n?) - until end of line, which can be off
-        self.__commentsRegExp = re.compile(r'(/\*[^\*/]*\*/|//.*\n?)')
+        # (/\*[^\*/]*\*/|//.*\n?)
+        #
+        # advanced one @(/\*(.|[\r\n])*?\*/)|(//.*)@ taken from:
+        # http://ostermiller.org/findcomment.html
+        self.__commentsRegExp = re.compile(r'(/\*(.|[\r\n])*?\*/)|(//.*)')
 
         # get all quoted strings via regExp
         # (?:" - begin on quoted via "-symbol string and passive regExp group
@@ -1485,7 +1495,7 @@ class scriptAnalyzer(commonAnalysisData):
                 except Exception, error:
                     logger = logging.getLogger(self.__class__.__name__)
                     logger.exception(error)
-                    pass
+                    continue
 
             # if we get here, so function calls above are correct and we can add hashes values to result dictionary
             # this values will be extract later
@@ -1516,7 +1526,7 @@ class scriptAnalyzer(commonAnalysisData):
                     except Exception, error:
                         logger = logging.getLogger(self.__class__.__name__)
                         logger.exception(error)
-                        pass
+                        continue
 
                 # if we get here, so function calls above are correct and we can add hashes values to result list
                 # with analyzed data
@@ -1535,7 +1545,7 @@ class scriptAnalyzer(commonAnalysisData):
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning(error)
             logger.warning("Insufficient number of parameters")
-            return
+            return [None, scriptAnalyzer.__name__]
 
         objectData = kwargs['object']
         if objectData.getXMLData() is None \
@@ -1544,8 +1554,9 @@ class scriptAnalyzer(commonAnalysisData):
             logger.warning('Error in input parameters:\n xmldata:\t%s\n pageReady:\t%s' % (objectData.getXMLData(),
                                                                                            objectData.getPageReady()))
             logger.warning("Insufficient number of parameters")
-            return
+            return [None, scriptAnalyzer.__name__]
 
+        objectData = commonConnectionUtils.openPage(kwargs['uri'])
         self.initialization(objectData, kwargs['uri'])
 
         # get previous hash values of script pieces, corresponding to this page

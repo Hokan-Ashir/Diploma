@@ -63,6 +63,9 @@ class neuroNetsController:
             logger.error('Cannot perform analysis further. Application will be terminated')
             raise Exception('Pages duplication in valid and invalid lists')
 
+        # indicate that networks not loaded
+        raise IOError
+
     def trainNetworks(self, invalidDataDict, validDataDict):
         logger = logging.getLogger(self.__class__.__name__)
 
