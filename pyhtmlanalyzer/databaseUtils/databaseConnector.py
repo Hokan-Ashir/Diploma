@@ -68,7 +68,7 @@ class databaseConnector(object):
                 typeObject = Float
             elif columnType.lower() == 'String'.lower():
                 # TODO maybe get non-default String type value length from file?
-                typeObject = String(255)
+                typeObject = String(1255)
             elif columnType.lower() == 'Boolean'.lower():
                 typeObject = Boolean
             else:

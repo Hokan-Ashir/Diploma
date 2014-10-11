@@ -1,0 +1,38 @@
+Project libraries:
+first of all pycharm will suggest install "pip" and "setup tools", do it
+sqlalchemy (in case of using "load_only" function version 0.9+ is required)
+	- install via pycharm
+lxml
+	- manually via downloading from site and then "sudo python setup.py install"
+matplotlib
+	- first install dependencies (libpng-dev, libjpeg8-dev, libfreetype6-dev, python-dev) via "sudo apt-get install XXXXXX"
+	- then install matplotlib inside pycharm
+libemu
+	- first install dependencies (autoconf, git, libtool) via "sudo apt-get install XXXXXX"
+	http://nuald.blogspot.ru/2010/10/shellcode-detection-using-libemu.html 
+	- WARNINGS: 
+		in "src/Makefile" delete "-Werror" flag, otherwise all warning will be considered as erros, that will crush "make"
+		in "./configure –prefix=/opt/libemu/ –enable-python-bindings" replace "-" as "- -"
+dnspython
+	- manually via downloading from site and then "sudo python setup.py install"
+_mysql
+	- "sudo apt-get install python-mysqldb"
+whois
+	- install via pycharm (named as "python-whois")
+pybrain
+	- install via pycharm ("pybrain" will no be accessable, cause of no "scipy" package installed)
+scipy
+	first install dependencies (gfortran libopenblas-dev liblapack-dev) via "sudo apt-get install XXXXXX"
+	after that install scipy via pycharm
+
+
+NonProject libraries:
+mysql
+	- "sudo apt-get install mysql-server"
+ip2location DB	
+	https://lite.ip2location.com/database-ip-country-region-city-latitude-longitude-zipcode-timezone
+	mysql -u root -p < ip2location_create_db_file
+	http://stackoverflow.com/questions/10762239/mysql-enable-load-data-local-infile
+	mysql - -local-infile -u root -p ip2location < ip2location_file_to_fill_db
+emma
+	-"sudo apt-get install emma"
