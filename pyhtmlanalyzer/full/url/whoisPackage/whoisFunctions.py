@@ -25,9 +25,9 @@ class whoisFunctions(commonURIAnalysisData):
     def getURLExpirationDates(self):
         try:
             return [] if self.whoisData is None else self.whoisData.expiration_date
-        except KeyError, error:
+        except Exception, error:
             logger = logging.getLogger(self.__class__.__name__)
-            logger.warning('Page has no expiration dates\n\t %s' % error)
+            logger.warning('Page %s has no expiration dates\n\t %s' % (self._uri, error))
             return []
 
     def printURLExpirationDates(self):
@@ -41,9 +41,9 @@ class whoisFunctions(commonURIAnalysisData):
     def getURLRegistrationDates(self):
         try:
             return [] if self.whoisData is None else self.whoisData.creation_date
-        except KeyError, error:
+        except Exception, error:
             logger = logging.getLogger(self.__class__.__name__)
-            logger.warning('Page has no registration dates\n\t %s' % error)
+            logger.warning('Page %s has no registration dates\n\t %s' % (self._uri, error))
             return []
 
     def printURLRegistrationDates(self):
@@ -57,9 +57,9 @@ class whoisFunctions(commonURIAnalysisData):
     def getURLUpdateDate(self):
         try:
             return [] if self.whoisData is None else self.whoisData.updated_date
-        except KeyError, error:
+        except Exception, error:
             logger = logging.getLogger(self.__class__.__name__)
-            logger.warning('Page has no update dates\n\t %s' % error)
+            logger.warning('Page %s has no update dates\n\t %s' % (self._uri, error))
             return []
 
 

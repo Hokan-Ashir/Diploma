@@ -43,11 +43,6 @@ class databaseConnector(object):
             and databaseName is not None:
             self.getDatabaseEngine(user, password, hostname, databaseName)
 
-    def detachObject(self, classInstance):
-        Session = scoped_session(sessionmaker(self.__engine))
-        session = Session()
-        session.expunge(classInstance)
-
     # columnNames and columnTypes must have same length
     def createORMClass(self, tableName, columns, tablesRelations):
         # currently support only one FK per column

@@ -43,8 +43,9 @@ class pyHTMLAnalyzer:
         # networks part
         validPagesFileName = 'testDataSet/validPages/validPages'
         invalidPagesFileName = 'testDataSet/invalidPages/invalidPages'
+        self.__controller = neuroNetsController()
         try:
-            self.__controller = neuroNetsController(invalidPagesFileName, validPagesFileName)
+            self.__controller.attemptToLoadNetworksFromFiles(validPagesFileName, invalidPagesFileName)
         except IOError:
             logger.info("Getting invalid data from pages to train networks...")
             invalidDataDict = self.getNetworkTrainDataFromFile(invalidPagesFileName, False)

@@ -14,11 +14,10 @@ class neuroNetsController:
     # predefined networks directory
     __networksDirectory = './networks'
 
-    def __init__(self, invalidPagesFileName, validPagesFileName):
-        self.__initialize(invalidPagesFileName, validPagesFileName)
+    def __init__(self):
+        self.__initialize()
 
-    def __initialize(self, invalidPagesFileName, validPagesFileName):
-        logger = logging.getLogger(self.__class__.__name__)
+    def __initialize(self):
         register = modulesRegister()
 
         # set weights for register modules
@@ -29,6 +28,8 @@ class neuroNetsController:
         for moduleName in register.getClassInstanceDictionary().keys():
             self.__networksDict[moduleName] = neuroNet()
 
+    def attemptToLoadNetworksFromFiles(self, invalidPagesFileName, validPagesFileName):
+        logger = logging.getLogger(self.__class__.__name__)
         # load networks from files
         logger.info("Loading networks from files ...")
         loadingSuccess = False
