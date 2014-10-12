@@ -150,10 +150,15 @@ class scriptAnalyzer(commonAnalysisData):
 
         def callbackFunction(text, arguments):
             # totalLengthOfScriptContent
-            if self.getEncoding() is None:
-                tempText = text
-            else:
-                tempText = text.encode(self.getEncoding())
+            try:
+                if self.getEncoding() is None:
+                    tempText = text
+                else:
+                    tempText = text.encode(self.getEncoding())
+            except Exception, error:
+                logger = logging.getLogger(self.__class__.__name__)
+                logger.warning(error)
+                tempText = text.encode('utf-8')
 
             arguments[0] += len(str(tempText))
             for keyword in commonListOfKeyWords:
@@ -184,10 +189,15 @@ class scriptAnalyzer(commonAnalysisData):
     def getListOfLongStrings(self, stringLength = 40, separatorList = ['\n', ';']):
         separator = '|'.join(separatorList)
         def callbackFunction(text, arguments):
-            if self.getEncoding() is None:
-                tempText = text
-            else:
-                tempText = text.encode(self.getEncoding())
+            try:
+                if self.getEncoding() is None:
+                    tempText = text
+                else:
+                    tempText = text.encode(self.getEncoding())
+            except Exception, error:
+                logger = logging.getLogger(self.__class__.__name__)
+                logger.warning(error)
+                tempText = text.encode('utf-8')
 
             stringsList = re.split(separator, str(tempText))
             for string in stringsList:
@@ -258,10 +268,15 @@ class scriptAnalyzer(commonAnalysisData):
     # script's whitespace percentage
     def getScriptWhitespacePercentage(self):
         def callbackFunction(text, arguments):
-            if self.getEncoding() is None:
-                tempText = text
-            else:
-                tempText = text.encode(self.getEncoding())
+            try:
+                if self.getEncoding() is None:
+                    tempText = text
+                else:
+                    tempText = text.encode(self.getEncoding())
+            except Exception, error:
+                logger = logging.getLogger(self.__class__.__name__)
+                logger.warning(error)
+                tempText = text.encode('utf-8')
 
             # totalScriptLength
             arguments[0] += len(str(tempText))
@@ -317,10 +332,15 @@ class scriptAnalyzer(commonAnalysisData):
     def getAverageLengthOfStringsUsedInScript(self, separatorList = ['\n', ';']):
         separator = '|'.join(separatorList)
         def callbackFunction(text, arguments):
-            if self.getEncoding() is None:
-                tempText = text
-            else:
-                tempText = text.encode(self.getEncoding())
+            try:
+                if self.getEncoding() is None:
+                    tempText = text
+                else:
+                    tempText = text.encode(self.getEncoding())
+            except Exception, error:
+                logger = logging.getLogger(self.__class__.__name__)
+                logger.warning(error)
+                tempText = text.encode('utf-8')
 
             stringsList = re.split(separator, str(tempText))
             # totalNumberOfLines
@@ -507,10 +527,15 @@ class scriptAnalyzer(commonAnalysisData):
     def getMaximumLengthOfScriptStrings(self, separatorList = ['\n', ';']):
         separator = '|'.join(separatorList)
         def callbackFunction(text, arguments):
-            if self.getEncoding() is None:
-                tempText = text
-            else:
-                tempText = text.encode(self.getEncoding())
+            try:
+                if self.getEncoding() is None:
+                    tempText = text
+                else:
+                    tempText = text.encode(self.getEncoding())
+            except Exception, error:
+                logger = logging.getLogger(self.__class__.__name__)
+                logger.warning(error)
+                tempText = text.encode('utf-8')
 
             stringsList = re.split(separator, str(tempText))
             for string in stringsList:
@@ -583,10 +608,15 @@ class scriptAnalyzer(commonAnalysisData):
         functionRegExp = re.compile(ur'[\s\t=\.\n]+%s{%d,}[\s\t]*\('
                                     % (jsVariableRegExp.jsVariableNameRegExp, functionNameLength))
         def callbackFunction(text, arguments):
-            if self.getEncoding() is None:
-                tempText = text
-            else:
-                tempText = text.encode(self.getEncoding())
+            try:
+                if self.getEncoding() is None:
+                    tempText = text
+                else:
+                    tempText = text.encode(self.getEncoding())
+            except Exception, error:
+                logger = logging.getLogger(self.__class__.__name__)
+                logger.warning(error)
+                tempText = text.encode('utf-8')
 
             arguments[0] += len(re.findall(variableRegExp, tempText))
             arguments[1] += len(re.findall(functionRegExp, tempText))
@@ -839,10 +869,14 @@ class scriptAnalyzer(commonAnalysisData):
         for key, value in dictOfTagsEntropy.items():
             logger.info("source line: " + str(key))
             logger.info("maximum string entropy of this node: " + str(value[0]))
-            if self.getEncoding() is None:
-                tempValue = value[1]
-            else:
-                tempValue = value[1].encode(self.getEncoding())
+            try:
+                if self.getEncoding() is None:
+                    tempValue = value[1]
+                else:
+                    tempValue = value[1].encode(self.getEncoding())
+            except Exception, error:
+                logger.warning(error)
+                tempValue = value[1].encode('utf-8')
 
             logger.info("of string: " + str(tempValue))
     #
@@ -880,10 +914,14 @@ class scriptAnalyzer(commonAnalysisData):
 
         logger.info("\nEntropy of strings declared in script (by whole script)")
         for key, value in dictOfStringsEntropy.items():
-            if self.getEncoding() is None:
-                tempKey = key
-            else:
-                tempKey = key.encode(self.getEncoding())
+            try:
+                if self.getEncoding() is None:
+                    tempKey = key
+                else:
+                    tempKey = key.encode(self.getEncoding())
+            except Exception, error:
+                logger.warning(error)
+                tempKey = key.encode('utf-8')
 
             logger.info("string: " + str(tempKey) + "\nentropy: " + str(value))
     #
@@ -926,10 +964,14 @@ class scriptAnalyzer(commonAnalysisData):
 
         logger.info("\nEntropy of strings declared in script (by nodes)")
         for key, value in dictOfStringsEntropy.items():
-            if self.getEncoding() is None:
-                tempKey = key
-            else:
-                tempKey = key.encode(self.getEncoding())
+            try:
+                if self.getEncoding() is None:
+                    tempKey = key
+                else:
+                    tempKey = key.encode(self.getEncoding())
+            except Exception, error:
+                logger.warning(error)
+                tempKey = key.encode('utf-8')
 
             logger.info("string: " + str(tempKey) + "\nentropy: " + str(value))
     #
@@ -940,12 +982,18 @@ class scriptAnalyzer(commonAnalysisData):
     def getScriptContentHashingAll(self, includeComments = False):
         dictOfScriptTagsHashed = {}
         def callbackFunction(text, arguments, i, inlineTagContent):
-            if self.getEncoding() is None:
-                pageHashSHA256 = hashlib.sha256(text).hexdigest()
-                pageHashSHA512 = hashlib.sha512(text).hexdigest()
-            else:
-                pageHashSHA256 = hashlib.sha256(text.encode(self.getEncoding())).hexdigest()
-                pageHashSHA512 = hashlib.sha512(text.encode(self.getEncoding())).hexdigest()
+            try:
+                if self.getEncoding() is None:
+                    pageHashSHA256 = hashlib.sha256(text).hexdigest()
+                    pageHashSHA512 = hashlib.sha512(text).hexdigest()
+                else:
+                    pageHashSHA256 = hashlib.sha256(text.encode(self.getEncoding())).hexdigest()
+                    pageHashSHA512 = hashlib.sha512(text.encode(self.getEncoding())).hexdigest()
+            except Exception, error:
+                logger = logging.getLogger(self.__class__.__name__)
+                logger.warning(error)
+                pageHashSHA256 = hashlib.sha256(text.encode('utf-8')).hexdigest()
+                pageHashSHA512 = hashlib.sha512(text.encode('utf-8')).hexdigest()
 
             if inlineTagContent:
                 arguments[self.__listOfScriptTagsTextSourcelines[i]] = [pageHashSHA256, pageHashSHA512]

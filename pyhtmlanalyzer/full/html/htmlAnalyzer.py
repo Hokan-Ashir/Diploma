@@ -797,10 +797,15 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
             # \n?) - until end of line, which can be off
             regExp = re.compile(r'(/\*[^\*/]*\*/|//.*\n?)')
 
-            if self.getEncoding() is None:
-                tempItem = item
-            else:
-                tempItem = item.encode(self.getEncoding())
+            try:
+                if self.getEncoding() is None:
+                    tempItem = item
+                else:
+                    tempItem = item.encode(self.getEncoding())
+            except Exception, error:
+                logger = logging.getLogger(self.__class__.__name__)
+                logger.warning(error)
+                tempItem = item.encode('utf-8')
 
             numberOfCharactersInPage = len(re.sub(regExp, '', str(tempItem)))
 
@@ -836,10 +841,15 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         for item in listOfInlineScriptTextNodes:
             # additional '|\s' for replacing spaces in one turn
             regExp = re.compile(r'(/\*[^\*/]*\*/|//.*\n?|\s)')
-            if self.getEncoding() is None:
-                tempItem = item
-            else:
-                tempItem = item.encode(self.getEncoding())
+            try:
+                if self.getEncoding() is None:
+                    tempItem = item
+                else:
+                    tempItem = item.encode(self.getEncoding())
+            except Exception, error:
+                logger = logging.getLogger(self.__class__.__name__)
+                logger.warning(error)
+                tempItem = item.encode('utf-8')
 
             numberOfCharactersInPage += len(re.sub(regExp, '', str(tempItem)))
 
