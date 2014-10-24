@@ -67,21 +67,22 @@ class neuroNetsController:
         # indicate that networks not loaded
         raise IOError
 
-    def trainNetworks(self, invalidDataDict, validDataDict):
+    def trainNetworks(self, invalidDataDict, validDataDict, numberOfInnerNeurons = None, outputDirectory =
+    __networksDirectory):
         logger = logging.getLogger(self.__class__.__name__)
 
         logger.info("Creating and training networks ...")
         # create train networks
         for moduleName, moduleValueList in validDataDict.items():
-            self.__networksDict[moduleName] = neuroNet(len(moduleValueList[0]))
+            self.__networksDict[moduleName] = neuroNet(len(moduleValueList[0]), 1, numberOfInnerNeurons)
 
             # create common (valid and invalid) input values list of lists
             inputDataList = moduleValueList + invalidDataDict[moduleName]
             outputDataList = ([[True]] * len(moduleValueList)) + ([[False]] * len(invalidDataDict[moduleName]))
             logger.info("Network name: " + moduleName)
             logger.info(self.__trainNetworkWithData(moduleName, inputDataList, outputDataList, 200))
-            logger.info("Saving '%s' network to directory '%s'" % (moduleName, self.__networksDirectory))
-            self.__networksDict[moduleName].saveNetworkToDirectory(moduleName, self.__networksDirectory)
+            logger.info("Saving '%s' network to directory '%s'" % (moduleName, outputDirectory))
+            self.__networksDict[moduleName].saveNetworkToDirectory(moduleName, outputDirectory)
             logger.info("Network '%s' saved" % moduleName)
 
     def analyzeObjectViaNetworks(self, analyzeDataDict):
@@ -136,16 +137,25 @@ class neuroNetsController:
         solution = 0
         for networkName in self.__networksDict.keys():
             logger.info("Gathering result solution from network '%s'" % networkName)
-            moduleResultValue = 1
-            for item in dictOfInputParameters[networkName]:
-                if self.__networksDict[networkName].getNumberOfInputParameters() == len(item):
-                    pageChanged = True
-                    moduleResultValue = moduleResultValue \
-                                        * abs(self.__networksDict[networkName].analyzeData(item)) \
-                                        * self.__weightsController.getModuleWeight(networkName)
+            moduleResultValue = 0
+            if len(dictOfInputParameters[networkName]) != 0:
+                for item in dictOfInputParameters[networkName]:
+                    if self.__networksDict[networkName].getNumberOfInputParameters() == len(item):
+                        pageChanged = True
+                        moduleResultValue = moduleResultValue \
+                                            + abs(self.__networksDict[networkName].analyzeData(item)) \
+                                            * self.__weightsController.getModuleWeight(networkName)
+                        logger.info('Analyze data value: %s' % str(self.__networksDict[networkName].analyzeData(item)))
+                        logger.info("Network \'%s\' module weight: %s" % (networkName,
+                                                                   str(self.__weightsController.getModuleWeight(networkName))))
 
+                moduleResultValue = moduleResultValue / len(dictOfInputParameters[networkName])
             solution = solution + moduleResultValue * self.__weightsController.getModuleValueWeight(networkName)
+            logger.info("Network \'%s\' module value weight: %s" % (networkName,
+                                                                    self.__weightsController.getModuleValueWeight(
+                                                                        networkName)))
 
+        logger.info('Non round solution value: %s' % str(solution))
         # round solution
         solution = True if abs(solution) >= self.__solutionBorderValue else False
         logger.info("Result solution is: " + str(solution))

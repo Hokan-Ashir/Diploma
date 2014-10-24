@@ -153,16 +153,16 @@ getTotalNumberOfLongVariableOrFunction : Integer,
 getScriptWholeEntropy : Integer,
 getMaximumEntropyOfWholeScriptStrings : Integer,
 # this function returns dict, so String(255) may be not enough
-getNumberOfEventAttachments : String,
+#getNumberOfEventAttachments : String,
 getNumberOfDirectStringAssignments : Integer,
 # this function returns dict, so String(255) may be not enough
-getNumberOfStringModificationFunctions : String,
+#getNumberOfStringModificationFunctions : String,
 # this function returns dict, so String(255) may be not enough
-getNumberBuiltInDeobfuscationFunctions : String,
+#getNumberBuiltInDeobfuscationFunctions : String,
 # this function returns dict, so String(255) may be not enough
-getNumberOfDOMModificationFunctions : String,
+#getNumberOfDOMModificationFunctions : String,
 # this function returns dict, so String(255) may be not enough
-getNumberOfFingerPrintingFunctions : String
+#getNumberOfFingerPrintingFunctions : String
 
 [urlAnalyzer]
 

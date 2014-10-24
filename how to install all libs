@@ -36,3 +36,5 @@ ip2location DB
 	mysql - -local-infile -u root -p ip2location < ip2location_file_to_fill_db
 emma
 	-"sudo apt-get install emma"
+mysql workbench (much better than emma)
+	- "sudo apt-get install mysql-workbench"

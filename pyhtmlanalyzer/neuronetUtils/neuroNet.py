@@ -16,23 +16,25 @@ class neuroNet(object):
     __network = None
     __numberOfInputParameters = None
     __numberOfOutputParameters = None
-    __numberOfInnerLayers = None
+    __numberOfInnerNeurons = None
 
     # if "numberOfInputParameters" is None, we create simply stub of network
     def __init__(self, numberOfInputParameters = None, numberOfOutputParameters = 1, numberOfInnerLayers = None):
         self.createNetwork(numberOfInputParameters, numberOfOutputParameters, numberOfInnerLayers)
 
-    def createNetwork(self, numberOfInputParameters, numberOfOutputParameters = 1, numberOfInnerLayers = None):
+    def createNetwork(self, numberOfInputParameters, numberOfOutputParameters = 1, numberOfInnerNeurons = None):
         self.__numberOfInputParameters = numberOfInputParameters
         self.__numberOfOutputParameters = numberOfOutputParameters
-        self.__numberOfInnerLayers = numberOfInnerLayers
+        self.__numberOfInnerNeurons = numberOfInnerNeurons
 
-        if numberOfInnerLayers is None:
-            # TODO manage this
-            numberOfInnerLayers = 3#numberOfInputParameters + numberOfOutputParameters
+        if numberOfInnerNeurons is None:
+            if numberOfInputParameters is None:
+                numberOfInnerNeurons = 3
+            else:
+                numberOfInnerNeurons = numberOfInputParameters + numberOfOutputParameters
 
         if numberOfInputParameters is not None:
-            self.__network = buildNetwork(numberOfInputParameters, numberOfInnerLayers, numberOfOutputParameters)
+            self.__network = buildNetwork(numberOfInputParameters, numberOfInnerNeurons, numberOfOutputParameters)
 
     def saveNetworkToDirectory(self, networkName, directoryPath):
         try:
@@ -63,8 +65,8 @@ class neuroNet(object):
     def getNumberOfOutputParameters(self):
         return self.__numberOfOutputParameters
 
-    def getNumberOfInnerLayers(self):
-        return self.__numberOfInnerLayers
+    def getNumberOfInnerNeurons(self):
+        return self.__numberOfInnerNeurons
 
     # dataList is list that consists of lists.
     # Each even element is input parameter and corresponding odd parameter is output parameter

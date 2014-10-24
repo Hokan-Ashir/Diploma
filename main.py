@@ -4,7 +4,6 @@ import logging
 import logging.config
 import timeit
 from pyhtmlanalyzer.commonFunctions import configNames
-from pyhtmlanalyzer.commonFunctions.commonFunctions import commonFunctions
 from pyhtmlanalyzer.pyHTMLAnalyzer import pyHTMLAnalyzer
 
 if __name__ == "__main__":
@@ -27,7 +26,8 @@ if __name__ == "__main__":
     begin = timeit.default_timer()
     # http://www.tutorialspoint.com/python/string_rstrip.htm
     #dic = analyzer.getNumberOfAnalyzedPageFeaturesByFunction('http://habrahabr.ru/post/235949/')
-    analyzer.analyzePages(commonFunctions.getObjectNamesFromFile('testDataSet/testDataSet_'))
+    # commonFunctions.getObjectNamesFromFile('testDataSet/testDataSet_')
+    analyzer.analyzePages(['http://www.tutorialspoint.com/python/string_rstrip.htm'])
     #analyzer.analyzePages(['http://www.baidu.com'])
     #analyzer.setIsActiveModule('urlAnalyzer', False)
     #analyzer.analyzeFiles(['xmlFiles/test.htm'])
