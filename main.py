@@ -2,56 +2,55 @@
 # -*- coding: utf-8 -*-
 import logging
 import logging.config
-import timeit
+from optparse import OptionParser
+import sys
 from pyhtmlanalyzer.commonFunctions import configNames
+from pyhtmlanalyzer.commonFunctions.commonFunctions import commonFunctions
 from pyhtmlanalyzer.pyHTMLAnalyzer import pyHTMLAnalyzer
+from pyhtmlanalyzer.server.ConnectionServer import ConnectionServer
+
+def parserCallback(option, opt, value, parser):
+    setattr(parser.values, option.dest, value.split(','))
 
 if __name__ == "__main__":
+    parser = OptionParser()
+    parser.add_option("-f", "--file", dest="filename",
+                  help="analyze urls from file")
+    parser.add_option("-l", "--list", dest="list", type='string',
+                  action='callback',
+                  callback=parserCallback,
+                  help="analyze urls from argument list separated by commas")
+    parser.add_option("-g", "--generate",
+                  action="store_true",
+                  help="generate networks. WARNING: this option will cause database dropping")
+    parser.add_option("-s", "--server", action="store_true",
+                  help="start Twisted server")
+
+    (options, args) = parser.parse_args()
+
     logging.config.fileConfig('logging.ini')
     logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
     logger = logging.getLogger("main")
-    totalBegin = timeit.default_timer()
+
+    if options.server is None \
+        and options.filename is None \
+        and options.generate is None \
+        and options.list is None:
+        parser.print_help()
+        sys.exit(1)
+
     analyzer = pyHTMLAnalyzer(configNames.configFileName)
-
-    #analyzer.printAnalyzedPageFeatures("http://www.tutorialspoint.com/python/string_split.htm")
-    #dic = analyzer.getTotalNumberOfAnalyzedPageFeatures("http://www.tutorialspoint.com/python/string_split.htm")
-    #listOfPages = ['http://www.tutorialspoint.com/python/string_split.htm', 'http://www.tutorialspoint
-    # .com/python/string_rstrip.htm']
-    #begin = timeit.default_timer()
-    #dic = analyzer.getTotalNumberOfAnalyzedPagesFeatures(listOfPages)
-    #end = timeit.default_timer()
-    #logger.info("\nElapsed time: " + str(end - begin) + " seconds")
-    #logger.info(dic.items())
-
-    begin = timeit.default_timer()
-    # http://www.tutorialspoint.com/python/string_rstrip.htm
-    #dic = analyzer.getNumberOfAnalyzedPageFeaturesByFunction('http://habrahabr.ru/post/235949/')
-    # commonFunctions.getObjectNamesFromFile('testDataSet/testDataSet_')
-    analyzer.analyzePages(['http://www.tutorialspoint.com/python/string_rstrip.htm'])
-    #analyzer.analyzePages(['http://www.baidu.com'])
-    #analyzer.setIsActiveModule('urlAnalyzer', False)
-    #analyzer.analyzeFiles(['xmlFiles/test.htm'])
-    #dic = analyzer.getNumberOfAnalyzedPageFeaturesByFunction('http://www.yandex.ru')
-    end = timeit.default_timer()
-    logger.info("Elapsed time: " + str(end - begin) + " seconds")
-
-    # print all data via print and __repr__ class methods
-    #connector = databaseConnector()
-    #connector.printAllTablesData()
-
-    '''begin = timeit.default_timer()
-    dic = analyzer.getNumberOfAnalyzedHTMLFileFeaturesByFunction('xmlFiles/test.htm')
-    #dic = analyzer.getNumberOfAnalyzedPageFeaturesByFunction('http://www.yandex.ru')
-    analyzer.analyzeFiles(['xmlFiles/test.htm'])
-    end = timeit.default_timer()
-    logger.info("Elapsed time: " + str(end - begin) + " seconds")'''
-    #logger.info(dic.items())
-    #html = htmlAnalyzer.printPagesPercentageMismatch(commonConnectionUtils.openFile('xmlFiles/VLC.htm')[0],
-    #                                                commonConnectionUtils.openFile('xmlFiles/VLC1.htm')[0])
-    #plottingFunctions.plotArrayOfValues('test', [10, 20, 40], [100, 400, 300], 'xLabel', 'yLabel')
-    #logger.info("sadf" + str(len(dic)))
-    totalEnd = timeit.default_timer()
-    logger.info("Total elapsed time: " + str(totalEnd - totalBegin) + " seconds")
+    if options.server:
+        server = ConnectionServer(analyzer)
+        server.run()
+    elif options.generate:
+        analyzer.generateNetworks(configNames.configFileName)
+    elif options.filename:
+        analyzer.analyzePages(commonFunctions.getObjectNamesFromFile(args.filename))
+    elif options.list:
+        # commonFunctions.getObjectNamesFromFile('testDataSet/testDataSet_')
+        # analyzer.analyzePages(['http://www.tutorialspoint.com/python/string_rstrip.htm'])
+        analyzer.analyzePages(args.list)
 
     # TODO Global
     # - browser-plugin - must save malicious url for post-analysis, black/white-listing

@@ -27,7 +27,7 @@ class urlVoidFunctions(commonURIAnalysisData):
         result = commonConnectionUtils.openPage('http://api.urlvoid.com/api1000/'
                                                        + self.__API_KEY
                                                        + '/host/'
-                                                       + self._uri.split("://")[1].split("/")[0])
+                                                       + self._uri.split('://')[1].split('/')[0].lstrip('www.'))
 
         # if there exists any info about site (details tag exists) - save it
         if len(result.getXMLData().xpath('//details')) != 0:

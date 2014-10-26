@@ -11,6 +11,7 @@ from pyhtmlanalyzer.databaseUtils.databaseWrapperFunctions import databaseWrappe
 from pyhtmlanalyzer.full.html.htmlExtractor import htmlExtractor
 from pyhtmlanalyzer.full.script.scriptExtractor import scriptExtractor
 from pyhtmlanalyzer.full.url.urlExtractor import urlExtractor
+from pyhtmlanalyzer.full.url.urlvoid.urlVoidFunctions import urlVoidFunctions
 from pyhtmlanalyzer.neuronetUtils.neuroNetsController import neuroNetsController
 
 __author__ = 'hokan'
@@ -32,14 +33,17 @@ class pyHTMLAnalyzer:
 
     def __initialize(self, configFileName):
         self.__modulesRegister = modulesRegister()
-        logger = logging.getLogger(self.__class__.__name__)
         configList = self.getConfigList(configFileName)
-        self.createDatabaseFromFile(configFileName)
+        self.createDatabaseFromFile(configFileName, False, False)
 
         self.setModule(htmlExtractor(configList[0]))
         self.setModule(scriptExtractor(configList[1]))
         self.setModule(urlExtractor(configList[2]))
 
+    def generateNetworks(self, configFileName):
+        logger = logging.getLogger(self.__class__.__name__)
+        logger.info("Analysis database will be dropped ...")
+        self.createDatabaseFromFile(configFileName)
         # networks part
         validPagesFileName = 'testDataSet/validPages/validPages'
         invalidPagesFileName = 'testDataSet/invalidPages/invalidPages'
@@ -53,7 +57,7 @@ class pyHTMLAnalyzer:
             validDataDict = self.getNetworkTrainDataFromFile(validPagesFileName, True)
             self.__controller.trainNetworks(invalidDataDict, validDataDict)
 
-    def createDatabaseFromFile(self, configFileName, deleteTablesContent = True):
+    def createDatabaseFromFile(self, configFileName, recreateDatabase = True, deleteTablesContent = True):
         databaseInfo = commonFunctions.getSectionContent(configFileName, r'[^\n\s=,]+',
                                                          self.__databaseSectionName)
         user = None
@@ -77,7 +81,7 @@ class pyHTMLAnalyzer:
             logger.warning(error)
 
         connector = databaseConnector()
-        connector.createORMClasses(user, password, hostName, databaseName, recreateDatabase=True,
+        connector.createORMClasses(user, password, hostName, databaseName, recreateDatabase=recreateDatabase,
                                        cleanTablesContent=deleteTablesContent)
 
     # numberOfObjectsSimultaneouslyAnalysing
@@ -381,7 +385,18 @@ class pyHTMLAnalyzer:
         resultDict = self.getTotalNumberOfAnalyzedObjectsFeatures(listOfObjects, isPages)
         for analyzedObjectName, analyzedObjectValue in resultDict.items():
             # get isValid-solution
-            isValid = self.__controller.analyzeObjectViaNetworks(analyzedObjectValue)
+            isValid = None
+            urlVoid = urlVoidFunctions(analyzedObjectName)
+            if urlVoid.getRemainedQueries() != 0:
+                detectedEnginesList = urlVoid.getDetectedEnginesList()
+                if detectedEnginesList and len(detectedEnginesList) != 0:
+                    isValid = False
+                else:
+                    isValid = True
+
+            # if urlVoid API failed, analyze page via networks
+            if isValid is None:
+                isValid = self.__controller.analyzeObjectViaNetworks(analyzedObjectValue)
             self.__insertDataInDatabase(analyzedObjectName, analyzedObjectValue, isValid)
 
     def analyzePages(self, listOfPages):
