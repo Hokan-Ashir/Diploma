@@ -8,9 +8,9 @@ from pyhtmlanalyzer.commonFunctions.modulesRegister import modulesRegister
 from pyhtmlanalyzer.commonFunctions.multiprocessing.nodaemonWrappers import NoDaemonPool
 from pyhtmlanalyzer.databaseUtils.databaseConnector import databaseConnector
 from pyhtmlanalyzer.databaseUtils.databaseWrapperFunctions import databaseWrapperFunctions
-from pyhtmlanalyzer.full.html.htmlAnalyzer import htmlAnalyzer
-from pyhtmlanalyzer.full.script.scriptAnalyzer import scriptAnalyzer
-from pyhtmlanalyzer.full.url.urlAnalyzer import urlAnalyzer
+from pyhtmlanalyzer.full.html.htmlExtractor import htmlExtractor
+from pyhtmlanalyzer.full.script.scriptExtractor import scriptExtractor
+from pyhtmlanalyzer.full.url.urlExtractor import urlExtractor
 from pyhtmlanalyzer.neuronetUtils.neuroNetsController import neuroNetsController
 
 __author__ = 'hokan'
@@ -36,9 +36,9 @@ class pyHTMLAnalyzer:
         configList = self.getConfigList(configFileName)
         self.createDatabaseFromFile(configFileName)
 
-        self.setModule(htmlAnalyzer(configList[0]))
-        self.setModule(scriptAnalyzer(configList[1]))
-        self.setModule(urlAnalyzer(configList[2]))
+        self.setModule(htmlExtractor(configList[0]))
+        self.setModule(scriptExtractor(configList[1]))
+        self.setModule(urlExtractor(configList[2]))
 
         # networks part
         validPagesFileName = 'testDataSet/validPages/validPages'
@@ -120,7 +120,7 @@ class pyHTMLAnalyzer:
         # html features
         htmlConfigDict = {}
         try:
-            for item in result['htmlAnalyzer']:
+            for item in result['htmlExtractor']:
                 htmlConfigDict[item[0]] = item[1:]
         except KeyError, error:
             logger = logging.getLogger(self.__class__.__name__)
@@ -130,7 +130,7 @@ class pyHTMLAnalyzer:
         # script features
         scriptConfigDict = {}
         try:
-            for item in result['scriptAnalyzer']:
+            for item in result['scriptExtractor']:
                 scriptConfigDict[item[0]] = item[1:]
         except KeyError, error:
             logger = logging.getLogger(self.__class__.__name__)
@@ -140,7 +140,7 @@ class pyHTMLAnalyzer:
         # uri features
         urlConfigDict = {}
         try:
-            for item in result['urlAnalyzer']:
+            for item in result['urlExtractor']:
                 urlConfigDict[item[0]] = item[1:]
         except KeyError, error:
             logger = logging.getLogger(self.__class__.__name__)

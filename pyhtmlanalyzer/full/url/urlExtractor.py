@@ -13,8 +13,8 @@ from pyhtmlanalyzer.full.url.whoisPackage.whoisFunctions import whoisFunctions
 __author__ = 'hokan'
 
 
-class urlAnalyzer(commonURLFunctions, dnsFunctions, geoIPFunctions, whoisFunctions, urlVoidFunctions):
-    __name__ = 'urlAnalyzer'
+class urlExtractor(commonURLFunctions, dnsFunctions, geoIPFunctions, whoisFunctions, urlVoidFunctions):
+    __name__ = 'urlExtractor'
 
     __configDict = None
     __isCommonURLModuleActive = True
@@ -87,7 +87,7 @@ class urlAnalyzer(commonURLFunctions, dnsFunctions, geoIPFunctions, whoisFunctio
         logger = logging.getLogger(self.__class__.__name__)
         logger.info("\n\nurl Analyser ----------------------")
         begin = timeit.default_timer()
-        for className in urlAnalyzer.__bases__:
+        for className in urlExtractor.__bases__:
             if className.__name__ == commonURLFunctions.__name__ and not self.__isCommonURLModuleActive:
                 continue
             if className.__name__ == dnsFunctions.__name__ and not self.__isDNSModuleActive:
@@ -119,7 +119,7 @@ class urlAnalyzer(commonURLFunctions, dnsFunctions, geoIPFunctions, whoisFunctio
             return
         self._uri = uri
         resultDict = {}
-        for className in urlAnalyzer.__bases__:
+        for className in urlExtractor.__bases__:
             if className.__name__ == commonURLFunctions.__name__ and not self.__isCommonURLModuleActive:
                 continue
             if className.__name__ == dnsFunctions.__name__ and not self.__isDNSModuleActive:
@@ -139,7 +139,7 @@ class urlAnalyzer(commonURLFunctions, dnsFunctions, geoIPFunctions, whoisFunctio
                         logger.exception(error)
                         pass
 
-        return [resultDict, urlAnalyzer.__name__]
+        return [resultDict, urlExtractor.__name__]
     #
     ###################################################################################################################
 
@@ -233,7 +233,7 @@ class urlAnalyzer(commonURLFunctions, dnsFunctions, geoIPFunctions, whoisFunctio
                     logger.exception(error)
                     pass
 
-        return [[resultDict], urlAnalyzer.__name__]
+        return [[resultDict], urlExtractor.__name__]
     #
     ###################################################################################################################
 

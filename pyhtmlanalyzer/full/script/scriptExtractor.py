@@ -23,8 +23,8 @@ from pyhtmlanalyzer.full.commonAnalysisData import commonAnalysisData
 
 __author__ = 'hokan'
 
-class scriptAnalyzer(commonAnalysisData):
-    __name__ = 'scriptAnalyzer'
+class scriptExtractor(commonAnalysisData):
+    __name__ = 'scriptExtractor'
 
     # TODO make constant, maybe in more common file
     _scriptHashingFunctionName = 'getScriptContentHashing'
@@ -1423,7 +1423,7 @@ class scriptAnalyzer(commonAnalysisData):
         #    return
         logger.info("\n\njs Analyser ----------------------")
         begin = timeit.default_timer()
-        for funcName, funcValue in scriptAnalyzer.__dict__.items():
+        for funcName, funcValue in scriptExtractor.__dict__.items():
             if str(funcName).startswith("print") and callable(funcValue):
                 try:
                     getattr(self, funcName)()
@@ -1445,7 +1445,7 @@ class scriptAnalyzer(commonAnalysisData):
                 return
         self.initialization(objectData, uri)
         resultDict = {}
-        for funcName, funcValue in scriptAnalyzer.__dict__.items():
+        for funcName, funcValue in scriptExtractor.__dict__.items():
             if str(funcName).startswith("getTotal") and callable(funcValue):
                 try:
                     resultDict[funcName] = getattr(self, funcName)()
@@ -1454,7 +1454,7 @@ class scriptAnalyzer(commonAnalysisData):
                     logger.exception(error)
                     pass
 
-        return [resultDict, scriptAnalyzer.__name__]
+        return [resultDict, scriptExtractor.__name__]
     #
     ###################################################################################################################
 
@@ -1593,7 +1593,7 @@ class scriptAnalyzer(commonAnalysisData):
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning(error)
             logger.warning("Insufficient number of parameters")
-            return [None, scriptAnalyzer.__name__]
+            return [None, scriptExtractor.__name__]
 
         objectData = kwargs['object']
         if objectData.getXMLData() is None \
@@ -1602,7 +1602,7 @@ class scriptAnalyzer(commonAnalysisData):
             logger.warning('Error in input parameters:\n xmldata:\t%s\n pageReady:\t%s' % (objectData.getXMLData(),
                                                                                            objectData.getPageReady()))
             logger.warning("Insufficient number of parameters")
-            return [None, scriptAnalyzer.__name__]
+            return [None, scriptExtractor.__name__]
 
         objectData = commonConnectionUtils.openPage(kwargs['uri'])
         self.initialization(objectData, kwargs['uri'])
@@ -1647,7 +1647,7 @@ class scriptAnalyzer(commonAnalysisData):
         else:
             resultList = self.analyzeAllFunctions()
 
-        return [resultList, scriptAnalyzer.__name__]
+        return [resultList, scriptExtractor.__name__]
     #
     ###################################################################################################################
 

@@ -18,8 +18,8 @@ from pyhtmlanalyzer.full.commonURIAnalysisData import commonURIAnalysisData
 
 __author__ = 'hokan'
 
-class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
-    __name__ = 'htmlAnalyzer'
+class htmlExtractor(commonAnalysisData, commonURIAnalysisData):
+    __name__ = 'htmlExtractor'
 
     # TODO make constant, maybe in more common file
     _scriptHashingFunctionName = 'getPageHashValues'
@@ -511,7 +511,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         probablyNotMatch = (xmldataFirstPage.xpath('count(//*)') != xmldataSecondPage.xpath('count(//*)'))
         if probablyNotMatch:
             logger.info("\nThis pages probably not match")
-        numberOfMismatchedTags = htmlAnalyzer.getNumberOfMismatchedTagNames(xmldataFirstPage.xpath('/*')[0],
+        numberOfMismatchedTags = htmlExtractor.getNumberOfMismatchedTagNames(xmldataFirstPage.xpath('/*')[0],
                                                                             xmldataSecondPage.xpath('/*')[0])
         return numberOfMismatchedTags / xmldataFirstPage.xpath('count(//*)')
 
@@ -556,7 +556,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
             else:
                 # TODO here can be add attributes lists comparing
                 numberOfDifferentNodes += \
-                    htmlAnalyzer.getNumberOfMismatchedTagNames(listPairChildFirstPage[0][1],
+                    htmlExtractor.getNumberOfMismatchedTagNames(listPairChildFirstPage[0][1],
                                                                listPairChildSecondPage[secondPageListIndex][1])
                 listPairChildSecondPage.pop(secondPageListIndex)
 
@@ -592,7 +592,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         if xmldataFirstPage is None or xmldataSecondPage is None:
                 logger.warning("Insufficient number of parameters")
                 return
-        pagesPercentageMismatch = htmlAnalyzer.getPagesPercentageMismatch(xmldataFirstPage, xmldataSecondPage)
+        pagesPercentageMismatch = htmlExtractor.getPagesPercentageMismatch(xmldataFirstPage, xmldataSecondPage)
         logger.info("\nPages percentage mismatch is: " + str(pagesPercentageMismatch * 100) + "%")
     #
     ###################################################################################################################
@@ -1018,7 +1018,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         #    return
         logger.info("\n\nhtml Analyser ----------------------")
         begin = timeit.default_timer()
-        for funcName, funcValue in htmlAnalyzer.__dict__.items():
+        for funcName, funcValue in htmlExtractor.__dict__.items():
             if str(funcName).startswith("print") and callable(funcValue):
                 try:
                     getattr(self, funcName)()
@@ -1041,7 +1041,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         self.setPageReady(pageReady)
         self._uri = uri
         resultDict = {}
-        for funcName, funcValue in htmlAnalyzer.__dict__.items():
+        for funcName, funcValue in htmlExtractor.__dict__.items():
             if str(funcName).startswith("getTotal") and callable(funcValue):
                 try:
                     resultDict[funcName] = getattr(self, funcName)()
@@ -1050,7 +1050,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
                     logger.exception(error)
                     pass
 
-        return [resultDict, htmlAnalyzer.__name__]
+        return [resultDict, htmlExtractor.__name__]
     #
     ###################################################################################################################
 
@@ -1114,7 +1114,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         if self.__listOfHashes is not None and pageHashValues == self.__listOfHashes:
             # set id of this table row to which reference this listOfHashes
             resultDict[configNames.id] = previousHTMLFk[0].htmlAnalysisFk
-            return [[resultDict], htmlAnalyzer.__name__]
+            return [[resultDict], htmlExtractor.__name__]
 
         if numberOfProcesses > 1:
             numberOfFunctionsByProcess = len(self.__listOfAnalyzeFunctions) / numberOfProcesses
@@ -1180,7 +1180,7 @@ class htmlAnalyzer(commonAnalysisData, commonURIAnalysisData):
         hashValues = [{'hash256': pageHashValues[0], 'hash512': pageHashValues[1]}]
         resultDict['hashValues'] = hashValues
 
-        return [[resultDict], htmlAnalyzer.__name__]
+        return [[resultDict], htmlExtractor.__name__]
     #
     ###################################################################################################################
 

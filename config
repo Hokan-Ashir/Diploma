@@ -1,5 +1,5 @@
 {Extractors features}
-[htmlAnalyzer]
+[htmlExtractor]
 html.elements.with.small.area = div, iframe, object
 
 html.non.dulpicated.elemets = html, head, title, body
@@ -32,7 +32,7 @@ html.no.block.content.inline.elements = ins, del
 html.all.tag.names = !DOCTYPE, a, abbr, acronym, address, applet, area, article, aside, audio, b, base, basefont, bdi, bdo, big, blockquote, body, br, button, canvas, caption, center, cite, code, col, colgroup, command, datalist, dd, del, details, dfn, dialog, dir, div, dl, dt, em, embed, fieldset, figcaption, figure, font, footer, form, frame, frameset, head, header, hgroup, h1, h2, h3, h4, h5, h6, hr, i, iframe, img, input, ins, kbd, keygen, label, legend, li, link, main, map, mark, menu, meta, meter, nav, noframes, noscript, object, ol, optgroup, option, output, p, param, pre, progress, q, rp, rt, ruby, s, samp, script, section, select, small, source, span, strike, strong, style, sub, summary, sup, table, tbody, td, textarea, tfoot, th, thead, time, title, tr, track, tt, u, ul, var, video, wbr
 
 ########################################################################################################################
-[scriptAnalyzer]
+[scriptExtractor]
 script.set.timeout.functions = setTimeout, setInterval
 
 # lists of keywords is taken from: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Reserved_Words
@@ -86,7 +86,7 @@ script.DOM.modifying.methods = createElement, createAttribute, setAttribute, cre
 script.fingerprinting.functions = navigator.userAgent, navigator.language, screen.colorDepth, getTimezoneOffset, window.localStorage, window.sessionStorage, window.indexedDB, document.body.addBehavior, window.openDatabase, navigator.cpuClass, navigator.platform, navigator.doNotTrack
 
 ########################################################################################################################
-[urlAnalyzer]
+[urlExtractor]
 # list of suspicious file names
 url.suspicious.file.names = swfNode.php, pdfNode.php
 
@@ -105,7 +105,7 @@ url.suspicious.patterns = swfNode.php, pdfNode.php
 
 # We also do not pass here "getPagesPercentageMismatch", just because we must have another page to compare to
 
-[htmlAnalyzer]
+[htmlExtractor]
 getTotalNumberOfElementsWithSmallArea : Integer,
 getTotalNumberOfDuplicatedElements : Integer,
 getTotalNumberOfElementsWithSuspiciousContent : Integer,
@@ -133,7 +133,7 @@ getExternalDomainToInternalDomainSourceElementsRatio : Float
 # Do not consider "getAverageScriptLength" cause it calculate average length of all script code pieces
 # also do not consider "getScriptContentHashing" function, cause it's used for storing data, not analysing it
 
-[scriptAnalyzer]
+[scriptExtractor]
 
 getNumberOfEvalFunctionCalls : Integer,
 getTotalNumberOfSetTimeoutIntervalCalls : Integer,
@@ -164,7 +164,7 @@ getNumberOfDirectStringAssignments : Integer,
 # this function returns dict, so String(255) may be not enough
 #getNumberOfFingerPrintingFunctions : String
 
-[urlAnalyzer]
+[urlExtractor]
 
 # Common functions section
 getDomainNameLength : Integer,
@@ -230,10 +230,10 @@ getURLRegistrationDates : String,
 getURLUpdateDate : String
 
 {Extra columns}
-[htmlAnalyzer]
+[htmlExtractor]
 hashValuesFk : Integer
 
-[scriptAnalyzer]
+[scriptExtractor]
 pageFk : Integer
 hashValuesFk : Integer
 
@@ -255,14 +255,14 @@ isValid : Boolean
 # column_which_will_be_used_as_FK : tableName_to_which_FK_points : field_of_table_to_which_FK_points
 #
 [page]
-htmlAnalysisFk : htmlAnalyzer : id
-urlAnalysisFk : urlAnalyzer : id
+htmlAnalysisFk : htmlExtractor : id
+urlAnalysisFk : urlExtractor : id
 
-[scriptAnalyzer]
+[scriptExtractor]
 pageFk : page : id
 hashValuesFk : hashValues : id
 
-[htmlAnalyzer]
+[htmlExtractor]
 hashValuesFk : hashValues : id
 
 {Analyze functions database}
