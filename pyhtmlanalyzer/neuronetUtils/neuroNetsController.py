@@ -9,7 +9,8 @@ __author__ = 'hokan'
 class neuroNetsController:
     __networksDict = {}
     __weightsController = None
-    __solutionBorderValue = 0.5
+    __solutionBorderValueLess = 1.98
+    __solutionBorderValueMore = 1.98
 
     # predefined networks directory
     __networksDirectory = './networks'
@@ -157,17 +158,24 @@ class neuroNetsController:
 
         logger.info('Non round solution value: %s' % str(solution))
         # round solution
-        solution = True if abs(solution) >= self.__solutionBorderValue else False
+        solution = True if abs(solution) >= self.__solutionBorderValueLess \
+            and abs(solution) <= self.__solutionBorderValueMore else False
         logger.info("Result solution is: " + str(solution))
         logger.info("Page changed: " + str(pageChanged))
 
         return None if not pageChanged else solution
 
-    def getSolutionBorderValue(self):
-        return self.__solutionBorderValue
+    def getSolutionBorderValueLess(self):
+        return self.__solutionBorderValueLess
 
-    def setSolutionBorderValue(self, value):
-        self.__solutionBorderValue = value
+    def setSolutionBorderValueLess(self, value):
+        self.__solutionBorderValueLess = value
+
+    def getSolutionBorderValueMore(self):
+        return self.__solutionBorderValueMore
+
+    def setSolutionBorderValueMore(self, value):
+        self.__solutionBorderValueMore = value
 
     def __trainNetworkWithData(self, networkName, listOfInputParameters, listOfOutputParameters, numberOfEpochs = None):
         return self.__networksDict[networkName].trainNetworkWithData(listOfInputParameters, listOfOutputParameters, numberOfEpochs)

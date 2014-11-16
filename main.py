@@ -6,6 +6,7 @@ from optparse import OptionParser
 import sys
 from pyhtmlanalyzer.commonFunctions import configNames
 from pyhtmlanalyzer.commonFunctions.commonFunctions import commonFunctions
+from pyhtmlanalyzer.databaseUtils.databaseConnector import databaseConnector
 from pyhtmlanalyzer.pyHTMLAnalyzer import pyHTMLAnalyzer
 from pyhtmlanalyzer.server.ConnectionServer import ConnectionServer
 
@@ -25,6 +26,11 @@ if __name__ == "__main__":
                   help="generate networks. WARNING: this option will cause database dropping")
     parser.add_option("-s", "--server", action="store_true",
                   help="start Twisted server")
+    parser.add_option("-c", "--clear", action="store_true",
+                  help="clear analysis database (all content will be deleted, but tables will remain)")
+    parser.add_option("-k", "--create", action="store_true",
+                  help="create analysis database (all content will be deleted, database will be dropped and created "
+                       "again)")
 
     (options, args) = parser.parse_args()
 
@@ -35,18 +41,34 @@ if __name__ == "__main__":
     if options.server is None \
         and options.filename is None \
         and options.generate is None \
-        and options.list is None:
+        and options.list is None\
+        and options.clear is None\
+        and options.create is None:
         parser.print_help()
         sys.exit(1)
 
     analyzer = pyHTMLAnalyzer(configNames.configFileName)
+    validPagesFileName = 'testDataSet/validPages/validPages'
+    invalidPagesFileName = 'testDataSet/invalidPages/invalidPages'
+    try:
+        analyzer.getNeuroNetsController().attemptToLoadNetworksFromFiles(validPagesFileName, invalidPagesFileName)
+    except IOError:
+        if options.generate == False:
+            logger.info('No neuro networks exists; You can only use generate networks flag (-g). Program terminating')
+            sys.exit(1)
+
     if options.server:
         server = ConnectionServer(analyzer)
         server.run()
     elif options.generate:
         analyzer.generateNetworks(configNames.configFileName)
     elif options.filename:
-        analyzer.analyzePages(commonFunctions.getObjectNamesFromFile(args.filename))
+        analyzer.analyzePages(commonFunctions.getObjectNamesFromFile(options.filename))
+    elif options.clear:
+        connector = databaseConnector()
+        connector.deleteAllTablesContent()
+    elif options.create:
+        analyzer.createDatabaseFromFile(configNames.configFileName, True, True)
     elif options.list:
         # commonFunctions.getObjectNamesFromFile('testDataSet/testDataSet_')
         # analyzer.analyzePages(['http://www.tutorialspoint.com/python/string_rstrip.htm'])

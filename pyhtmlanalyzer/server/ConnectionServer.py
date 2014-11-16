@@ -32,8 +32,6 @@ class URLReceiver(LineReceiver):
         self.handle_GETURL(line)
 
     def handle_GETURL(self, url):
-        self.sendLine(str(self.currentlyAnalyzingURLs))
-        self.sendLine(str(self.url))
         if url in self.currentlyAnalyzingURLs:
             status = self.getURLCurrentStatus(url)
             self.sendLine("URL currently analyzing, please choose another.")

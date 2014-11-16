@@ -31,7 +31,7 @@ class neuroNet(object):
             if numberOfInputParameters is None:
                 numberOfInnerNeurons = 3
             else:
-                numberOfInnerNeurons = numberOfInputParameters + numberOfOutputParameters
+                numberOfInnerNeurons = 3#numberOfInputParameters + numberOfOutputParameters
 
         if numberOfInputParameters is not None:
             self.__network = buildNetwork(numberOfInputParameters, numberOfInnerNeurons, numberOfOutputParameters)

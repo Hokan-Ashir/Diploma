@@ -39,6 +39,7 @@ class pyHTMLAnalyzer:
         self.setModule(htmlExtractor(configList[0]))
         self.setModule(scriptExtractor(configList[1]))
         self.setModule(urlExtractor(configList[2]))
+        self.__controller = neuroNetsController()
 
     def generateNetworks(self, configFileName):
         logger = logging.getLogger(self.__class__.__name__)
@@ -47,7 +48,6 @@ class pyHTMLAnalyzer:
         # networks part
         validPagesFileName = 'testDataSet/validPages/validPages'
         invalidPagesFileName = 'testDataSet/invalidPages/invalidPages'
-        self.__controller = neuroNetsController()
         try:
             self.__controller.attemptToLoadNetworksFromFiles(validPagesFileName, invalidPagesFileName)
         except IOError:
@@ -83,6 +83,12 @@ class pyHTMLAnalyzer:
         connector = databaseConnector()
         connector.createORMClasses(user, password, hostName, databaseName, recreateDatabase=recreateDatabase,
                                        cleanTablesContent=deleteTablesContent)
+
+    def getNeuroNetsController(self):
+        return self.__controller
+
+    def setNeuroNetsController(self, controller):
+        self.__controller = controller
 
     # numberOfObjectsSimultaneouslyAnalysing
     def getNumberOfObjectsSimultaneouslyAnalysing(self):
@@ -182,8 +188,7 @@ class pyHTMLAnalyzer:
             if self.getIsActiveModule(moduleName):
                 # 'numberOfProcesses' : 1
                 methodProxy = MethodProxy(module, functionName)
-                processPool.apply_async(methodProxy, (), {'object': openedObject, 'uri': uri, 'numberOfProcesses' :
-                    3},
+                processPool.apply_async(methodProxy, (), {'object': openedObject, 'uri': uri},
                                         callback=collectResults)
 
         processPool.close()

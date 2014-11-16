@@ -111,6 +111,14 @@ class commonConnectionUtils:
                                   encoding['encoding'])
 
     @staticmethod
+    def isOpenablePage(url):
+        return commonConnectionUtils.openPage(url) != []
+
+    @staticmethod
+    def isOpenableFile(path):
+        return commonConnectionUtils.openFile(path) != []
+
+    @staticmethod
     def openRelativeScriptObject(uri, filePath):
         # in case of page analyzing
         if uri.startswith('http'):

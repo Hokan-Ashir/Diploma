@@ -1,8 +1,9 @@
 import logging
-from sqlalchemy import Integer, Float, String, Boolean, Column, create_engine, ForeignKey
-from sqlalchemy.exc import OperationalError
+from sqlalchemy import Integer, Float, String, Boolean, Column, create_engine, ForeignKey, event
+from sqlalchemy.exc import OperationalError, DisconnectionError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker, relationship, load_only
+from sqlalchemy.pool import Pool
 from pyhtmlanalyzer.commonFunctions import configNames
 from pyhtmlanalyzer.commonFunctions.commonFunctions import commonFunctions
 from pyhtmlanalyzer.commonFunctions.modulesRegister import modulesRegister
@@ -382,8 +383,24 @@ def __repr__ (self):
             return False
 
     def getDatabaseEngine(self, user, password, hostname, databaseName, createIfNotExists=False):
+
+        @event.listens_for(Pool, "checkout")
+        def checkout_listener(dbapi_con, con_record, con_proxy):
+            try:
+                try:
+                    dbapi_con.ping(False)
+                except TypeError:
+                    dbapi_con.ping()
+            except dbapi_con.OperationalError as exc:
+                if exc.args[0] in (1046, 2006, 2013, 2014, 2045, 2055):
+                    raise DisconnectionError()
+                else:
+                    raise
+
         connectionString = 'mysql://' + user + ':' + password + '@' + hostname
-        self.__engine = create_engine(connectionString, encoding='latin1')
+        self.__engine = create_engine(connectionString, encoding='latin1', pool_size=100,
+                          pool_recycle=3600)
+        event.listen(Pool, 'checkout', checkout_listener)
         self.useDatabase(user, password, hostname, databaseName)
         self.__Base = declarative_base(bind=self.__engine)
 
@@ -412,6 +429,7 @@ def __repr__ (self):
         elif self.useDatabase(user, password, hostname, databaseName) == False:
             logger = logging.getLogger(self.__class__.__name__)
             logger.warning('Database %s does not exists' % databaseName)
+            return
 
         # load analysing tables
         tables = commonFunctions.getSectionContent(configNames.configFileName, r'[^\n\s=,]+\s*:\s*[^\n\s=,]+', 'Extractors functions')
